@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Tyre Eco — Consignação</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F7F7F5;--surface:#FFF;--border:#E5E4E0;--bl:#EFEFED;
+  --text:#1A1A18;--t2:#6B6B65;--t3:#A8A8A2;
+  --green:#1D7A4F;--gbg:#EBF5EF;--gl:#C5DFC9;
+  --blue:#1A5FA8;--bbg:#EBF2FB;--bl2:#C9DFF5;
+  --orange:#B85C00;--obg:#FDF0E5;--ol:#FAD9B4;
+  --red:#B02020;--rbg:#FDECEC;--rl:#F5C0C0;
+  --purple:#5040A8;--pbg:#F0EEFB;--pl:#CFC9F2;
+  --teal:#0A6E5C;--tbg:#E8F5F2;
+  --wpp:#25D366;
+  --r:12px;--rs:8px;--rxs:6px;
+  --sh:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.05);
+  --shm:0 4px 12px rgba(0,0,0,.10);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-tap-highlight-color:transparent}
+.app{max-width:540px;margin:0 auto}
+/* Topbar */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 1rem;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.tlogo{width:32px;height:32px;border-radius:8px;background:var(--purple);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700}
+.tinfo h1{font-size:14px;font-weight:600}
+.tinfo span{font-size:11px;color:var(--t2)}
+.content{padding:1rem}
+/* Buttons */
+.btn{padding:10px 14px;border-radius:var(--rs);font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:6px;touch-action:manipulation}
+.btn-primary{background:var(--purple);color:#fff}
+.btn-primary:hover{background:#3C3489}
+.btn-success{background:var(--green);color:#fff}
+.btn-orange{background:var(--orange);color:#fff}
+.btn-wpp{background:var(--wpp);color:#fff}
+.btn-secondary{background:var(--surface);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--bg)}
+.btn-danger{background:var(--rbg);color:var(--red);border:1px solid var(--rl)}
+.btn-sm{padding:5px 10px;font-size:12px;font-weight:500}
+.btn-block{width:100%;justify-content:center;margin-top:8px}
+.btn-dis{opacity:.4;pointer-events:none}
+.back-btn{background:none;border:1px solid var(--border);border-radius:var(--rxs);padding:6px 10px;cursor:pointer;font-size:13px;color:var(--t2);font-family:inherit;display:inline-flex;align-items:center;gap:5px;margin-bottom:1rem}
+/* Cards */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1rem;margin-bottom:10px;box-shadow:var(--sh)}
+/* Tabs */
+.tabs{display:flex;gap:3px;margin-bottom:1rem;background:#EBEBEA;border-radius:10px;padding:3px;overflow-x:auto}
+.tab{flex:1;padding:7px 4px;font-size:11px;border:none;background:none;cursor:pointer;border-radius:8px;color:var(--t2);font-family:inherit;text-align:center;white-space:nowrap;min-width:60px;font-weight:500}
+.tab.active{background:var(--surface);color:var(--text);font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+/* Badge */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap}
+.b-green{background:var(--gbg);color:var(--green)}
+.b-blue{background:var(--bbg);color:var(--blue)}
+.b-orange{background:var(--obg);color:var(--orange)}
+.b-red{background:var(--rbg);color:var(--red)}
+.b-purple{background:var(--pbg);color:var(--purple)}
+.b-gray{background:var(--bg);color:var(--t2);border:1px solid var(--border)}
+/* Form */
+.form-group{margin-bottom:12px}
+.form-group label{display:block;font-size:11px;font-weight:700;color:var(--t2);letter-spacing:.04em;text-transform:uppercase;margin-bottom:5px}
+input,select,textarea{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:14px;font-family:inherit;background:var(--bg);color:var(--text);transition:border .15s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple);background:#fff}
+textarea{resize:vertical;min-height:70px;line-height:1.5}
+/* Rows */
+.fin-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--bl);font-size:13px}
+.fin-row:last-child{border-bottom:none}
+.fl{color:var(--t2)}.fv{font-weight:600}
+.pos{color:var(--green)}.neg{color:var(--red)}.warn{color:var(--orange)}
+/* Alerts */
+.alert{border-radius:var(--rs);padding:10px 14px;margin-bottom:12px;display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.5}
+.alert i{font-size:16px;flex-shrink:0;margin-top:1px}
+.alert.ok{background:var(--gbg);color:var(--green)}
+.alert.blue{background:var(--bbg);color:var(--blue)}
+.alert.warn{background:var(--obg);color:var(--orange)}
+.alert.red{background:var(--rbg);color:var(--red)}
+.alert.purple{background:var(--pbg);color:var(--purple)}
+/* Stats */
+.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px}
+.stat-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+.stat-box{background:var(--bg);border-radius:var(--rs);padding:10px;text-align:center;border:1px solid var(--border)}
+.stat-box .sv{font-size:18px;font-weight:700}
+.stat-box .sl{font-size:10px;color:var(--t2);margin-top:2px;text-transform:uppercase;letter-spacing:.03em}
+/* Pedido card */
+.pedido-card{border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:10px;box-shadow:var(--sh)}
+.pedido-header{padding:12px 14px;display:flex;align-items:flex-start;gap:10px;cursor:pointer;transition:background .12s}
+.pedido-header:hover{background:var(--bg)}
+.pedido-body{padding:14px;border-top:1px solid var(--bl)}
+/* Status colors */
+.status-enviado{border-left:4px solid var(--blue)}
+.status-adiant{border-left:4px solid var(--orange)}
+.status-declarado{border-left:4px solid var(--purple)}
+.status-conferido{border-left:4px solid var(--teal)}
+.status-fechado{border-left:4px solid var(--green)}
+/* Mix bars */
+.mix-wrap{margin-bottom:6px}
+.mix-label{display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px}
+.mix-bg{background:var(--bg);border-radius:20px;height:7px;overflow:hidden}
+.mix-fill{height:7px;border-radius:20px;transition:width .4s}
+/* Grade input */
+.grade-table{width:100%;border-collapse:collapse}
+.grade-table th{font-size:10px;font-weight:700;color:var(--t2);padding:6px 6px;border-bottom:2px solid var(--border);text-align:center;background:var(--bg);text-transform:uppercase;letter-spacing:.03em}
+.grade-table th:first-child{text-align:left}
+.grade-table td{padding:4px 4px;border-bottom:1px solid var(--bl);vertical-align:middle}
+.grade-table .lbl{font-size:13px;font-weight:600;padding-left:2px}
+.grade-input{width:56px;height:40px;padding:0;text-align:center;border:1.5px solid var(--border);border-radius:7px;font-size:14px;font-weight:600;background:var(--surface);color:var(--text);-moz-appearance:textfield}
+.grade-input::-webkit-inner-spin-button,.grade-input::-webkit-outer-spin-button{-webkit-appearance:none}
+.grade-input:focus{outline:none;border:2px solid var(--purple);background:var(--pbg)}
+.grade-input.tem{background:var(--gbg);border-color:var(--green);color:var(--green)}
+.grade-input.dev{background:var(--rbg);border-color:var(--red);color:var(--red)}
+/* Comparativo mix */
+.mix-comp-row{display:grid;grid-template-columns:60px 1fr 80px 80px;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid var(--bl);font-size:12px}
+.mix-comp-row:last-child{border-bottom:none}
+.mix-comp-bars{display:flex;flex-direction:column;gap:3px}
+.mix-comp-bar{height:5px;border-radius:3px;transition:width .4s}
+/* Progress */
+.prog-wrap{background:var(--bg);border-radius:20px;height:6px;overflow:hidden;margin:5px 0}
+.prog-bar{height:6px;border-radius:20px;background:var(--purple);transition:width .3s}
+/* WPP preview */
+.wpp-bubble{background:#E7F8DC;border-radius:12px 12px 2px 12px;padding:12px 14px;font-size:12px;line-height:1.7;color:#111;border:0.5px solid #C5E8A3;margin-bottom:8px}
+/* Opções de devolução */
+.opcao-card{border:2px solid var(--border);border-radius:var(--r);padding:1rem;cursor:pointer;transition:all .2s;margin-bottom:8px;position:relative}
+.opcao-card:hover{border-color:var(--purple);background:var(--pbg)}
+.opcao-card.sel{border-color:var(--purple);background:var(--pbg)}
+.opcao-card .oc-num{position:absolute;top:-12px;left:12px;background:var(--purple);color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.opcao-card h3{font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;margin-top:4px}
+.opcao-card p{font-size:12px;color:var(--t2);line-height:1.5}
+.opcao-pros{margin-top:8px;display:flex;gap:4px;flex-wrap:wrap}
+.opcao-pros span{font-size:10px;padding:2px 7px;border-radius:20px;background:var(--gbg);color:var(--green);font-weight:600}
+.opcao-contras span{font-size:10px;padding:2px 7px;border-radius:20px;background:var(--obg);color:var(--orange);font-weight:600}
+.section-title{font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;margin-top:4px}
+.empty{text-align:center;padding:2.5rem 1rem;color:var(--t2)}
+.empty i{font-size:32px;display:block;margin-bottom:10px;opacity:.3}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="tlogo"><i class="ti ti-refresh-dot" style="font-size:16px"></i></div>
+      <div class="tinfo"><h1>Consignação</h1><span id="topbar-sub">Pedidos em aberto</span></div>
+    </div>
+    <div style="display:flex;gap:6px">
+      <button class="btn btn-sm btn-primary" id="btn-novo-pedido"><i class="ti ti-plus"></i> Novo</button>
+    </div>
+  </div>
+  <div class="content" id="main"></div>
+</div>
+
+<script>
+// ── Estado ────────────────────────────────────────────────────────────────────
+const AROS=['13','14','15','16','17','SUV','Camionete','Caminhão'];
+const CATS=[
+  {id:'carcaca',nome:'Carcaça',porMedida:true},
+  {id:'risco',nome:'Risco',porMedida:false},
+  {id:'meiavida',nome:'Meia Vida',porMedida:false},
+  {id:'cortados',nome:'Cortados',porMedida:false},
+];
+const MEDIDAS_CARCACA={'13':['165/70R13','175/70R13','175/75R13'],'14':['175/65R14','175/70R14','185/65R14','185/70R14'],'15':['185/60R15','185/65R15','195/55R15','195/65R15','205/60R15','205/65R15'],'16':['205/55R16','205/60R16','215/65R16'],'17':['215/45R17','225/45R17','225/50R17']};
+// ── Cadastro de clientes com tabela de preços (espelha módulo Vendas) ─────────
+// Tipo 'medidas': precos = {aro: {medida: preco}}
+// Tipo 'aros':    precos = {aro: preco}
+const CADASTRO_CLIENTES = {
+  '357': { nome:'TCP ECOLOGY TYRE',      categoria:'carcaca', tipo:'medidas',
+    precos:{'13':{'165/70R13':45,'175/70R13':50,'175/75R13':40},'14':{'175/65R14':45,'175/70R14':55,'185/65R14':50,'185/70R14':50},'15':{'185/60R15':22,'185/65R15':25,'195/55R15':20,'195/65R15':25,'205/60R15':20,'205/65R15':40},'16':{'205/55R16':10,'205/60R16':15,'215/65R16':30},'17':{'215/45R17':20,'225/45R17':15,'225/50R17':15}} },
+  '6':   { nome:'JATOBA PNEUS',          categoria:'risco',   tipo:'aros',   precos:{'13':35,'14':35,'15':35,'16':35,'17':35,'SUV':35} },
+  '1':   { nome:'BORRACHARIA PEREIRA LTDA', categoria:'meiavida', tipo:'aros', precos:{'13':55,'14':55,'15':55,'16':55} },
+  '63':  { nome:'MESQUITAO COMERCIO DE PNEUS', categoria:'carcaca', tipo:'aros', precos:{'13':30,'14':28,'15':22,'16':10} },
+  '363': { nome:'SARADAO COMERCIO DE PNEUS',   categoria:'cortados', tipo:'aros', precos:{'13':45,'14':45,'15':45,'16':45} },
+  '73':  { nome:'ROQUE WHEELS RODAS E PNEUS',  categoria:'risco',   tipo:'aros', precos:{'13':35,'14':35,'15':35} },
+  '82':  { nome:'TRUCKERS PNEUS',              categoria:'carcaca', tipo:'aros', precos:{'13':35,'14':30,'15':25,'16':10,'17':5} },
+  '399': { nome:'AGILI DISTRIBUIDORA',         categoria:'meiavida', tipo:'aros', precos:{'13':55,'14':55,'15':55,'16':55,'17':55} },
+  '371': { nome:'JCM COMERCIO DE PNEUS',       categoria:'risco',   tipo:'aros', precos:{'13':35,'14':35,'15':35,'16':35} },
+};
+
+// Tenta carregar cadastro do storage compartilhado com módulo Vendas
+async function sincronizarCadastroVendas(){
+  try{
+    const r=await window.storage?.get('vnd3_cad');
+    if(r){
+      const dados=JSON.parse(r.value);
+      // Mescla cadastro Vendas no cadastro local
+      Object.entries(dados).forEach(([id,cad])=>{
+        const nome=Object.values(CADASTRO_CLIENTES).find(c=>c.nome===cad.nome)?.nome||`Cliente ${id}`;
+        CADASTRO_CLIENTES[id]={nome,categoria:cad.categoria,tipo:cad.tipo,precos:cad.precos||cad.tabela||{}};
+      });
+    }
+  }catch(e){}
+}
+sincronizarCadastroVendas();
+
+const CLIENTES=Object.values(CADASTRO_CLIENTES).map(c=>c.nome);
+const CLIENTES_IDS=Object.entries(CADASTRO_CLIENTES).map(([id,c])=>({id,nome:c.nome}));
+
+// Busca cadastro pelo nome do cliente
+function getCadCliente(nomeOuId){
+  const por_id=CADASTRO_CLIENTES[nomeOuId];
+  if(por_id) return {id:nomeOuId,...por_id};
+  const entry=Object.entries(CADASTRO_CLIENTES).find(([,c])=>c.nome===nomeOuId);
+  return entry?{id:entry[0],...entry[1]}:null;
+}
+
+// Retorna preço unitário de um aro para um cliente
+// Para tipo 'medidas': retorna média dos preços das medidas daquele aro
+// Para tipo 'aros': retorna direto
+function getPrecoAro(cad,aro){
+  if(!cad||!cad.precos) return 0;
+  if(cad.tipo==='medidas'){
+    const medidas=cad.precos[aro];
+    if(!medidas) return 0;
+    const vals=Object.values(medidas).map(Number).filter(v=>v>0);
+    return vals.length?vals.reduce((s,v)=>s+v,0)/vals.length:0;
+  }
+  return Number(cad.precos[aro])||0;
+}
+
+// Preço detalhado por medida (para tipo 'medidas')
+function getPrecoMedida(cad,aro,medida){
+  if(!cad||cad.tipo!=='medidas'||!cad.precos[aro]) return 0;
+  return Number(cad.precos[aro][medida])||0;
+}
+
+// Status: enviado → adiantamento → declarado → conferido → fechado
+let pedidos=[
+  {id:'p001',clienteId:'357',cliente:'TCP ECOLOGY TYRE',data:'01/06/2026',status:'conferido',
+   categoria:'carcaca',adiantamento:2000,
+   lote:{
+     '13':{total:80,medidas:{'165/70R13':30,'175/70R13':30,'175/75R13':20}},
+     '14':{total:60,medidas:{'175/65R14':20,'175/70R14':20,'185/65R14':20}},
+     '15':{total:40,medidas:{'185/60R15':15,'185/65R15':15,'195/65R15':10}},
+   },
+   declarado:{'13':25,'14':20,'15':15},
+   conferido:{'13':25,'14':18,'15':15},
+   devObs:'Aro 14 chegou 18 em vez de 20 declarados',
+   credito:0,saldoFinal:0,
+  },
+  {id:'p002',clienteId:'6',cliente:'JATOBA PNEUS',data:'05/06/2026',status:'declarado',
+   categoria:'risco',adiantamento:1500,
+   lote:{'13':50,'14':40,'15':30,'16':10},
+   declarado:{'13':15,'14':10,'15':8},
+   conferido:null,credito:0,saldoFinal:0,
+  },
+  {id:'p003',clienteId:'1',cliente:'BORRACHARIA PEREIRA LTDA',data:'08/06/2026',status:'adiantamento',
+   categoria:'meiavida',adiantamento:1000,
+   lote:{'13':30,'14':25,'15':20},
+   declarado:null,conferido:null,credito:0,saldoFinal:0,
+  },
+  {id:'p004',clienteId:'357',cliente:'TCP ECOLOGY TYRE',data:'10/06/2026',status:'enviado',
+   categoria:'carcaca',adiantamento:0,
+   lote:{
+     '13':{total:60,medidas:{'165/70R13':25,'175/70R13':20,'175/75R13':15}},
+     '14':{total:40,medidas:{'175/65R14':20,'185/65R14':20}},
+   },
+   declarado:null,conferido:null,credito:0,saldoFinal:0,
+  },
+];
+
+let tela='lista'; // lista | pedido | novo | conferencia | opcoes_dev | relatorio
+let pedidoId=null;
+let novoState={step:1,cliente:'',cat:'',lote:{},adiant:''};
+let lancarDevState={};
+let confState={};
+let expandido={};
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const fmtM=v=>'R$'+(+v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+function getPedido(){return pedidos.find(p=>p.id===pedidoId);}
+
+function calcValorLote(p){
+  const cad=getCadCliente(p.clienteId||p.cliente);
+  let v=0;
+  Object.entries(p.lote).forEach(([aro,d])=>{
+    const qtd=typeof d==='object'?d.total:d;
+    // Se o lote tem preços salvos por medida, usa eles
+    if(typeof d==='object'&&d.medidas&&cad&&cad.tipo==='medidas'){
+      Object.entries(d.medidas).forEach(([med,qmed])=>{
+        v+=qmed*(getPrecoMedida(cad,aro,med)||getPrecoAro(cad,aro)||0);
+      });
+    } else {
+      // Preço por aro do cadastro do cliente
+      const preco=cad?getPrecoAro(cad,aro):0;
+      v+=qtd*preco;
+    }
+  });
+  return v;
+}
+
+function calcValorDev(p,fonte){
+  if(!p[fonte])return 0;
+  const cad=getCadCliente(p.clienteId||p.cliente);
+  let v=0;
+  Object.entries(p[fonte]).forEach(([aro,qtd])=>{
+    const preco=cad?getPrecoAro(cad,aro):0;
+    v+=qtd*preco;
+  });
+  return v;
+}
+
+// Retorna label do preço de um aro para exibição
+function labelPrecoAro(p,aro){
+  const cad=getCadCliente(p.clienteId||p.cliente);
+  if(!cad) return '—';
+  const preco=getPrecoAro(cad,aro);
+  if(!preco) return '—';
+  if(cad.tipo==='medidas') return `~${fmtM(preco)}/un (média)`;
+  return fmtM(preco)+'/un';
+}
+
+function calcMix(lote,devQtds){
+  const result=[];
+  const aros=Object.keys(lote);
+  const totalLote=aros.reduce((s,a)=>s+(typeof lote[a]==='object'?lote[a].total:lote[a]),0);
+  const totalDev=devQtds?aros.reduce((s,a)=>s+(devQtds[a]||0),0):0;
+  aros.forEach(aro=>{
+    const qtdLote=typeof lote[aro]==='object'?lote[aro].total:lote[aro];
+    const qtdDev=devQtds?devQtds[aro]||0:0;
+    const ficou=qtdLote-qtdDev;
+    result.push({aro,qtdLote,qtdDev,ficou,pctEnviado:totalLote?Math.round(qtdLote/totalLote*100):0,pctFicou:totalDev<totalLote&&totalLote>0?Math.round(ficou/(totalLote-totalDev)*100):0});
+  });
+  return result;
+}
+
+function totalLotePneus(p){
+  return Object.values(p.lote).reduce((s,v)=>s+(typeof v==='object'?v.total:v),0);
+}
+
+function statusLabel(s){
+  return{enviado:'Enviado',adiantamento:'Adiant. recebido',declarado:'Dev. declarada',conferido:'Conferido',fechado:'Fechado'}[s]||s;
+}
+function statusBadge(s){
+  return{enviado:'b-blue',adiantamento:'b-orange',declarado:'b-purple',conferido:'b-gray',fechado:'b-green'}[s]||'b-gray';
+}
+function statusClass(s){
+  return{enviado:'status-enviado',adiantamento:'status-adiant',declarado:'status-declarado',conferido:'status-conferido',fechado:'status-fechado'}[s]||'';
+}
+
+function buildMsgMix(p){
+  const mix=calcMix(p.lote,p.conferido||p.declarado);
+  const vlote=calcValorLote(p);
+  const vdev=calcValorDev(p,p.conferido?'conferido':'declarado');
+  const vfinal=vlote-vdev;
+  const linhasEnv=mix.map(m=>`Aro ${m.aro}: ${m.qtdLote} un (${m.pctEnviado}%)`).join('\n');
+  const linhasFicou=mix.filter(m=>m.ficou>0).map(m=>`Aro ${m.aro}: ${m.ficou} un`).join('\n');
+  return `📦 *Consignação Tyre Eco — ${p.cliente}*\n\n*Lote enviado em ${p.data}:*\n${linhasEnv}\nTotal: ${totalLotePneus(p)} pneus\nValor: ${fmtM(vlote)}\n\n*Devolvidos:* ${Object.values(p.conferido||p.declarado||{}).reduce((s,v)=>s+v,0)} pneus\n\n*Ficou com você:*\n${linhasFicou}\n\n💰 *Fechamento:*\nValor do lote: ${fmtM(vlote)}\nDevolução: -${fmtM(vdev)}\nAdiantamento: -${fmtM(p.adiantamento)}\n*Saldo a pagar: ${fmtM(Math.max(0,vfinal-p.adiantamento))}*`;
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function render(){
+  const map={lista:'Pedidos em aberto',pedido:'Detalhe do pedido',novo:'Novo pedido',conferencia:'Conferência de devolução',opcoes_dev:'Como declarar devolução',relatorio:'Relatório de mix'};
+  document.getElementById('topbar-sub').textContent=map[tela]||'';
+  document.getElementById('main').innerHTML=renderTela();
+  bindAll();
+}
+
+function renderTela(){
+  if(tela==='lista')       return renderLista();
+  if(tela==='pedido')      return renderPedido();
+  if(tela==='novo')        return renderNovo();
+  if(tela==='conferencia') return renderConferencia();
+  if(tela==='opcoes_dev')  return renderOpcoesDev();
+  if(tela==='relatorio')   return renderRelatorio();
+  return '';
+}
+
+// ── LISTA ─────────────────────────────────────────────────────────────────────
+function renderLista(){
+  const abertos=pedidos.filter(p=>p.status!=='fechado');
+  const fechados=pedidos.filter(p=>p.status==='fechado');
+  const totalEmAberto=abertos.reduce((s,p)=>s+calcValorLote(p)-calcValorDev(p,'conferido')-p.adiantamento,0);
+  return `
+  <div class="stat-grid-3">
+    <div class="stat-box"><div class="sv" style="color:var(--purple)">${abertos.length}</div><div class="sl">Em aberto</div></div>
+    <div class="stat-box"><div class="sv" style="color:var(--orange);font-size:15px">${fmtM(abertos.reduce((s,p)=>s+calcValorLote(p),0))}</div><div class="sl">Lotes enviados</div></div>
+    <div class="stat-box"><div class="sv" style="color:var(--green);font-size:15px">${fmtM(Math.max(0,totalEmAberto))}</div><div class="sl">A receber</div></div>
+  </div>
+
+  <div style="display:flex;gap:8px;margin-bottom:1rem">
+    <button class="btn btn-secondary btn-sm" id="btn-rel" style="flex:1;justify-content:center"><i class="ti ti-chart-bar"></i> Relatório de mix</button>
+    <button class="btn btn-sm" id="btn-opcoes" style="flex:1;justify-content:center;background:var(--wpp);color:#fff"><i class="ti ti-brand-whatsapp"></i> Como declarar dev.</button>
+  </div>
+
+  <div class="section-title">Pedidos ativos</div>
+  ${abertos.map(p=>renderCardLista(p)).join('')}
+
+  ${fechados.length?`
+  <div class="section-title" style="margin-top:1rem">Fechados recentemente</div>
+  ${fechados.map(p=>renderCardLista(p)).join('')}`:''}`;
+}
+
+function renderCardLista(p){
+  const vlote=calcValorLote(p);
+  const vdev=calcValorDev(p,'conferido');
+  const pneus=totalLotePneus(p);
+  return `<div class="pedido-card ${statusClass(p.status)}" id="card-${p.id}">
+    <div class="pedido-header">
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap">
+          <span class="badge ${statusBadge(p.status)}">${statusLabel(p.status)}</span>
+          <span class="badge b-gray">${p.id}</span>
+          <span style="font-size:10px;color:var(--t2)">${p.data}</span>
+        </div>
+        <strong style="font-size:14px;display:block">${p.cliente}</strong>
+        <span style="font-size:12px;color:var(--t2)">${CATS.find(c=>c.id===p.categoria)?.nome} · ${pneus} pneus · ${fmtM(vlote)}</span>
+        ${p.adiantamento>0?`<span style="font-size:11px;color:var(--orange)">Adiantamento: ${fmtM(p.adiantamento)}</span>`:''}
+      </div>
+      <i class="ti ti-chevron-right" style="color:var(--t3);font-size:18px;flex-shrink:0;margin-top:4px"></i>
+    </div>
+  </div>`;
+}
+
+// ── DETALHE DO PEDIDO ─────────────────────────────────────────────────────────
+function renderPedido(){
+  const p=getPedido();if(!p)return '';
+  const vlote=calcValorLote(p);
+  const vdecl=calcValorDev(p,'declarado');
+  const vconf=calcValorDev(p,'conferido');
+  const vdev=p.conferido?vconf:vdecl;
+  const vfinal=vlote-vdev;
+  const saldo=vfinal-p.adiantamento;
+  const pneus=totalLotePneus(p);
+  const pdevDecl=p.declarado?Object.values(p.declarado).reduce((s,v)=>s+v,0):0;
+  const pdevConf=p.conferido?Object.values(p.conferido).reduce((s,v)=>s+v,0):0;
+  const mix=calcMix(p.lote,p.conferido||p.declarado||null);
+
+  const passos=[
+    {id:'enviado',label:'Lote enviado',done:true},
+    {id:'adiantamento',label:'Adiantamento recebido',done:['adiantamento','declarado','conferido','fechado'].includes(p.status)},
+    {id:'declarado',label:'Devolução declarada',done:['declarado','conferido','fechado'].includes(p.status)},
+    {id:'conferido',label:'Devolução conferida',done:['conferido','fechado'].includes(p.status)},
+    {id:'fechado',label:'Pedido fechado',done:p.status==='fechado'},
+  ];
+
+  return `
+  <button class="back-btn" id="btn-back"><i class="ti ti-arrow-left"></i> Voltar</button>
+
+  <!-- Header -->
+  <div class="card" style="border-left:4px solid var(--purple)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <strong style="font-size:16px">${p.cliente}</strong>
+      <span class="badge ${statusBadge(p.status)}">${statusLabel(p.status)}</span>
+    </div>
+    <div style="font-size:12px;color:var(--t2)">${p.id} · ${p.data} · ${CATS.find(c=>c.id===p.categoria)?.nome}</div>
+  </div>
+
+  <!-- Progresso -->
+  <div class="section-title">Status do pedido</div>
+  <div class="card" style="padding:.75rem 1rem">
+    ${passos.map((ps,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;${i<passos.length-1?'border-bottom:1px solid var(--bl)':''}">
+      <div style="width:26px;height:26px;border-radius:50%;background:${ps.done?'var(--green)':'var(--bg)'};border:2px solid ${ps.done?'var(--green)':'var(--border)'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        ${ps.done?`<i class="ti ti-check" style="font-size:12px;color:#fff"></i>`:`<span style="font-size:11px;color:var(--t3)">${i+1}</span>`}
+      </div>
+      <span style="font-size:13px;font-weight:${ps.done?'600':'400'};color:${ps.done?'var(--text)':'var(--t2)'}">${ps.label}</span>
+    </div>`).join('')}
+  </div>
+
+  <!-- Financeiro -->
+  <div class="section-title">Financeiro</div>
+  <div class="card" style="padding:.75rem 1rem">
+    <div class="fin-row"><span class="fl">Valor do lote (${pneus} pneus)</span><span class="fv">${fmtM(vlote)}</span></div>
+    ${p.declarado?`<div class="fin-row"><span class="fl">Devolução declarada (${pdevDecl} pneus)</span><span class="fv warn">-${fmtM(vdecl)}</span></div>`:''}
+    ${p.conferido?`<div class="fin-row"><span class="fl">Devolução conferida (${pdevConf} pneus)</span><span class="fv neg">-${fmtM(vconf)}</span></div>`:''}
+    <div class="fin-row"><span class="fl">Adiantamento recebido</span><span class="fv neg">-${fmtM(p.adiantamento)}</span></div>
+    <div class="fin-row" style="font-size:15px;font-weight:700;padding-top:10px;border-top:2px solid var(--border)">
+      <span>${saldo>=0?'Saldo a receber':'Crédito p/ cliente'}</span>
+      <span class="${saldo>=0?'pos':'neg'}">${fmtM(Math.abs(saldo))}</span>
+    </div>
+  </div>
+
+  <!-- Mix -->
+  ${mix.length?`
+  <div class="section-title">Mix — Lote vs Ficou com cliente</div>
+  <div class="card">
+    <div style="display:grid;grid-template-columns:60px 1fr 70px 70px;gap:4px;padding:4px 0;border-bottom:1px solid var(--border);margin-bottom:4px">
+      <span style="font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase">Aro</span>
+      <span style="font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase">Mix</span>
+      <span style="font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;text-align:right">Enviado</span>
+      <span style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;text-align:right">Ficou</span>
+    </div>
+    ${mix.map(m=>`<div class="mix-comp-row">
+      <span style="font-weight:600">Aro ${m.aro}</span>
+      <div class="mix-comp-bars">
+        <div style="background:var(--bbg);border-radius:20px;height:5px;overflow:hidden"><div class="mix-comp-bar" style="width:${m.pctEnviado}%;background:var(--blue)"></div></div>
+        <div style="background:var(--gbg);border-radius:20px;height:5px;overflow:hidden"><div class="mix-comp-bar" style="width:${m.pctFicou}%;background:var(--green)"></div></div>
+      </div>
+      <span style="text-align:right;color:var(--blue);font-weight:600">${m.qtdLote}</span>
+      <span style="text-align:right;color:${m.ficou>0?'var(--green)':'var(--t3)'};font-weight:600">${m.ficou}</span>
+    </div>`).join('')}
+  </div>`:''}
+
+  <!-- Ações por status -->
+  <div class="section-title">Ações</div>
+  ${p.status==='enviado'?`
+  <button class="btn btn-orange btn-block" id="btn-reg-adiant"><i class="ti ti-cash"></i> Registrar adiantamento</button>`:''}
+  ${p.status==='adiantamento'?`
+  <button class="btn btn-primary btn-block" id="btn-lancar-dev"><i class="ti ti-arrow-back-up"></i> Lançar devolução declarada</button>
+  <button class="btn btn-sm" style="background:var(--wpp);color:#fff;width:100%;justify-content:center;margin-top:6px" id="btn-wpp-dev"><i class="ti ti-brand-whatsapp"></i> Enviar template ao cliente</button>`:''}
+  ${p.status==='declarado'?`
+  <button class="btn btn-success btn-block" id="btn-conferir-dev"><i class="ti ti-clipboard-check"></i> Conferir devolução física</button>
+  <button class="btn btn-secondary btn-sm btn-block" id="btn-editar-dev"><i class="ti ti-edit"></i> Editar declaração</button>`:''}
+  ${p.status==='conferido'?`
+  <button class="btn btn-primary btn-block" id="btn-fechar"><i class="ti ti-flag-check"></i> Fechar pedido e gerar crédito</button>
+  <button class="btn btn-sm" style="background:var(--wpp);color:#fff;width:100%;justify-content:center;margin-top:6px" id="btn-wpp-fechamento"><i class="ti ti-brand-whatsapp"></i> Enviar mix e fechamento ao cliente</button>`:''}
+  ${p.status==='fechado'?`
+  <div class="alert ok"><i class="ti ti-circle-check"></i><p>Pedido fechado. Crédito de ${fmtM(p.credito)} registrado para o cliente.</p></div>
+  <button class="btn btn-sm" style="background:var(--wpp);color:#fff;width:100%;justify-content:center" id="btn-wpp-fechamento"><i class="ti ti-brand-whatsapp"></i> Enviar resumo ao cliente</button>`:''}
+  
+  ${p.devObs?`<div class="alert warn" style="margin-top:8px"><i class="ti ti-alert-triangle"></i><p>Obs: ${p.devObs}</p></div>`:''}`;
+}
+
+// ── LANÇAR DEVOLUÇÃO ──────────────────────────────────────────────────────────
+function renderLancarDev(tipo){
+  const p=getPedido();if(!p)return '';
+  const label=tipo==='declarado'?'Declaração do cliente':'Conferência física';
+  const aros=Object.keys(p.lote);
+  const atual=tipo==='declarado'?p.declarado:p.conferido;
+
+  return `
+  <button class="back-btn" id="btn-back-dev"><i class="ti ti-arrow-left"></i> Voltar ao pedido</button>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem">
+    <div style="width:40px;height:40px;border-radius:50%;background:var(--pbg);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--purple)"><i class="ti ti-arrow-back-up"></i></div>
+    <div><strong style="font-size:15px">${label}</strong><div style="font-size:12px;color:var(--t2)">${p.cliente} · ${p.id}</div></div>
+  </div>
+
+  <div class="alert blue"><i class="ti ti-info-circle"></i>
+    <p>Informe quantos pneus foram ${tipo==='declarado'?'declarados pelo cliente como devolução':'conferidos fisicamente na chegada'}. ${tipo==='conferido'?'Se diferir do declarado, registre a observação.':''}</p>
+  </div>
+
+  <div class="card">
+    <table class="grade-table">
+      <thead><tr>
+        <th>Aro</th><th>Enviado</th><th style="color:var(--red)">Devolver</th>
+        <th style="color:var(--green)">Fica</th>
+      </tr></thead>
+      <tbody>
+        ${aros.map(aro=>{
+          const qtdLote=typeof p.lote[aro]==='object'?p.lote[aro].total:p.lote[aro];
+          const val=lancarDevState[aro]!==undefined?lancarDevState[aro]:(atual?atual[aro]||'':'');
+          const ficou=qtdLote-(parseInt(val)||0);
+          return `<tr>
+            <td class="lbl">Aro ${aro}</td>
+            <td style="text-align:center;font-size:13px;font-weight:600;color:var(--blue)">${qtdLote}</td>
+            <td style="text-align:center;padding:3px">
+              <input class="grade-input dev" type="number" inputmode="numeric" min="0" max="${qtdLote}"
+                value="${val}" placeholder="0" data-aro="${aro}">
+            </td>
+            <td style="text-align:center;font-size:13px;font-weight:700;color:${ficou>0?'var(--green)':'var(--t3)'}">${ficou}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  </div>
+
+  ${tipo==='conferido'?`
+  <div class="form-group"><label>Observações / Divergências</label>
+    <textarea id="dev-obs" placeholder="Ex: Aro 14 chegou 18 em vez de 20...">${p.devObs||''}</textarea>
+  </div>`:''}
+
+  <button class="btn btn-success btn-block" id="btn-salvar-dev" data-tipo="${tipo}" style="font-size:14px;padding:12px">
+    <i class="ti ti-device-floppy"></i> Salvar ${label}
+  </button>`;
+}
+
+// ── OPÇÕES DE DECLARAÇÃO ──────────────────────────────────────────────────────
+function renderOpcoesDev(){
+  return `
+  <button class="back-btn" id="btn-back"><i class="ti ti-arrow-left"></i> Voltar</button>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:1.25rem">
+    <div style="width:42px;height:42px;border-radius:50%;background:var(--pbg);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--purple)"><i class="ti ti-bulb"></i></div>
+    <div><strong style="font-size:16px">Como o cliente declara a devolução?</strong><div style="font-size:12px;color:var(--t2)">Compare as 3 opções e escolha a melhor</div></div>
+  </div>
+
+  <div class="opcao-card" id="opc-3">
+    <div class="oc-num">3</div>
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <h3>Vendedor lança no sistema</h3>
+      <span class="badge b-green">Recomendado agora</span>
+    </div>
+    <p>Cliente continua informando por WhatsApp ou planilha. O vendedor recebe e lança a devolução diretamente no sistema.</p>
+    <div class="opcao-pros"><span>✅ Sem mudança para o cliente</span><span>✅ Implementado hoje</span><span>✅ Sem custo extra</span></div>
+    <div class="opcao-contras" style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap"><span>⚠️ Depende do vendedor lançar</span></div>
+  </div>
+
+  <div class="opcao-card" id="opc-1">
+    <div class="oc-num">1</div>
+    <h3>Portal do cliente (link único)</h3>
+    <p>Cada cliente recebe um link único: <strong>tyreeco.com.br/dev/TCP</strong>. Ele abre no celular, vê os lotes em aberto e lança as quantidades a devolver por aro.</p>
+    <div class="opcao-pros"><span>✅ Rastreável e automático</span><span>✅ Histórico completo</span><span>✅ Sem planilha</span></div>
+    <div class="opcao-contras" style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap"><span>⚠️ Precisa de backend/servidor</span></div>
+    <div style="margin-top:10px;background:var(--bbg);border-radius:var(--rs);padding:10px;font-size:12px;color:var(--blue)">
+      <strong>Como implementar:</strong> Render.com ou Railway (gratuito para começar), banco Supabase (gratuito), link único por cliente com JWT. Estimativa: 1-2 semanas de desenvolvimento.
+    </div>
+  </div>
+
+  <div class="opcao-card" id="opc-2">
+    <div class="oc-num">2</div>
+    <h3>WhatsApp estruturado (Z-API)</h3>
+    <p>Você envia uma mensagem template com os aros e quantidades enviados. O cliente responde com os números. O sistema interpreta e lança automaticamente.</p>
+    <div class="opcao-pros"><span>✅ Cliente usa o WhatsApp que já tem</span><span>✅ Sem app novo</span></div>
+    <div class="opcao-contras" style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap"><span>⚠️ Z-API configurada</span><span>⚠️ Interpretação de texto</span></div>
+    <div style="margin-top:10px">
+      <p style="font-size:11px;color:var(--t2);margin-bottom:6px">Exemplo de mensagem template que seria enviada:</p>
+      <div class="wpp-bubble">
+        <strong>Tyre Eco — Devolução Pedido #p001</strong><br>
+        Olá TCP! Confirme quantos pneus vai devolver de cada aro:<br><br>
+        Aro 13 (enviamos 80): ___<br>
+        Aro 14 (enviamos 60): ___<br>
+        Aro 15 (enviamos 40): ___<br><br>
+        <em style="color:#999">Responda com os números nos espaços acima.</em>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert blue" style="margin-top:4px"><i class="ti ti-info-circle"></i>
+    <p>Sugestão: começar com a Opção 3 agora e migrar para a Opção 1 quando o volume de consignações crescer.</p>
+  </div>`;
+}
+
+// ── NOVO PEDIDO ───────────────────────────────────────────────────────────────
+function renderNovo(){
+  const s=novoState;
+  const steps=['Cliente','Lote','Adiantamento'];
+  const dots=steps.map((_,i)=>`<div style="flex:1;height:3px;border-radius:2px;background:${i+1<s.step?'var(--purple)':i+1===s.step?'var(--pbg)':'var(--bg)'}"></div>`).join('');
+
+  return `
+  <button class="back-btn" id="btn-back-novo"><i class="ti ti-arrow-left"></i> Cancelar</button>
+  <div style="display:flex;gap:4px;margin-bottom:1rem">${dots}</div>
+  <p style="font-size:12px;color:var(--t2);margin-bottom:1rem">Etapa <strong>${s.step} de 3</strong> — ${steps[s.step-1]}</p>
+
+  ${s.step===1?`
+  <div class="form-group"><label>Cliente</label>
+    <select id="novo-cli">
+      <option value="">Selecionar cliente...</option>
+      ${CLIENTES_IDS.map(c=>`<option value="${c.nome}" ${s.cliente===c.nome?'selected':''}>${c.nome}</option>`).join('')}
+    </select>
+  </div>
+  ${s.cliente?`
+  <div class="card" style="padding:.75rem 1rem;background:var(--pbg);border-color:var(--pl)">
+    ${(()=>{
+      const cad=getCadCliente(s.cliente);
+      if(!cad) return `<p style="font-size:13px;color:var(--red)">⚠️ Cliente sem tabela de preços cadastrada. Cadastre em Vendas primeiro.</p>`;
+      return `<div class="fin-row"><span class="fl">Categoria</span><span class="fv" style="color:var(--purple)">${CATS.find(c=>c.id===cad.categoria)?.nome||cad.categoria}</span></div>
+      <div class="fin-row"><span class="fl">Tabela de preços</span><span class="fv">${cad.tipo==='medidas'?'Por medida':'Por aro'}</span></div>
+      <div class="fin-row" style="border:none"><span class="fl">Preços salvos em Vendas</span><span class="fv" style="color:var(--green)">✓ Carregados</span></div>`;
+    })()}
+  </div>`:''}
+  <button class="btn btn-primary btn-block" id="btn-novo-step2">Próximo <i class="ti ti-arrow-right"></i></button>`
+
+  :s.step===2?`
+  <div class="alert blue"><i class="ti ti-info-circle"></i>
+    <p>Preços carregados do cadastro de <strong>${s.cliente}</strong>. Informe as quantidades.</p>
+  </div>
+  ${(()=>{
+    const cad=getCadCliente(s.cliente);
+    const arosDisponiveis=cad?Object.keys(cad.precos).filter(a=>getPrecoAro(cad,a)>0):AROS.slice(0,6);
+    const totalVal=arosDisponiveis.reduce((sum,aro)=>{
+      const qtd=parseInt(s.lote[aro])||0;
+      return sum+qtd*(cad?getPrecoAro(cad,aro):0);
+    },0);
+    return `
+  <div class="card">
+    <table class="grade-table">
+      <thead><tr>
+        <th>Aro</th>
+        <th style="color:var(--purple)">R$/un</th>
+        <th>Qtd envio</th>
+        <th style="color:var(--green)">Subtotal</th>
+      </tr></thead>
+      <tbody>
+        ${arosDisponiveis.map(aro=>{
+          const preco=cad?getPrecoAro(cad,aro):0;
+          const val=s.lote[aro]||'';
+          const sub=(parseInt(val)||0)*preco;
+          const labelPreco=cad?.tipo==='medidas'?('~'+fmtM(preco)+' <span style="font-size:9px;color:var(--t3)">(média)</span>'):fmtM(preco);
+          return `<tr>
+            <td class="lbl">Aro ${aro}</td>
+            <td style="text-align:center;font-size:12px;color:var(--purple);font-weight:600">${labelPreco}</td>
+            <td style="padding:3px"><input class="grade-input${parseInt(val)>0?' tem':''}" type="number" inputmode="numeric" min="0" value="${val}" placeholder="0" data-novo-aro="${aro}"></td>
+            <td style="text-align:center;font-size:12px;font-weight:600;color:${sub>0?'var(--green)':'var(--t3)'}">${sub>0?fmtM(sub):'—'}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    ${totalVal>0?`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 4px 0;border-top:2px solid var(--border);margin-top:6px">
+      <strong style="font-size:13px">Total do lote</strong>
+      <strong style="font-size:16px;color:var(--purple)">${fmtM(totalVal)}</strong>
+    </div>`:''}
+  </div>
+  <div style="display:flex;gap:8px">
+    <button class="btn btn-secondary" id="btn-novo-back2"><i class="ti ti-arrow-left"></i></button>
+    <button class="btn btn-primary" style="flex:1;justify-content:center" id="btn-novo-step3">Próximo <i class="ti ti-arrow-right"></i></button>
+  </div>`;
+  })()`
+
+  :`
+  ${(()=>{
+    const cad=getCadCliente(s.cliente);
+    const totalPneus=Object.values(s.lote).reduce((a,b)=>a+(parseInt(b)||0),0);
+    const totalVal=Object.entries(s.lote).reduce((sum,[aro,qtd])=>{
+      return sum+(parseInt(qtd)||0)*(cad?getPrecoAro(cad,aro):0);
+    },0);
+    return `
+  <div class="card">
+    <div class="fin-row"><span class="fl">Cliente</span><span class="fv">${s.cliente}</span></div>
+    <div class="fin-row"><span class="fl">Categoria</span><span class="fv" style="color:var(--purple)">${CATS.find(c=>c.id===cad?.categoria)?.nome||'—'}</span></div>
+    <div class="fin-row"><span class="fl">Tabela de preços</span><span class="fv">${cad?.tipo==='medidas'?'Por medida':'Por aro'} — do cadastro</span></div>
+    <div class="fin-row"><span class="fl">Total pneus</span><span class="fv">${totalPneus}</span></div>
+    <div class="fin-row" style="font-size:15px;font-weight:700;border-top:2px solid var(--border);margin-top:4px;padding-top:10px">
+      <span>Valor do lote</span>
+      <span style="color:var(--purple)">${fmtM(totalVal)}</span>
+    </div>
+  </div>
+  <div class="form-group"><label>Adiantamento recebido (R$)</label>
+    <input id="novo-adiant" type="number" step="0.01" min="0" placeholder="0,00" value="${s.adiant}">
+  </div>
+  <div style="display:flex;gap:8px">
+    <button class="btn btn-secondary" id="btn-novo-back3"><i class="ti ti-arrow-left"></i></button>
+    <button class="btn btn-success" style="flex:1;justify-content:center" id="btn-criar-pedido"><i class="ti ti-circle-check"></i> Criar pedido</button>
+  </div>`;
+  })()`}`;
+}
+
+// ── RELATÓRIO ─────────────────────────────────────────────────────────────────
+function renderRelatorio(){
+  const todos=[...pedidos];
+  const fechados=todos.filter(p=>p.status==='fechado');
+  const totalEnviado=todos.reduce((s,p)=>s+calcValorLote(p),0);
+  const totalDevolvido=todos.reduce((s,p)=>s+calcValorDev(p,'conferido'),0);
+  const totalRecebido=todos.reduce((s,p)=>s+p.adiantamento,0);
+
+  // Mix consolidado antes e depois
+  const mixConsolidado=[];
+  AROS.forEach(aro=>{
+    let enviado=0,devolvido=0;
+    todos.forEach(p=>{
+      const qe=typeof p.lote[aro]==='object'?p.lote[aro]?.total||0:p.lote[aro]||0;
+      const qd=p.conferido?p.conferido[aro]||0:0;
+      enviado+=qe;devolvido+=qd;
+    });
+    if(enviado>0) mixConsolidado.push({aro,enviado,devolvido,ficou:enviado-devolvido});
+  });
+  const totalEnvPneus=mixConsolidado.reduce((s,m)=>s+m.enviado,0);
+  const totalFicou=mixConsolidado.reduce((s,m)=>s+m.ficou,0);
+
+  return `
+  <button class="back-btn" id="btn-back"><i class="ti ti-arrow-left"></i> Voltar</button>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem">
+    <div style="width:40px;height:40px;border-radius:50%;background:var(--pbg);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--purple)"><i class="ti ti-chart-bar"></i></div>
+    <div><strong style="font-size:15px">Relatório de mix</strong><div style="font-size:12px;color:var(--t2)">Antes e depois da devolução</div></div>
+  </div>
+
+  <div class="stat-grid-3">
+    <div class="stat-box"><div class="sv" style="color:var(--blue)">${totalEnvPneus}</div><div class="sl">Enviados</div></div>
+    <div class="stat-box"><div class="sv" style="color:var(--red)">${mixConsolidado.reduce((s,m)=>s+m.devolvido,0)}</div><div class="sl">Devolvidos</div></div>
+    <div class="stat-box"><div class="sv" style="color:var(--green)">${totalFicou}</div><div class="sl">Ficou</div></div>
+  </div>
+  <div class="stat-grid">
+    <div class="stat-box"><div class="sv" style="font-size:15px">${fmtM(totalEnviado)}</div><div class="sl">Val. enviado</div></div>
+    <div class="stat-box"><div class="sv" style="color:var(--green);font-size:15px">${fmtM(totalEnviado-totalDevolvido)}</div><div class="sl">Val. confirmado</div></div>
+  </div>
+
+  <div class="section-title">Mix por aro — Enviado vs Ficou com cliente</div>
+  <div class="card">
+    <div style="display:grid;grid-template-columns:60px 1fr 60px 60px;gap:4px;padding:4px 0;border-bottom:1px solid var(--border);margin-bottom:6px">
+      <span style="font-size:10px;font-weight:700;color:var(--t2)">ARO</span>
+      <span style="font-size:10px;font-weight:700;color:var(--t2)">BARRAS</span>
+      <span style="font-size:10px;font-weight:700;color:var(--blue);text-align:right">ENV.</span>
+      <span style="font-size:10px;font-weight:700;color:var(--green);text-align:right">FICOU</span>
+    </div>
+    ${mixConsolidado.map(m=>{
+      const pctE=totalEnvPneus?Math.round(m.enviado/totalEnvPneus*100):0;
+      const pctF=totalFicou?Math.round(m.ficou/totalFicou*100):0;
+      return `<div style="display:grid;grid-template-columns:60px 1fr 60px 60px;gap:4px;align-items:center;padding:6px 0;border-bottom:1px solid var(--bl)">
+        <span style="font-weight:700;font-size:13px">Aro ${m.aro}</span>
+        <div>
+          <div style="background:var(--bbg);border-radius:20px;height:5px;overflow:hidden;margin-bottom:3px"><div style="height:5px;border-radius:20px;background:var(--blue);width:${pctE}%"></div></div>
+          <div style="background:var(--gbg);border-radius:20px;height:5px;overflow:hidden"><div style="height:5px;border-radius:20px;background:var(--green);width:${pctF}%"></div></div>
+        </div>
+        <span style="text-align:right;font-size:12px;font-weight:700;color:var(--blue)">${m.enviado}<br><span style="font-size:9px;font-weight:400;color:var(--t3)">${pctE}%</span></span>
+        <span style="text-align:right;font-size:12px;font-weight:700;color:${m.ficou>0?'var(--green)':'var(--t3)'}">${m.ficou}<br><span style="font-size:9px;font-weight:400;color:var(--t3)">${pctF}%</span></span>
+      </div>`;
+    }).join('')}
+  </div>
+
+  <div class="section-title">Por cliente</div>
+  ${[...new Set(todos.map(p=>p.cliente))].map(cli=>{
+    const ps=todos.filter(p=>p.cliente===cli);
+    const vlote=ps.reduce((s,p)=>s+calcValorLote(p),0);
+    const vconf=ps.reduce((s,p)=>s+calcValorDev(p,'conferido'),0);
+    const pneus=ps.reduce((s,p)=>s+totalLotePneus(p),0);
+    return `<div class="card" style="padding:.75rem 1rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <strong>${cli}</strong>
+        <span style="font-size:13px;font-weight:700;color:var(--purple)">${fmtM(vlote-vconf)}</span>
+      </div>
+      <div class="fin-row"><span class="fl">Pedidos</span><span class="fv">${ps.length}</span></div>
+      <div class="fin-row"><span class="fl">Pneus enviados</span><span class="fv">${pneus}</span></div>
+      <div class="fin-row"><span class="fl">Valor enviado</span><span class="fv">${fmtM(vlote)}</span></div>
+      ${vconf>0?`<div class="fin-row"><span class="fl">Devolução conferida</span><span class="fv neg">-${fmtM(vconf)}</span></div>`:''}
+      <div class="fin-row"><span class="fl">Valor confirmado</span><span class="fv pos">${fmtM(vlote-vconf)}</span></div>
+    </div>`;
+  }).join('')}`;
+}
+
+// ── BIND EVENTOS ──────────────────────────────────────────────────────────────
+function bindAll(){
+  // Global back
+  document.getElementById('btn-back')?.addEventListener('click',()=>{tela='lista';pedidoId=null;render();});
+  document.getElementById('btn-back-novo')?.addEventListener('click',()=>{tela='lista';render();});
+  document.getElementById('btn-back-dev')?.addEventListener('click',()=>{tela='pedido';lancarDevState={};render();});
+
+  // Lista
+  document.getElementById('btn-novo-pedido')?.addEventListener('click',()=>{novoState={step:1,cliente:'',cat:'',lote:{},adiant:''};tela='novo';render();});
+  document.getElementById('btn-rel')?.addEventListener('click',()=>{tela='relatorio';render();});
+  document.getElementById('btn-opcoes')?.addEventListener('click',()=>{tela='opcoes_dev';render();});
+  document.querySelectorAll('.pedido-card[id]').forEach(el=>{
+    el.addEventListener('click',()=>{pedidoId=el.id.replace('card-','');tela='pedido';render();});
+  });
+
+  // Detalhe
+  document.getElementById('btn-reg-adiant')?.addEventListener('click',()=>{
+    const p=getPedido();if(!p)return;
+    const val=prompt(`Adiantamento recebido de ${p.cliente} (R$):`,'');
+    if(val&&parseFloat(val)>0){p.adiantamento=parseFloat(val);p.status='adiantamento';render();}
+  });
+  document.getElementById('btn-lancar-dev')?.addEventListener('click',()=>{
+    const p=getPedido();if(!p)return;
+    if(p.declarado) Object.entries(p.declarado).forEach(([k,v])=>{lancarDevState[k]=v;});
+    tela='lancar-declarado';render();
+  });
+  document.getElementById('btn-editar-dev')?.addEventListener('click',()=>{
+    const p=getPedido();if(!p)return;
+    if(p.declarado) Object.entries(p.declarado).forEach(([k,v])=>{lancarDevState[k]=v;});
+    tela='lancar-declarado';render();
+  });
+  document.getElementById('btn-conferir-dev')?.addEventListener('click',()=>{
+    const p=getPedido();if(!p)return;
+    if(p.declarado) Object.entries(p.declarado).forEach(([k,v])=>{lancarDevState[k]=v;});
+    tela='lancar-conferido';render();
+  });
+  document.getElementById('btn-fechar')?.addEventListener('click',()=>{
+    const p=getPedido();if(!p)return;
+    const vlote=calcValorLote(p);
+    const vdev=calcValorDev(p,'conferido');
+    const saldo=vlote-vdev-p.adiantamento;
+    const credito=saldo<0?Math.abs(saldo):0;
+    p.credito=credito;p.saldoFinal=Math.max(0,saldo);p.status='fechado';
+    render();
+    setTimeout(()=>alert(`✅ Pedido fechado!\n${credito>0?`Crédito de R$${credito.toFixed(2)} registrado para ${p.cliente}.`:''}`),100);
+  });
+  document.getElementById('btn-wpp-dev')?.addEventListener('click',()=>{
+    const p=getPedido();if(!p)return;
+    const aros=Object.keys(p.lote);
+    const msg=`Tyre Eco — Devolução Pedido ${p.id}\n\nOlá ${p.cliente}!\nConfirme quantos pneus vai devolver:\n\n${aros.map(a=>{const q=typeof p.lote[a]==='object'?p.lote[a].total:p.lote[a];return `Aro ${a} (enviamos ${q}): ___`;}).join('\n')}\n\nResponda com os números.`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
+  });
+  document.getElementById('btn-wpp-fechamento')?.addEventListener('click',()=>{
+    const p=getPedido();if(!p)return;
+    window.open(`https://wa.me/?text=${encodeURIComponent(buildMsgMix(p))}`,'_blank');
+  });
+
+  // Novo pedido
+  document.getElementById('btn-novo-step2')?.addEventListener('click',()=>{
+    novoState.cliente=document.getElementById('novo-cli')?.value;
+    if(!novoState.cliente){alert('Selecione o cliente.');return;}
+    const cad=getCadCliente(novoState.cliente);
+    if(!cad){alert('Este cliente não tem tabela de preços cadastrada em Vendas. Cadastre primeiro.');return;}
+    novoState.cat=cad.categoria;
+    novoState.step=2;render();
+  });
+  document.querySelectorAll('[data-novo-aro]').forEach(inp=>{
+    inp.addEventListener('input',()=>{
+      novoState.lote[inp.dataset.novoAro]=inp.value;
+      inp.className='grade-input'+(parseInt(inp.value)>0?' tem':'');
+    });
+  });
+  document.getElementById('btn-novo-step3')?.addEventListener('click',()=>{novoState.step=3;render();});
+  document.getElementById('btn-novo-back2')?.addEventListener('click',()=>{novoState.step=1;render();});
+  document.getElementById('btn-novo-back3')?.addEventListener('click',()=>{novoState.step=2;render();});
+  document.getElementById('btn-criar-pedido')?.addEventListener('click',()=>{
+    const adiant=parseFloat(document.getElementById('novo-adiant')?.value)||0;
+    const lote={};
+    Object.entries(novoState.lote).forEach(([k,v])=>{if(parseInt(v)>0)lote[k]=parseInt(v);});
+    if(!Object.keys(lote).length){alert('Informe ao menos 1 aro.');return;}
+    const cad=getCadCliente(novoState.cliente);
+    const entry=Object.entries(CADASTRO_CLIENTES).find(([,c])=>c.nome===novoState.cliente);
+    const novo={id:`p00${pedidos.length+1}`,
+      clienteId:entry?entry[0]:'',
+      cliente:novoState.cliente,
+      data:new Date().toLocaleDateString('pt-BR'),
+      status:adiant>0?'adiantamento':'enviado',
+      categoria:novoState.cat||cad?.categoria||'',
+      adiantamento:adiant,
+      lote,declarado:null,conferido:null,credito:0,saldoFinal:0};
+    pedidos.unshift(novo);pedidoId=novo.id;
+    tela='pedido';render();
+    setTimeout(()=>alert('✅ Pedido criado com preços do cadastro de '+novoState.cliente+'!'),100);
+  });
+
+  // Lançar devolução
+  document.querySelectorAll('[data-aro]').forEach(inp=>{
+    inp.addEventListener('focus',()=>inp.select());
+    inp.addEventListener('input',()=>{
+      lancarDevState[inp.dataset.aro]=parseInt(inp.value)||0;
+      inp.className='grade-input dev'+(parseInt(inp.value)>0?' dev':'');
+    });
+  });
+  document.getElementById('btn-salvar-dev')?.addEventListener('click',()=>{
+    const tipo=document.getElementById('btn-salvar-dev').dataset.tipo;
+    const p=getPedido();if(!p)return;
+    const dados={};
+    document.querySelectorAll('[data-aro]').forEach(inp=>{if(parseInt(inp.value)>0)dados[inp.dataset.aro]=parseInt(inp.value);});
+    p[tipo]=dados;
+    p.status=tipo;
+    if(tipo==='conferido'){
+      const obs=document.getElementById('dev-obs')?.value;
+      if(obs)p.devObs=obs;
+    }
+    lancarDevState={};tela='pedido';render();
+  });
+
+  // Telas de lançar dev (precisam re-render com função específica)
+  if(tela==='lancar-declarado'||tela==='lancar-conferido'){
+    document.getElementById('main').innerHTML=renderLancarDev(tela==='lancar-declarado'?'declarado':'conferido');
+    bindAll();
+  }
+}
+
+render();
+</script>
+</body>
+</html>

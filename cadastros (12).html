@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Tyre Eco — Cadastros</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F7F7F5;--sf:#FFF;--bd:#E5E4E0;--bl:#EFEFED;
+  --tx:#1A1A18;--t2:#6B6B65;--t3:#A8A8A2;
+  --gn:#1D7A4F;--gnb:#EBF5EF;--gnl:#C5DFC9;
+  --bl2:#1A5FA8;--bb:#EBF2FB;
+  --or:#B85C00;--ob:#FDF0E5;
+  --rd:#B02020;--rb:#FDECEC;
+  --pu:#5040A8;--pb:#F0EEFB;
+  --tl:#0A6E5C;--tb:#E8F5F2;
+  --r:12px;--rs:8px;--rx:6px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;-webkit-tap-highlight-color:transparent}
+.app{max-width:540px;margin:0 auto}
+/* Topbar */
+.topbar{background:var(--sf);border-bottom:1px solid var(--bd);height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 1rem;position:sticky;top:0;z-index:50}
+.tl{display:flex;align-items:center;gap:8px}
+.tlogo{width:30px;height:30px;border-radius:8px;background:var(--pu);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px}
+.th1{font-size:14px;font-weight:600}.th2{font-size:11px;color:var(--t2)}
+.content{padding:1rem}
+/* Login */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem;background:var(--bg)}
+.login-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:2rem;width:100%;max-width:360px;box-shadow:0 4px 24px rgba(0,0,0,.08)}
+.login-logo{width:64px;height:64px;border-radius:16px;background:var(--pu);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:28px;color:#fff}
+.login-title{text-align:center;font-size:20px;font-weight:700;margin-bottom:4px}
+.login-sub{text-align:center;font-size:13px;color:var(--t2);margin-bottom:1.5rem}
+/* Nav tabs */
+.nav{display:flex;gap:0;border-bottom:1px solid var(--bd);margin-bottom:1rem;overflow-x:auto}
+.nav-btn{flex:1;padding:10px 6px;font-size:12px;font-weight:600;text-align:center;cursor:pointer;border-bottom:2.5px solid transparent;color:var(--t2);white-space:nowrap;min-width:70px;font-family:inherit;background:none;border-top:none;border-left:none;border-right:none;transition:all .15s}
+.nav-btn.active{color:var(--pu);border-bottom-color:var(--pu)}
+/* Buttons */
+.btn{padding:10px 14px;border-radius:var(--rs);font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:all .15s;touch-action:manipulation}
+.btn-primary{background:var(--pu);color:#fff}
+.btn-success{background:var(--gn);color:#fff}
+.btn-danger{background:var(--rb);color:var(--rd);border:1px solid #F5C0C0}
+.btn-secondary{background:var(--sf);color:var(--tx);border:1px solid var(--bd)}
+.btn-sm{padding:5px 10px;font-size:11px;font-weight:500}
+.btn-block{width:100%;justify-content:center;margin-top:8px;padding:13px;font-size:14px}
+/* Cards */
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:1rem;margin-bottom:10px}
+/* Form */
+.form-row{display:flex;gap:8px;margin-bottom:10px}
+.form-group{flex:1}
+label{display:block;font-size:11px;font-weight:700;color:var(--t2);letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px}
+input,select{width:100%;padding:10px 12px;border:1.5px solid var(--bd);border-radius:var(--rs);font-size:14px;font-family:inherit;background:var(--bg);color:var(--tx);transition:border .15s}
+input:focus,select:focus{outline:none;border-color:var(--pu);background:#fff}
+/* Rows */
+.row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--bl);font-size:13px}
+.row:last-child{border-bottom:none}
+/* Alerts */
+.alert{border-radius:var(--rs);padding:10px 14px;margin-bottom:10px;display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.5}
+.alert i{font-size:15px;flex-shrink:0;margin-top:1px}
+.a-blue{background:var(--bb);color:var(--bl2)}
+.a-ok{background:var(--gnb);color:var(--gn)}
+.a-warn{background:var(--ob);color:var(--or)}
+/* Table itens */
+.item-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--rs);padding:.75rem 1rem;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.item-icon{width:36px;height:36px;border-radius:50%;background:var(--pb);display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--pu);flex-shrink:0}
+.item-info{flex:1;min-width:0}
+.item-info strong{font-size:13px;font-weight:600;display:block}
+.item-info span{font-size:11px;color:var(--t2)}
+.item-actions{display:flex;gap:5px;flex-shrink:0}
+/* Veículo card */
+.vei-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--rs);padding:.75rem 1rem;margin-bottom:8px}
+.vei-header{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.vei-icon{width:36px;height:36px;border-radius:50%;background:var(--bb);display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--bl2);flex-shrink:0}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
+.b-pu{background:var(--pb);color:var(--pu)}
+.b-gn{background:var(--gnb);color:var(--gn)}
+.b-bl{background:var(--bb);color:var(--bl2)}
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:flex;align-items:flex-end;justify-content:center}
+.modal{background:var(--sf);border-radius:var(--r) var(--r) 0 0;padding:1.5rem;width:100%;max-width:540px;max-height:85vh;overflow-y:auto}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:8px}
+.stitle{font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;margin-top:12px}
+.empty{text-align:center;padding:2rem;color:var(--t2)}
+.empty i{font-size:28px;display:block;margin-bottom:8px;opacity:.3}
+/* Volumes inline */
+.vol-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--bl)}
+.vol-row:last-child{border-bottom:none}
+.vol-row .vl{flex:1;font-size:13px;font-weight:500}
+.vol-row .vu{font-size:10px;color:var(--t2);width:22px;text-align:right;flex-shrink:0}
+.vol-inp{width:72px;padding:6px 8px;text-align:right;border:1.5px solid var(--bd);border-radius:6px;font-size:13px;font-weight:600;background:var(--bg)}
+.vol-inp:focus{outline:none;border-color:var(--pu);background:#fff}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="login-wrap" id="login-wrap">
+    <div class="login-card">
+      <div class="login-logo"><i class="ti ti-settings"></i></div>
+      <div class="login-title">Tyre Eco</div>
+      <div class="login-sub">Área de Cadastros</div>
+      <div id="login-err" style="display:none;margin-bottom:12px" class="alert a-warn"><i class="ti ti-alert-triangle"></i><span>Senha incorreta.</span></div>
+      <label>Senha de acesso</label>
+      <input id="inp-senha" type="password" placeholder="••••••••" style="margin-bottom:16px;font-size:18px;text-align:center;letter-spacing:.2em">
+      <button class="btn btn-primary btn-block" id="btn-entrar"><i class="ti ti-login"></i> Entrar</button>
+    </div>
+  </div>
+  <div id="sistema" style="display:none">
+    <div class="topbar">
+      <div class="tl">
+        <div class="tlogo"><i class="ti ti-settings" style="font-size:14px"></i></div>
+        <div><div class="th1">Cadastros</div><div class="th2" id="sub-nav">Tyre Eco</div></div>
+      </div>
+      <button class="btn btn-secondary btn-sm" id="btn-sair"><i class="ti ti-logout"></i> Sair</button>
+    </div>
+    <div class="content">
+      <div class="nav">
+        <button class="nav-btn active" data-nav="itens">📋 Itens</button>
+        <button class="nav-btn" data-nav="frota">🚛 Frota</button>
+        <button class="nav-btn" data-nav="volumes">📦 Volumes</button>
+        <button class="nav-btn" data-nav="funcionarios">👥 Equipe</button>
+        <button class="nav-btn" data-nav="clientes">🤝 Clientes</button>
+        <button class="nav-btn" data-nav="medidas">📐 Medidas</button>
+      </div>
+      <div id="content"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SENHA = 'admin2024';
+const S = window.storage;
+
+// ── Dados padrão ──────────────────────────────────────────────────
+let ITENS = [
+  {id:'pneus_passeio',  nome:'Pneus passeio',   un:'un', icon:'ti-circle', vol:0.05},
+  {id:'pneus_estourado',nome:'Pneus estourado',  un:'un', icon:'ti-circle-dotted', vol:0.05},
+  {id:'amortecedor',    nome:'Amortecedor',       un:'un', icon:'ti-tool', vol:0.02},
+  {id:'bandeja',        nome:'Bandeja',           un:'un', icon:'ti-layout-bottombar', vol:0.01},
+  {id:'disco',          nome:'Disco',             un:'un', icon:'ti-disc', vol:0.01},
+  {id:'filtro_oleo',    nome:'Filtro óleo',       un:'kg', icon:'ti-droplet', vol:0},
+  {id:'frascos_oleo',   nome:'Frascos óleo',      un:'un', icon:'ti-bottle', vol:0},
+  {id:'mola',           nome:'Mola',              un:'un', icon:'ti-code-minus', vol:0.01},
+  {id:'papelao',        nome:'Papelão',           un:'kg', icon:'ti-package', vol:0},
+  {id:'pastilha',       nome:'Pastilha',          un:'un', icon:'ti-square', vol:0},
+  {id:'plasticos',      nome:'Plásticos',         un:'kg', icon:'ti-recycle', vol:0},
+  {id:'roda',           nome:'Roda',              un:'un', icon:'ti-circle-half-2', vol:0.04},
+  {id:'sucata',         nome:'Sucata ferrosa',    un:'kg', icon:'ti-bolt', vol:0},
+];
+
+let FROTA = [
+  {id:'v1',placa:'FPW-9J58',modelo:'VW 24.280 6X2', tipo:'Caminhão', bau:45, status:'ativo', consumo:4.5, combustivel:'Diesel S10'},
+  {id:'v2',placa:'DEU-8A98',modelo:'VW 13180 6X2',  tipo:'Caminhão', bau:40, status:'ativo', consumo:5.0, combustivel:'Diesel S10'},
+  {id:'v3',placa:'GGA-0262',modelo:'Actros 2546LS',  tipo:'Caminhão', bau:50, status:'ativo', consumo:4.0, combustivel:'Diesel S10'},
+  {id:'v4',placa:'EEK-1A92',modelo:'Iveco Daily',    tipo:'Van',      bau:18, status:'ativo', consumo:8.0, combustivel:'Diesel S10'},
+  {id:'v5',placa:'TJX-4G17',modelo:'Actros 2651S',   tipo:'Caminhão', bau:55, status:'ativo', consumo:3.8, combustivel:'Diesel S10'},
+  {id:'v6',placa:'FNY-0G23',modelo:'VW Express 4X2', tipo:'Van',      bau:18, status:'ativo', consumo:9.0, combustivel:'Diesel S10'},
+];
+
+// Preço do combustível (configurável globalmente)
+let PRECO_DIESEL = 6.50; // R$/litro — atualizar conforme posto
+
+let FUNCIONARIOS = [
+  {id:'f1',nome:'Herlon Carrera',    cargo:'Motorista',  telefone:''},
+  {id:'f2',nome:'Renan Marcondes',   cargo:'Motorista',  telefone:''},
+  {id:'f3',nome:'Kayo Candido',      cargo:'Motorista',  telefone:''},
+  {id:'f4',nome:'Leonardo Vinicius', cargo:'Motorista',  telefone:''},
+  {id:'f5',nome:'Rodrigo Souto',     cargo:'Motorista',  telefone:''},
+  {id:'f6',nome:'Alife Eduardo',     cargo:'Motorista',  telefone:''},
+];
+
+let nav = 'itens';
+let modalAberto = null; // null | 'item' | 'veiculo' | 'func'
+let editando = null; // objeto sendo editado
+
+// ── Persistência ──────────────────────────────────────────────────
+async function salvarDados(){
+  try{
+    await S?.set('cad_itens',    JSON.stringify(ITENS));
+    await S?.set('cad_frota',    JSON.stringify(FROTA));
+    await S?.set('cad_funcs',    JSON.stringify(FUNCIONARIOS));
+    await S?.set('cad_clientes', JSON.stringify(CLIENTES));
+    await S?.set('cad_preco_diesel', String(PRECO_DIESEL));
+    await S?.set('cad_medidas', JSON.stringify(MEDIDAS));
+  }catch(e){}
+}
+async function carregarDados(){
+  try{
+    const i=await S?.get('cad_itens');    if(i) ITENS=JSON.parse(i.value);
+    const f=await S?.get('cad_frota');    if(f) FROTA=JSON.parse(f.value);
+    const fn=await S?.get('cad_funcs');   if(fn) FUNCIONARIOS=JSON.parse(fn.value);
+    const cl=await S?.get('cad_clientes'); if(cl) CLIENTES=JSON.parse(cl.value);
+    const pd=await S?.get('cad_preco_diesel'); if(pd) PRECO_DIESEL=parseFloat(pd.value)||6.50;
+    const md=await S?.get('cad_medidas'); if(md) MEDIDAS=JSON.parse(md.value);
+  }catch(e){}
+}
+
+// ── Helpers ───────────────────────────────────────────────────────
+const uid = () => 'id'+Date.now()+Math.random().toString(36).slice(2,5);
+const fmtM3 = v => v>0?v+'m³':'—';
+
+// ── Login ─────────────────────────────────────────────────────────
+document.getElementById('btn-entrar').addEventListener('click', async ()=>{
+  const s = document.getElementById('inp-senha').value;
+  if(s===SENHA){
+    await carregarDados();
+    document.getElementById('login-wrap').style.display='none';
+    document.getElementById('sistema').style.display='block';
+    renderNav('itens');
+  } else {
+    document.getElementById('login-err').style.display='flex';
+    document.getElementById('inp-senha').value='';
+  }
+});
+document.getElementById('inp-senha').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('btn-entrar').click();});
+document.getElementById('btn-sair').addEventListener('click',()=>{
+  document.getElementById('login-wrap').style.display='flex';
+  document.getElementById('sistema').style.display='none';
+  document.getElementById('inp-senha').value='';
+});
+
+// ── Nav ───────────────────────────────────────────────────────────
+function renderNav(n){
+  nav=n;
+  document.querySelectorAll('.nav-btn').forEach(b=>{b.classList.toggle('active',b.dataset.nav===n);});
+  const labels={itens:'Itens do checklist',frota:'Frota de veículos',volumes:'Volumes m³',funcionarios:'Equipe',clientes:'Clientes',medidas:'Medidas por aro'};
+  document.getElementById('sub-nav').textContent=labels[n]||'';
+  if(n==='itens')       renderItens();
+  else if(n==='frota')  renderFrota();
+  else if(n==='volumes')renderVolumes();
+  else if(n==='clientes') renderClientes();
+  else if(n==='medidas')  renderMedidas();
+  else                  renderFuncionarios();
+}
+document.querySelectorAll('[data-nav]').forEach(b=>b.addEventListener('click',()=>renderNav(b.dataset.nav)));
+
+// ═══════════════════════════════════════════════════════════════════
+// ABA ITENS
+// ═══════════════════════════════════════════════════════════════════
+function renderItens(){
+  document.getElementById('content').innerHTML=`
+  <button class="btn btn-primary" id="btn-novo-item" style="width:100%;justify-content:center;margin-bottom:1rem;padding:12px">
+    <i class="ti ti-plus"></i> Cadastrar novo item
+  </button>
+  <div class="stitle">Itens cadastrados (${ITENS.length})</div>
+  ${ITENS.map(it=>`<div class="item-card">
+    <div class="item-icon"><i class="ti ${it.icon||'ti-box'}"></i></div>
+    <div class="item-info">
+      <strong>${it.nome}</strong>
+      <span>Unidade: ${it.un} · Volume: ${it.vol>0?it.vol+'m³/un':'por peso (kg)'}</span>
+    </div>
+    <div class="item-actions">
+      <button class="btn btn-secondary btn-sm" data-edit-item="${it.id}"><i class="ti ti-edit" style="font-size:13px"></i></button>
+      <button class="btn btn-danger btn-sm" data-del-item="${it.id}"><i class="ti ti-trash" style="font-size:13px"></i></button>
+    </div>
+  </div>`).join('')}`;
+
+  document.getElementById('btn-novo-item').addEventListener('click',()=>abrirModalItem(null));
+  document.querySelectorAll('[data-edit-item]').forEach(btn=>{
+    btn.addEventListener('click',()=>abrirModalItem(ITENS.find(i=>i.id===btn.dataset.editItem)));
+  });
+  document.querySelectorAll('[data-del-item]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const it=ITENS.find(i=>i.id===btn.dataset.delItem);
+      if(confirm('Excluir item "'+it.nome+'"?')){
+        ITENS=ITENS.filter(i=>i.id!==btn.dataset.delItem);
+        salvarDados();renderItens();
+      }
+    });
+  });
+}
+
+function abrirModalItem(item){
+  editando=item?{...item}:{id:uid(),nome:'',un:'un',icon:'ti-box',vol:0};
+  const isEdit=!!item;
+  document.body.insertAdjacentHTML('beforeend',`
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <div class="modal-title"><i class="ti ti-${isEdit?'edit':'plus'}" style="color:var(--pu)"></i> ${isEdit?'Editar item':'Novo item'}</div>
+      <label>Nome do item</label>
+      <input id="mi-nome" type="text" placeholder="Ex: Pneus passeio" value="${editando.nome}" style="margin-bottom:10px">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Unidade</label>
+          <select id="mi-un">
+            <option value="un" ${editando.un==='un'?'selected':''}>un (unidade)</option>
+            <option value="kg" ${editando.un==='kg'?'selected':''}>kg (peso)</option>
+            <option value="cx" ${editando.un==='cx'?'selected':''}>cx (caixa)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Volume (m³/un)</label>
+          <input id="mi-vol" type="number" step="0.001" min="0" value="${editando.vol||0}" placeholder="0.050">
+        </div>
+      </div>
+      <label>Ícone</label>
+      <select id="mi-icon" style="margin-bottom:16px">
+        ${[['ti-circle','Círculo (pneu)'],['ti-circle-dotted','Círculo pontilhado'],['ti-tool','Ferramenta'],['ti-disc','Disco'],['ti-droplet','Gota'],['ti-bottle','Frasco'],['ti-package','Caixa'],['ti-bolt','Raio'],['ti-recycle','Reciclar'],['ti-layout-bottombar','Bandeja'],['ti-code-minus','Mola'],['ti-square','Quadrado'],['ti-circle-half-2','Roda'],['ti-box','Genérico']].map(([v,l])=>
+          `<option value="${v}" ${editando.icon===v?'selected':''}>${l} (${v})</option>`).join('')}
+      </select>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-secondary" style="flex:1;justify-content:center" id="mi-cancelar">Cancelar</button>
+        <button class="btn btn-primary" style="flex:2;justify-content:center" id="mi-salvar">
+          <i class="ti ti-device-floppy"></i> Salvar item
+        </button>
+      </div>
+    </div>
+  </div>`);
+
+  document.getElementById('mi-cancelar').addEventListener('click',fecharModal);
+  document.getElementById('modal-overlay').addEventListener('click',e=>{if(e.target.id==='modal-overlay')fecharModal();});
+  document.getElementById('mi-salvar').addEventListener('click',()=>{
+    const nome=document.getElementById('mi-nome').value.trim();
+    if(!nome){alert('Informe o nome do item.');return;}
+    const obj={
+      id:editando.id, nome,
+      un:document.getElementById('mi-un').value,
+      vol:parseFloat(document.getElementById('mi-vol').value)||0,
+      icon:document.getElementById('mi-icon').value,
+    };
+    if(isEdit) ITENS=ITENS.map(i=>i.id===obj.id?obj:i);
+    else ITENS.push(obj);
+    salvarDados();fecharModal();renderItens();
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ABA FROTA
+// ═══════════════════════════════════════════════════════════════════
+function renderFrota(){
+  const ativos=FROTA.filter(v=>v.status==='ativo');
+  const inativos=FROTA.filter(v=>v.status!=='ativo');
+  document.getElementById('content').innerHTML=`
+  <button class="btn btn-primary" id="btn-novo-vei" style="width:100%;justify-content:center;margin-bottom:1rem;padding:12px">
+    <i class="ti ti-plus"></i> Cadastrar novo veículo
+  </button>
+  <div class="stitle">Frota ativa (${ativos.length})</div>
+  ${ativos.map(v=>renderVeiCard(v)).join('')}
+  ${inativos.length?`<div class="stitle" style="margin-top:1rem">Inativos (${inativos.length})</div>
+  ${inativos.map(v=>renderVeiCard(v)).join('')}`:''}`;
+
+  document.getElementById('btn-novo-vei').addEventListener('click',()=>abrirModalVeiculo(null));
+
+  // Preço diesel e simulador (injetados abaixo da lista)
+  document.getElementById('content').innerHTML += `
+    <div class="stitle" style="margin-top:1rem">Preço do Diesel S10</div>
+    <div class="card" style="padding:.75rem 1rem">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:13px;flex:1">R$ / litro (Diesel S10)</span>
+        <input id="inp-preco-diesel" type="number" step="0.01" min="0" value="${PRECO_DIESEL}"
+          style="width:80px;padding:7px 8px;text-align:right;border:1.5px solid var(--bd);border-radius:6px;font-size:14px;font-weight:700">
+        <button class="btn btn-success btn-sm" id="btn-salvar-diesel"><i class="ti ti-check"></i></button>
+      </div>
+    </div>
+    <div class="stitle">Simulador de custo por rota</div>
+    <div class="card" style="padding:.75rem 1rem">
+      <div style="display:flex;gap:8px;margin-bottom:10px;align-items:flex-end">
+        <div style="flex:1">
+          <label style="display:block;font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;margin-bottom:4px">Veículo</label>
+          <select id="sim-vei" style="font-size:13px;padding:8px 10px">
+            ${FROTA.filter(v=>v.status==='ativo').map(v=>'<option value="'+v.id+'">'+v.placa+' · '+(v.consumo||4.5)+'km/l</option>').join('')}
+          </select>
+        </div>
+        <div style="flex:1">
+          <label style="display:block;font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;margin-bottom:4px">Distância (km)</label>
+          <input id="sim-km" type="number" min="0" placeholder="Ex: 350" style="font-size:13px;padding:8px 10px">
+        </div>
+      </div>
+      <div id="sim-resultado" style="display:none;background:var(--gnb);border:1px solid var(--gnl);border-radius:var(--rs);padding:10px 14px;margin-bottom:8px">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center">
+          <div><div id="sim-litros" style="font-size:18px;font-weight:700;color:var(--gn)">—</div><div style="font-size:10px;color:var(--gn)">Litros</div></div>
+          <div><div id="sim-custo" style="font-size:18px;font-weight:700;color:var(--gn)">—</div><div style="font-size:10px;color:var(--gn)">Custo</div></div>
+          <div><div id="sim-kml" style="font-size:16px;font-weight:700;color:var(--t2)">—</div><div style="font-size:10px;color:var(--t2)">km/l</div></div>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-block btn-sm" id="btn-simular"><i class="ti ti-calculator"></i> Calcular custo</button>
+    </div>
+    <button class="btn btn-secondary btn-block btn-sm" id="btn-ir-volumes"><i class="ti ti-package"></i> Editar volumes e baús em Volumes</button>
+  `;
+
+  bindFrotaEvents();
+}
+
+function renderVeiCard(v){
+  return `<div class="vei-card">
+    <div class="vei-header">
+      <div class="vei-icon"><i class="ti ti-truck"></i></div>
+      <div style="flex:1">
+        <strong style="font-size:14px;display:block">${v.placa}</strong>
+        <span style="font-size:12px;color:var(--t2)">${v.modelo} · ${v.tipo}</span>
+      </div>
+      <span class="badge ${v.status==='ativo'?'b-gn':'b-bl'}">${v.status==='ativo'?'Ativo':'Inativo'}</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
+      <div style="background:var(--bg);border-radius:6px;padding:7px;text-align:center">
+        <div style="font-size:15px;font-weight:700;color:var(--bl2)">${v.bau}m³</div>
+        <div style="font-size:9px;color:var(--t2);margin-top:1px">Baú</div>
+      </div>
+      <div style="background:var(--bg);border-radius:6px;padding:7px;text-align:center">
+        <div style="font-size:12px;font-weight:600">${v.tipo}</div>
+        <div style="font-size:9px;color:var(--t2);margin-top:1px">Tipo</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
+      <div style="background:var(--gnb);border-radius:6px;padding:7px;text-align:center">
+        <div style="font-size:15px;font-weight:700;color:var(--gn)">${v.consumo||'—'} km/l</div>
+        <div style="font-size:9px;color:var(--gn);margin-top:1px">Consumo médio</div>
+      </div>
+      <div style="background:var(--bg);border-radius:6px;padding:7px;text-align:center">
+        <div style="font-size:11px;font-weight:700;color:var(--t2)">${v.combustivel||'Diesel S10'}</div>
+        <div style="font-size:9px;color:var(--t2);margin-top:1px">Combustível</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:6px">
+      <button class="btn btn-secondary btn-sm" style="flex:1;justify-content:center" data-edit-vei="${v.id}">
+        <i class="ti ti-edit"></i> Editar
+      </button>
+      <button class="btn btn-sm" style="flex:1;justify-content:center;background:${v.status==='ativo'?'var(--ob)':'var(--gnb)'};color:${v.status==='ativo'?'var(--or)':'var(--gn)'};border:1px solid ${v.status==='ativo'?'var(--or)':'var(--gn)'}" data-toggle-vei="${v.id}">
+        <i class="ti ti-${v.status==='ativo'?'pause':'play'}"></i> ${v.status==='ativo'?'Desativar':'Ativar'}
+      </button>
+      <button class="btn btn-danger btn-sm" data-del-vei="${v.id}"><i class="ti ti-trash"></i></button>
+    </div>
+  </div>`;
+}
+
+function bindFrotaEvents(){
+  document.getElementById('btn-ir-volumes')?.addEventListener('click',()=>renderNav('volumes'));
+  document.getElementById('btn-salvar-diesel')?.addEventListener('click',()=>{
+    const v=parseFloat(document.getElementById('inp-preco-diesel')?.value)||6.50;
+    PRECO_DIESEL=v;salvarDados();mostrarSucesso('Preço atualizado: R$'+v.toFixed(2)+'/l');
+  });
+  function calcSimulador(){
+    const veiId=document.getElementById('sim-vei')?.value;
+    const km=parseFloat(document.getElementById('sim-km')?.value)||0;
+    const vei=FROTA.find(v=>v.id===veiId);
+    if(!vei||!km){document.getElementById('sim-resultado').style.display='none';return;}
+    const consumo=vei.consumo||4.5;
+    const litros=km/consumo;
+    const custo=litros*PRECO_DIESEL;
+    document.getElementById('sim-litros').textContent=litros.toFixed(1)+'L';
+    document.getElementById('sim-custo').textContent='R$'+custo.toFixed(2);
+    document.getElementById('sim-kml').textContent=consumo+' km/l';
+    document.getElementById('sim-resultado').style.display='block';
+  }
+  document.getElementById('btn-simular')?.addEventListener('click',calcSimulador);
+  document.getElementById('sim-km')?.addEventListener('keydown',e=>{if(e.key==='Enter')calcSimulador();});
+
+  document.querySelectorAll('[data-edit-vei]').forEach(btn=>{
+    btn.addEventListener('click',()=>abrirModalVeiculo(FROTA.find(v=>v.id===btn.dataset.editVei)));
+  });
+  document.querySelectorAll('[data-toggle-vei]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const v=FROTA.find(x=>x.id===btn.dataset.toggleVei);
+      if(v){v.status=v.status==='ativo'?'inativo':'ativo';salvarDados();renderFrota();}
+    });
+  });
+  document.querySelectorAll('[data-del-vei]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const v=FROTA.find(x=>x.id===btn.dataset.delVei);
+      if(confirm('Excluir veículo '+v.placa+'?')){
+        FROTA=FROTA.filter(x=>x.id!==btn.dataset.delVei);
+        salvarDados();renderFrota();
+      }
+    });
+  });
+}
+
+function abrirModalVeiculo(vei){
+  editando=vei?{...vei}:{id:uid(),placa:'',modelo:'',tipo:'Caminhão',bau:40,status:'ativo'};
+  const isEdit=!!vei;
+  document.body.insertAdjacentHTML('beforeend',`
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <div class="modal-title"><i class="ti ti-truck" style="color:var(--bl2)"></i> ${isEdit?'Editar veículo':'Novo veículo'}</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Placa</label>
+          <input id="mv-placa" type="text" placeholder="ABC-1234" value="${editando.placa}" style="text-transform:uppercase">
+        </div>
+        <div class="form-group">
+          <label>Tipo</label>
+          <select id="mv-tipo">
+            <option value="Caminhão" ${editando.tipo==='Caminhão'?'selected':''}>Caminhão</option>
+            <option value="Van" ${editando.tipo==='Van'?'selected':''}>Van</option>
+            <option value="Carreta" ${editando.tipo==='Carreta'?'selected':''}>Carreta</option>
+            <option value="Utilitário" ${editando.tipo==='Utilitário'?'selected':''}>Utilitário</option>
+          </select>
+        </div>
+      </div>
+      <label>Modelo</label>
+      <input id="mv-modelo" type="text" placeholder="Ex: VW 24.280 6X2" value="${editando.modelo}" style="margin-bottom:10px">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Volume do baú (m³)</label>
+          <input id="mv-bau" type="number" step="0.5" min="1" value="${editando.bau||40}" placeholder="40">
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="mv-status">
+            <option value="ativo" ${editando.status==='ativo'?'selected':''}>Ativo</option>
+            <option value="inativo" ${editando.status==='inativo'?'selected':''}>Inativo</option>
+            <option value="manutencao" ${editando.status==='manutencao'?'selected':''}>Manutenção</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Consumo médio (km/l)</label>
+          <input id="mv-consumo" type="number" step="0.1" min="0.1" value="${editando.consumo||4.5}" placeholder="4.5">
+        </div>
+        <div class="form-group">
+          <label>Combustível</label>
+          <select id="mv-comb">
+            <option value="Diesel S10" ${(editando.combustivel||'Diesel S10')==='Diesel S10'?'selected':''}>Diesel S10</option>
+            <option value="Diesel" ${editando.combustivel==='Diesel'?'selected':''}>Diesel Comum</option>
+            <option value="Gasolina" ${editando.combustivel==='Gasolina'?'selected':''}>Gasolina</option>
+            <option value="Etanol" ${editando.combustivel==='Etanol'?'selected':''}>Etanol</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:6px">
+        <button class="btn btn-secondary" style="flex:1;justify-content:center" id="mv-cancelar">Cancelar</button>
+        <button class="btn btn-primary" style="flex:2;justify-content:center" id="mv-salvar">
+          <i class="ti ti-device-floppy"></i> Salvar veículo
+        </button>
+      </div>
+    </div>
+  </div>`);
+
+  document.getElementById('mv-cancelar').addEventListener('click',fecharModal);
+  document.getElementById('modal-overlay').addEventListener('click',e=>{if(e.target.id==='modal-overlay')fecharModal();});
+  document.getElementById('mv-placa').addEventListener('input',e=>{e.target.value=e.target.value.toUpperCase();});
+  document.getElementById('mv-salvar').addEventListener('click',()=>{
+    const placa=document.getElementById('mv-placa').value.trim().toUpperCase();
+    const modelo=document.getElementById('mv-modelo').value.trim();
+    if(!placa||!modelo){alert('Informe placa e modelo.');return;}
+    const obj={
+      id:editando.id, placa, modelo,
+      tipo:document.getElementById('mv-tipo').value,
+      bau:parseFloat(document.getElementById('mv-bau').value)||40,
+      status:document.getElementById('mv-status').value,
+      consumo:parseFloat(document.getElementById('mv-consumo').value)||4.5,
+      combustivel:document.getElementById('mv-comb').value,
+    };
+    if(isEdit) FROTA=FROTA.map(v=>v.id===obj.id?obj:v);
+    else FROTA.push(obj);
+    salvarDados();fecharModal();renderFrota();
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ABA VOLUMES
+// ═══════════════════════════════════════════════════════════════════
+function renderVolumes(){
+  document.getElementById('content').innerHTML=`
+  <div class="alert a-blue"><i class="ti ti-info-circle"></i>
+    <p>Itens em <strong>kg</strong> não computam volume (filtro, papelão, plásticos, sucata). Deixe 0 para esses.</p>
+  </div>
+  <div class="stitle">Volume por item (m³/unidade)</div>
+  <div class="card" style="padding:.75rem 1rem">
+    ${ITENS.map(it=>`<div class="vol-row">
+      <div class="item-icon" style="width:28px;height:28px;font-size:12px;margin-right:2px;flex-shrink:0"><i class="ti ${it.icon||'ti-box'}"></i></div>
+      <span class="vl">${it.nome}</span>
+      <span class="vu">${it.un}</span>
+      <input class="vol-inp" type="number" inputmode="decimal" step="0.001" min="0"
+        value="${it.vol||0}" data-item-id="${it.id}"
+        ${it.un==='kg'?'style="opacity:.5" title="Item por peso — volume não se aplica"':''}>
+      <span style="font-size:10px;color:var(--t2);flex-shrink:0">m³</span>
+    </div>`).join('')}
+  </div>
+  <button class="btn btn-success btn-block" id="btn-salvar-vol">
+    <i class="ti ti-device-floppy"></i> Salvar todos os volumes
+  </button>
+  <div class="stitle" style="margin-top:1rem">Capacidade do baú por veículo</div>
+  <div class="card" style="padding:.75rem 1rem">
+    ${FROTA.filter(v=>v.status==='ativo').map(v=>`<div class="vol-row">
+      <div class="item-icon" style="width:28px;height:28px;font-size:12px;margin-right:2px;background:var(--bb);color:var(--bl2);flex-shrink:0"><i class="ti ti-truck"></i></div>
+      <span class="vl">${v.placa} <span style="font-size:11px;color:var(--t2);font-weight:400">· ${v.modelo}</span></span>
+      <input class="vol-inp bau-inp" type="number" inputmode="decimal" step="0.5" min="1"
+        value="${v.bau||40}" data-vei-id="${v.id}">
+      <span style="font-size:10px;color:var(--t2);flex-shrink:0">m³</span>
+    </div>`).join('')}
+  </div>
+  <button class="btn btn-success btn-block" id="btn-salvar-bau">
+    <i class="ti ti-device-floppy"></i> Salvar capacidades dos baús
+  </button>`;
+
+  document.getElementById('btn-salvar-vol').addEventListener('click',()=>{
+    document.querySelectorAll('.vol-inp[data-item-id]').forEach(inp=>{
+      const it=ITENS.find(i=>i.id===inp.dataset.itemId);
+      if(it) it.vol=parseFloat(inp.value)||0;
+    });
+    salvarDados();
+    mostrarSucesso('Volumes salvos!');
+  });
+  document.getElementById('btn-salvar-bau').addEventListener('click',()=>{
+    document.querySelectorAll('.bau-inp[data-vei-id]').forEach(inp=>{
+      const v=FROTA.find(x=>x.id===inp.dataset.veiId);
+      if(v) v.bau=parseFloat(inp.value)||40;
+    });
+    salvarDados();
+    mostrarSucesso('Capacidades salvas!');
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ABA FUNCIONÁRIOS
+// ═══════════════════════════════════════════════════════════════════
+function renderFuncionarios(){
+  const motoristas=FUNCIONARIOS.filter(f=>f.cargo==='Motorista');
+  const outros=FUNCIONARIOS.filter(f=>f.cargo!=='Motorista');
+  document.getElementById('content').innerHTML=`
+  <button class="btn btn-primary" id="btn-novo-func" style="width:100%;justify-content:center;margin-bottom:1rem;padding:12px">
+    <i class="ti ti-plus"></i> Cadastrar novo funcionário
+  </button>
+  <div class="stitle">Motoristas (${motoristas.length})</div>
+  ${motoristas.map(f=>renderFuncCard(f)).join('')}
+  ${outros.length?`<div class="stitle" style="margin-top:1rem">Outros (${outros.length})</div>
+  ${outros.map(f=>renderFuncCard(f)).join('')}`:''}`;
+
+  document.getElementById('btn-novo-func').addEventListener('click',()=>abrirModalFunc(null));
+  bindFuncEvents();
+}
+
+function renderFuncCard(f){
+  const ini=f.nome.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+  return `<div class="item-card">
+    <div class="item-icon" style="background:var(--gnb);color:var(--gn);font-size:13px;font-weight:700">${ini}</div>
+    <div class="item-info">
+      <strong>${f.nome}</strong>
+      <span>${f.cargo}${f.telefone?' · '+f.telefone:''}</span>
+    </div>
+    <div class="item-actions">
+      <button class="btn btn-secondary btn-sm" data-edit-func="${f.id}"><i class="ti ti-edit" style="font-size:13px"></i></button>
+      <button class="btn btn-danger btn-sm" data-del-func="${f.id}"><i class="ti ti-trash" style="font-size:13px"></i></button>
+    </div>
+  </div>`;
+}
+
+function bindFuncEvents(){
+  document.querySelectorAll('[data-edit-func]').forEach(btn=>{
+    btn.addEventListener('click',()=>abrirModalFunc(FUNCIONARIOS.find(f=>f.id===btn.dataset.editFunc)));
+  });
+  document.querySelectorAll('[data-del-func]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const f=FUNCIONARIOS.find(x=>x.id===btn.dataset.delFunc);
+      if(confirm('Excluir "'+f.nome+'"?')){
+        FUNCIONARIOS=FUNCIONARIOS.filter(x=>x.id!==btn.dataset.delFunc);
+        salvarDados();renderFuncionarios();
+      }
+    });
+  });
+}
+
+function abrirModalFunc(func){
+  editando=func?{...func}:{id:uid(),nome:'',cargo:'Motorista',telefone:''};
+  const isEdit=!!func;
+  document.body.insertAdjacentHTML('beforeend',`
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <div class="modal-title"><i class="ti ti-user" style="color:var(--gn)"></i> ${isEdit?'Editar funcionário':'Novo funcionário'}</div>
+      <label>Nome completo</label>
+      <input id="mf-nome" type="text" placeholder="Nome do funcionário" value="${editando.nome}" style="margin-bottom:10px">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Cargo</label>
+          <select id="mf-cargo">
+            <option value="Motorista"   ${editando.cargo==='Motorista'?'selected':''}>Motorista</option>
+            <option value="Conferente"  ${editando.cargo==='Conferente'?'selected':''}>Conferente</option>
+            <option value="Triagem"     ${editando.cargo==='Triagem'?'selected':''}>Triagem</option>
+            <option value="Administrativo" ${editando.cargo==='Administrativo'?'selected':''}>Administrativo</option>
+            <option value="Gestor"      ${editando.cargo==='Gestor'?'selected':''}>Gestor</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Telefone</label>
+          <input id="mf-tel" type="tel" placeholder="(11) 99999-9999" value="${editando.telefone||''}">
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:6px">
+        <button class="btn btn-secondary" style="flex:1;justify-content:center" id="mf-cancelar">Cancelar</button>
+        <button class="btn btn-primary" style="flex:2;justify-content:center" id="mf-salvar">
+          <i class="ti ti-device-floppy"></i> Salvar
+        </button>
+      </div>
+    </div>
+  </div>`);
+
+  document.getElementById('mf-cancelar').addEventListener('click',fecharModal);
+  document.getElementById('modal-overlay').addEventListener('click',e=>{if(e.target.id==='modal-overlay')fecharModal();});
+  document.getElementById('mf-salvar').addEventListener('click',()=>{
+    const nome=document.getElementById('mf-nome').value.trim();
+    if(!nome){alert('Informe o nome.');return;}
+    const obj={
+      id:editando.id, nome,
+      cargo:document.getElementById('mf-cargo').value,
+      telefone:document.getElementById('mf-tel').value.trim(),
+    };
+    if(isEdit) FUNCIONARIOS=FUNCIONARIOS.map(f=>f.id===obj.id?obj:f);
+    else FUNCIONARIOS.push(obj);
+    salvarDados();fecharModal();renderFuncionarios();
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ABA CLIENTES
+// ═══════════════════════════════════════════════════════════════════
+// Medidas padrão por aro (usadas na grade por medida)
+// MEDIDAS_ARO é um alias dinâmico para MEDIDAS (definido após MEDIDAS)
+// Usado no modal de preços — atualiza automaticamente quando MEDIDAS muda
+function getMedsAro(aro){ return MEDIDAS[aro]||[]; }
+const AROS_PADRAO = ['13','14','15','16','17','SUV','Camionete','Caminhão'];
+const CATS_PRECO = [
+  {id:'carcaca', nome:'Carcaça'},
+  {id:'risco',   nome:'Risco'},
+  {id:'meiavida',nome:'Meia Vida'},
+  {id:'cortados',nome:'Cortados'},
+];
+
+// ── Medidas cadastradas por aro ──────────────────────────────────
+let MEDIDAS = {
+  '13': ['165/70R13','175/70R13','175/75R13','185/70R13','165/65R13'],
+  '14': ['175/65R14','175/70R14','185/65R14','185/70R14','195/70R14'],
+  '15': ['185/60R15','185/65R15','195/55R15','195/65R15','205/60R15','205/65R15','205/70R15'],
+  '16': ['205/55R16','205/60R16','215/65R16','225/65R16','235/60R16'],
+  '17': ['205/40R17','215/45R17','225/45R17','225/50R17','235/45R17'],
+  'SUV': ['235/55R18','235/60R18','255/55R19','265/50R20','275/55R20'],
+  'Camionete': ['205/70R15C','215/75R15C','225/75R15C','235/75R15'],
+  'Caminhão': ['275/80R22.5','295/80R22.5','11.00R22','900R20'],
+};
+
+let CLIENTES = [
+  {id:'c357',nome:'TCP ECOLOGY TYRE',       doc:'—', tipo:'Distribuidor', cidade:'São Paulo', uf:'SP', tel:'', cat:'carcaca', tabelaTipo:'medidas', obs:'Tabela por medida',
+   precos:{carcaca:{tipo:'medidas', tabela:{'13':[{m:'165/70R13',p:45},{m:'175/70R13',p:50},{m:'175/75R13',p:40}],'14':[{m:'175/65R14',p:45},{m:'175/70R14',p:55},{m:'185/65R14',p:50},{m:'185/70R14',p:50}],'15':[{m:'185/60R15',p:22},{m:'185/65R15',p:25},{m:'195/55R15',p:20},{m:'195/65R15',p:25},{m:'205/60R15',p:20},{m:'205/65R15',p:40}],'16':[{m:'205/55R16',p:10},{m:'205/60R16',p:15},{m:'215/65R16',p:30}],'17':[{m:'215/45R17',p:20},{m:'225/45R17',p:15},{m:'225/50R17',p:15}]}}}},
+  {id:'c6',  nome:'JATOBA PNEUS',            doc:'—', tipo:'Borracharia',  cidade:'Campinas',  uf:'SP', tel:'', cat:'risco',    tabelaTipo:'aros', obs:'',
+   precos:{risco:{tipo:'aros', tabela:{'13':35,'14':35,'15':35,'16':35,'17':35}}}},
+  {id:'c1',  nome:'BORRACHARIA PEREIRA LTDA',doc:'—', tipo:'Borracharia',  cidade:'Osasco',    uf:'SP', tel:'', cat:'meiavida', tabelaTipo:'aros', obs:'',
+   precos:{meiavida:{tipo:'aros', tabela:{'13':55,'14':55,'15':55,'16':55}}}},
+  {id:'c63', nome:'MESQUITAO COMERCIO PNEUS',doc:'—', tipo:'Distribuidor', cidade:'São Paulo', uf:'SP', tel:'', cat:'carcaca',  tabelaTipo:'aros', obs:'',
+   precos:{carcaca:{tipo:'aros', tabela:{'13':30,'14':28,'15':22,'16':10}}}},
+  {id:'c82', nome:'TRUCKERS PNEUS',          doc:'—', tipo:'Borracharia',  cidade:'Guarulhos', uf:'SP', tel:'', cat:'carcaca',  tabelaTipo:'aros', obs:'',
+   precos:{carcaca:{tipo:'aros', tabela:{'13':35,'14':30,'15':25,'16':10,'17':5}}}},
+  {id:'c399',nome:'AGILI DISTRIBUIDORA',     doc:'—', tipo:'Distribuidor', cidade:'São Paulo', uf:'SP', tel:'', cat:'meiavida', tabelaTipo:'aros', obs:'',
+   precos:{meiavida:{tipo:'aros', tabela:{'13':55,'14':55,'15':55,'16':55,'17':55}}}},
+  {id:'c371',nome:'JCM COMERCIO DE PNEUS',   doc:'—', tipo:'Borracharia',  cidade:'Barueri',   uf:'SP', tel:'', cat:'risco',    tabelaTipo:'aros', obs:'',
+   precos:{risco:{tipo:'aros', tabela:{'13':35,'14':35,'15':35,'16':35}}}},
+  {id:'c363',nome:'SARADAO PNEUS',           doc:'—', tipo:'Borracharia',  cidade:'Osasco',    uf:'SP', tel:'', cat:'cortados', tabelaTipo:'aros', obs:'',
+   precos:{cortados:{tipo:'aros', tabela:{'13':45,'14':45,'15':45,'16':45}}}},
+  {id:'c73', nome:'ROQUE WHEELS',            doc:'—', tipo:'Distribuidor', cidade:'São Paulo', uf:'SP', tel:'', cat:'risco',    tabelaTipo:'aros', obs:'',
+   precos:{risco:{tipo:'aros', tabela:{'13':35,'14':35,'15':35}}}},
+];
+
+const CAT_NOME={carcaca:'Carcaça',risco:'Risco',meiavida:'Meia Vida',cortados:'Cortados',outros:'Outros'};
+const CAT_COR={carcaca:'var(--tl)',risco:'var(--bl2)',meiavida:'var(--pu)',cortados:'var(--or)',outros:'var(--t2)'};
+
+let cliBusca='', cliOrdem='nome';
+
+function renderClientes(){
+  const b=cliBusca.toLowerCase();
+  const lista=[...CLIENTES]
+    .filter(c=>!b||c.nome.toLowerCase().includes(b)||c.cidade.toLowerCase().includes(b)||(c.doc||'').includes(b))
+    .sort((a,z)=>cliOrdem==='nome'?a.nome.localeCompare(z.nome):a.cidade.localeCompare(z.cidade));
+
+  document.getElementById('content').innerHTML=`
+  <div style="display:flex;gap:8px;margin-bottom:1rem">
+    <button class="btn btn-primary" id="btn-novo-cli" style="flex:1;justify-content:center;padding:11px">
+      <i class="ti ti-plus"></i> Novo cliente
+    </button>
+    <button class="btn btn-secondary btn-sm" id="btn-exp-cli" style="padding:11px 12px" title="Exportar lista">
+      <i class="ti ti-download"></i>
+    </button>
+  </div>
+  <!-- Busca e ordem -->
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <div style="position:relative;flex:1">
+      <i class="ti ti-search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--t3);font-size:14px"></i>
+      <input id="cli-busca" type="text" placeholder="Buscar por nome, cidade..." value="${cliBusca}"
+        style="padding-left:32px;font-size:13px">
+    </div>
+    <select id="cli-ordem" style="width:120px;font-size:12px;padding:8px 10px">
+      <option value="nome" ${cliOrdem==='nome'?'selected':''}>Nome A-Z</option>
+      <option value="cidade" ${cliOrdem==='cidade'?'selected':''}>Cidade</option>
+    </select>
+  </div>
+  <!-- Stats -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px">
+    <div style="background:var(--sf);border:1px solid var(--bd);border-radius:var(--rs);padding:8px;text-align:center">
+      <div style="font-size:18px;font-weight:700;color:var(--pu)">${CLIENTES.length}</div>
+      <div style="font-size:10px;color:var(--t2);text-transform:uppercase;letter-spacing:.03em">Total</div>
+    </div>
+    <div style="background:var(--sf);border:1px solid var(--bd);border-radius:var(--rs);padding:8px;text-align:center">
+      <div style="font-size:18px;font-weight:700;color:var(--tl)">${CLIENTES.filter(c=>c.tipo==='Borracharia').length}</div>
+      <div style="font-size:10px;color:var(--t2);text-transform:uppercase;letter-spacing:.03em">Borracharias</div>
+    </div>
+    <div style="background:var(--sf);border:1px solid var(--bd);border-radius:var(--rs);padding:8px;text-align:center">
+      <div style="font-size:18px;font-weight:700;color:var(--bl2)">${CLIENTES.filter(c=>c.tipo==='Distribuidor').length}</div>
+      <div style="font-size:10px;color:var(--t2);text-transform:uppercase;letter-spacing:.03em">Distribuidores</div>
+    </div>
+  </div>
+  <!-- Lista -->
+  <div class="stitle">${lista.length} cliente${lista.length!==1?'s':''} encontrado${lista.length!==1?'s':''}</div>
+  ${lista.length===0?`<div class="empty"><i class="ti ti-users-group"></i><p>Nenhum cliente encontrado.</p></div>`:''}
+  ${lista.map(cli=>`<div class="item-card" style="align-items:flex-start;flex-direction:column;padding:.875rem 1rem">
+    <div style="display:flex;align-items:center;gap:10px;width:100%;margin-bottom:6px">
+      <div class="item-icon" style="background:var(--pb);color:var(--pu);font-size:12px;font-weight:700;flex-shrink:0">
+        ${cli.nome.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase()}
+      </div>
+      <div style="flex:1;min-width:0">
+        <strong style="font-size:13px;font-weight:700;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cli.nome}</strong>
+        <span style="font-size:11px;color:var(--t2)">${cli.tipo} · ${cli.cidade}/${cli.uf}</span>
+      </div>
+      <div style="display:flex;gap:5px;flex-shrink:0">
+        <button class="btn btn-sm" style="background:var(--gnb);color:var(--gn);border:1px solid var(--gnl)" data-preco-cli="${cli.id}" title="Editar preços"><i class="ti ti-currency-dollar" style="font-size:12px"></i></button>
+        <button class="btn btn-secondary btn-sm" data-edit-cli="${cli.id}"><i class="ti ti-edit" style="font-size:12px"></i></button>
+        <button class="btn btn-danger btn-sm" data-del-cli="${cli.id}"><i class="ti ti-trash" style="font-size:12px"></i></button>
+      </div>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;padding-left:46px">
+      <span style="font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700;background:var(--gnb);color:var(--gn)">${CAT_NOME[cli.cat]||cli.cat}</span>
+      <span style="font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700;background:var(--pb);color:var(--pu)">${cli.tabelaTipo==='medidas'?'Tabela por medida':'Tabela por aro'}</span>
+      ${cli.tel?`<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:var(--bg);color:var(--t2);border:1px solid var(--bd)">${cli.tel}</span>`:''}
+      ${cli.obs?`<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:var(--bg);color:var(--t2);border:1px solid var(--bd)">${cli.obs}</span>`:''}
+      ${(()=>{const tot=Object.values(cli.medidas||{}).reduce((s,a)=>s+a.length,0);return tot>0?`<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:var(--pb);color:var(--pu);font-weight:600">${tot} medida${tot!==1?'s':''}</span>`:'';})()}
+    </div>
+  </div>`).join('')}`;
+
+  // Bind
+  document.getElementById('cli-busca').addEventListener('input',e=>{cliBusca=e.target.value;renderClientes();});
+  document.getElementById('cli-busca').addEventListener('focus',()=>{});
+  document.getElementById('cli-ordem').addEventListener('change',e=>{cliOrdem=e.target.value;renderClientes();});
+  document.getElementById('btn-novo-cli').addEventListener('click',()=>abrirModalCliente(null));
+  document.getElementById('btn-exp-cli').addEventListener('click',exportarClientes);
+  document.querySelectorAll('[data-edit-cli]').forEach(btn=>{
+    btn.addEventListener('click',()=>abrirModalCliente(CLIENTES.find(c=>c.id===btn.dataset.editCli)));
+  });
+  document.querySelectorAll('[data-del-cli]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const cli=CLIENTES.find(c=>c.id===btn.dataset.delCli);
+      if(confirm('Excluir cliente "'+cli.nome+'"?')){
+        CLIENTES=CLIENTES.filter(c=>c.id!==btn.dataset.delCli);
+        salvarDados();renderClientes();
+      }
+    });
+  });
+  document.querySelectorAll('[data-preco-cli]').forEach(btn=>{
+    btn.addEventListener('click',()=>abrirModalPrecos(btn.dataset.precoCli));
+  });
+}
+
+function abrirModalCliente(cli){
+  editando=cli?{...cli}:{id:uid(),nome:'',doc:'',tipo:'Borracharia',cidade:'',uf:'SP',tel:'',cat:'carcaca',tabelaTipo:'aros',obs:''};
+  const isEdit=!!cli;
+  const ufs=['AC','AL','AM','AP','BA','CE','DF','ES','GO','MA','MG','MS','MT','PA','PB','PE','PI','PR','RJ','RN','RO','RR','RS','SC','SE','SP','TO'];
+  document.body.insertAdjacentHTML('beforeend',`
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <div class="modal-title"><i class="ti ti-user-plus" style="color:var(--pu)"></i> ${isEdit?'Editar cliente':'Novo cliente'}</div>
+      <label>Razão social / Nome</label>
+      <input id="mc-nome" type="text" placeholder="Nome do cliente" value="${editando.nome}" style="margin-bottom:8px;text-transform:uppercase">
+      <div class="form-row">
+        <div class="form-group">
+          <label>CNPJ / CPF</label>
+          <input id="mc-doc" type="text" placeholder="00.000.000/0001-00" value="${editando.doc||''}">
+        </div>
+        <div class="form-group">
+          <label>Tipo</label>
+          <select id="mc-tipo">
+            <option value="Borracharia"  ${editando.tipo==='Borracharia'?'selected':''}>Borracharia</option>
+            <option value="Distribuidor" ${editando.tipo==='Distribuidor'?'selected':''}>Distribuidor</option>
+            <option value="Recauchutadora" ${editando.tipo==='Recauchutadora'?'selected':''}>Recauchutadora</option>
+            <option value="Outros"       ${editando.tipo==='Outros'?'selected':''}>Outros</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Cidade</label>
+          <input id="mc-cidade" type="text" placeholder="Cidade" value="${editando.cidade}">
+        </div>
+        <div class="form-group" style="max-width:90px">
+          <label>UF</label>
+          <select id="mc-uf">
+            ${ufs.map(u=>`<option value="${u}" ${editando.uf===u?'selected':''}>${u}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <label>Telefone / WhatsApp</label>
+      <input id="mc-tel" type="tel" placeholder="(11) 99999-9999" value="${editando.tel||''}" style="margin-bottom:8px">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Categoria padrão</label>
+          <select id="mc-cat">
+            <option value="carcaca"  ${editando.cat==='carcaca'?'selected':''}>Carcaça</option>
+            <option value="risco"    ${editando.cat==='risco'?'selected':''}>Risco</option>
+            <option value="meiavida" ${editando.cat==='meiavida'?'selected':''}>Meia Vida</option>
+            <option value="cortados" ${editando.cat==='cortados'?'selected':''}>Cortados</option>
+            <option value="outros"   ${editando.cat==='outros'?'selected':''}>Outros</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Tabela de preços</label>
+          <select id="mc-tabela">
+            <option value="aros"    ${editando.tabelaTipo==='aros'?'selected':''}>Por aro</option>
+            <option value="medidas" ${editando.tabelaTipo==='medidas'?'selected':''}>Por medida</option>
+          </select>
+        </div>
+      </div>
+      <label>Observações</label>
+      <input id="mc-obs" type="text" placeholder="Ex: Tabela especial, crédito aprovado..." value="${editando.obs||''}" style="margin-bottom:14px">
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-secondary" style="flex:1;justify-content:center" id="mc-cancelar">Cancelar</button>
+        <button class="btn btn-primary" style="flex:2;justify-content:center" id="mc-salvar">
+          <i class="ti ti-device-floppy"></i> Salvar cliente
+        </button>
+      </div>
+    </div>
+  </div>`);
+
+  document.getElementById('mc-cancelar').addEventListener('click',fecharModal);
+  document.getElementById('modal-overlay').addEventListener('click',e=>{if(e.target.id==='modal-overlay')fecharModal();});
+  document.getElementById('mc-nome').addEventListener('input',e=>{e.target.value=e.target.value.toUpperCase();});
+  document.getElementById('mc-salvar').addEventListener('click',()=>{
+    const nome=document.getElementById('mc-nome').value.trim();
+    const cidade=document.getElementById('mc-cidade').value.trim();
+    if(!nome){alert('Informe o nome do cliente.');return;}
+    const obj={
+      id:editando.id, nome, cidade,
+      doc:document.getElementById('mc-doc').value.trim(),
+      tipo:document.getElementById('mc-tipo').value,
+      uf:document.getElementById('mc-uf').value,
+      tel:document.getElementById('mc-tel').value.trim(),
+      cat:document.getElementById('mc-cat').value,
+      tabelaTipo:document.getElementById('mc-tabela').value,
+      obs:document.getElementById('mc-obs').value.trim(),
+    };
+    if(isEdit) CLIENTES=CLIENTES.map(c=>c.id===obj.id?obj:c);
+    else CLIENTES.push(obj);
+    salvarDados();fecharModal();renderClientes();
+  });
+}
+
+function exportarClientes(){
+  const linhas=[['Nome','CNPJ/CPF','Tipo','Cidade','UF','Telefone','Categoria','Tabela','Obs']];
+  CLIENTES.forEach(c=>linhas.push([c.nome,c.doc||'',c.tipo,c.cidade,c.uf,c.tel||'',CAT_NOME[c.cat]||c.cat,c.tabelaTipo==='medidas'?'Por medida':'Por aro',c.obs||'']));
+  const csv=linhas.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,﻿'+encodeURIComponent(csv);
+  a.download='clientes_tyre_eco.csv';a.click();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ABA MEDIDAS
+// ═══════════════════════════════════════════════════════════════════
+function renderMedidas(){
+  const aros = Object.keys(MEDIDAS);
+  document.getElementById('content').innerHTML=`
+  <div class="alert a-blue"><i class="ti ti-info-circle"></i>
+    <p>Medidas cadastradas aqui aparecem automaticamente na grade de preços dos clientes.</p>
+  </div>
+  <button class="btn btn-primary" id="btn-nova-medida" style="width:100%;justify-content:center;margin-bottom:1rem;padding:12px">
+    <i class="ti ti-plus"></i> Nova medida
+  </button>
+  ${aros.map(aro=>`
+  <div class="card" style="padding:.75rem 1rem;margin-bottom:10px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <strong style="font-size:14px">Aro ${aro}</strong>
+      <div style="display:flex;gap:6px;align-items:center">
+        <span style="font-size:11px;color:var(--t2)">${MEDIDAS[aro].length} medida${MEDIDAS[aro].length!==1?'s':''}</span>
+        <button class="btn btn-primary btn-sm" data-add-med="${aro}"><i class="ti ti-plus" style="font-size:11px"></i> Adicionar</button>
+      </div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px">
+      ${MEDIDAS[aro].map((m,i)=>`<div style="display:flex;align-items:center;gap:3px;background:var(--pb);border-radius:20px;padding:3px 4px 3px 10px">
+        <span style="font-size:12px;font-weight:600;color:var(--pu)">${m}</span>
+        <button style="width:18px;height:18px;border-radius:50%;border:none;background:var(--pu);color:#fff;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0"
+          data-del-med="${aro}" data-idx="${i}">✕</button>
+      </div>`).join('')}
+    </div>
+  </div>`).join('')}
+  <div class="stitle" style="margin-top:.5rem">Adicionar novo aro</div>
+  <div class="card" style="padding:.75rem 1rem">
+    <div style="display:flex;gap:8px;align-items:flex-end">
+      <div style="flex:1">
+        <label>Nome do aro</label>
+        <input id="inp-novo-aro" type="text" placeholder="Ex: 18, 19, 20...">
+      </div>
+      <button class="btn btn-primary" id="btn-criar-aro" style="padding:10px 14px;flex-shrink:0"><i class="ti ti-plus"></i> Criar aro</button>
+    </div>
+  </div>`;
+
+  // Bind nova medida global
+  document.getElementById('btn-nova-medida')?.addEventListener('click',()=>abrirModalNovaMedida(null));
+
+  // Bind adicionar medida por aro
+  document.querySelectorAll('[data-add-med]').forEach(btn=>{
+    btn.addEventListener('click',()=>abrirModalNovaMedida(btn.dataset.addMed));
+  });
+
+  // Bind excluir medida
+  document.querySelectorAll('[data-del-med]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const aro=btn.dataset.delMed;
+      const idx=parseInt(btn.dataset.idx);
+      const med=MEDIDAS[aro][idx];
+      if(confirm('Excluir medida "'+med+'" do Aro '+aro+'?')){
+        MEDIDAS[aro].splice(idx,1);
+        salvarDados();renderMedidas();
+      }
+    });
+  });
+
+  // Criar novo aro
+  document.getElementById('btn-criar-aro')?.addEventListener('click',()=>{
+    const aro=document.getElementById('inp-novo-aro')?.value.trim();
+    if(!aro){alert('Informe o nome do aro.');return;}
+    if(MEDIDAS[aro]){alert('Aro "'+aro+'" já existe.');return;}
+    MEDIDAS[aro]=[];
+    salvarDados();renderMedidas();
+  });
+}
+
+function abrirModalNovaMedida(aroPreSel){
+  const aros=Object.keys(MEDIDAS);
+  document.getElementById('modal-overlay')?.remove();
+  document.body.insertAdjacentHTML('beforeend',`
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <div class="modal-title"><i class="ti ti-ruler" style="color:var(--pu)"></i> Nova medida</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Aro</label>
+          <select id="med-aro">
+            ${aros.map(a=>`<option value="${a}" ${a===aroPreSel?'selected':''}>${a}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Medida</label>
+          <input id="med-val" type="text" placeholder="Ex: 185/65R15" style="text-transform:uppercase">
+        </div>
+      </div>
+      <div class="alert a-blue" style="margin-top:4px"><i class="ti ti-info-circle"></i>
+        <p>Formato padrão: <strong>185/65R15</strong> (largura/perfil R aro)</p>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn btn-secondary" style="flex:1;justify-content:center" id="med-cancelar">Cancelar</button>
+        <button class="btn btn-primary" style="flex:2;justify-content:center" id="med-salvar">
+          <i class="ti ti-device-floppy"></i> Adicionar medida
+        </button>
+      </div>
+    </div>
+  </div>`);
+
+  document.getElementById('med-val')?.addEventListener('input',e=>{e.target.value=e.target.value.toUpperCase();});
+  document.getElementById('med-cancelar')?.addEventListener('click',fecharModal);
+  document.getElementById('modal-overlay')?.addEventListener('click',e=>{if(e.target.id==='modal-overlay')fecharModal();});
+  document.getElementById('med-salvar')?.addEventListener('click',()=>{
+    const aro=document.getElementById('med-aro')?.value;
+    const val=document.getElementById('med-val')?.value.trim().toUpperCase();
+    if(!val){alert('Informe a medida.');return;}
+    if(!MEDIDAS[aro]) MEDIDAS[aro]=[];
+    if(MEDIDAS[aro].includes(val)){alert('Medida "'+val+'" já existe no Aro '+aro+'.');return;}
+    MEDIDAS[aro].push(val);
+    MEDIDAS[aro].sort();
+    salvarDados();fecharModal();renderMedidas();
+    mostrarSucesso('Medida '+val+' adicionada ao Aro '+aro+'!');
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// MODAL DE PREÇOS DO CLIENTE
+// ═══════════════════════════════════════════════════════════════════
+let precoCatAtiva = 'carcaca';
+
+function abrirModalPrecos(cliId){
+  const cli = CLIENTES.find(c=>c.id===cliId);
+  if(!cli) return;
+  if(!cli.precos) cli.precos = {};
+  renderModalPrecos(cli);
+}
+
+function renderModalPrecos(cli){
+  // Abas de categoria
+  const catAtiva = precoCatAtiva;
+  const catDados = cli.precos[catAtiva] || {tipo: cli.tabelaTipo, tabela: {}};
+  const isPorMedida = catDados.tipo === 'medidas' || cli.tabelaTipo === 'medidas';
+
+  // Gerar grade
+  let gradeHTML = '';
+  if(isPorMedida){
+    gradeHTML = AROS_PADRAO.map(aro => {
+      const meds = getMedsAro(aro);
+      if(!catDados.tabela[aro]) catDados.tabela[aro] = meds.map(m=>({m,p:0}));
+      return `<div style="margin-bottom:14px">
+        <div style="font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--bl)">Aro ${aro}</div>
+        ${(catDados.tabela[aro]||[]).map((med,i)=>`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--bl)">
+          <span style="flex:1;font-size:13px">${med.m}</span>
+          <span style="font-size:11px;color:var(--t2)">R$</span>
+          <input class="preco-inp" type="number" step="0.01" min="0"
+            style="width:72px;padding:6px 8px;text-align:right;border:1.5px solid var(--bd);border-radius:6px;font-size:14px;font-weight:600;background:var(--bg)"
+            value="${med.p||''}" placeholder="0,00"
+            data-aro="${aro}" data-idx="${i}" data-tipo="medida">
+        </div>`).join('')}
+      </div>`;
+    }).join('');
+  } else {
+    gradeHTML = `<table style="width:100%;border-collapse:collapse">
+      <thead><tr>
+        <th style="text-align:left;font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase;padding:6px 0;border-bottom:2px solid var(--bd)">Aro</th>
+        <th style="text-align:right;font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase;padding:6px 0;border-bottom:2px solid var(--bd)">R$ / unidade</th>
+      </tr></thead>
+      <tbody>
+        ${AROS_PADRAO.map(aro=>`<tr>
+          <td style="padding:6px 0;border-bottom:1px solid var(--bl);font-size:13px;font-weight:600">Aro ${aro}</td>
+          <td style="padding:4px 0;border-bottom:1px solid var(--bl);text-align:right">
+            <div style="display:flex;align-items:center;justify-content:flex-end;gap:4px">
+              <span style="font-size:11px;color:var(--t2)">R$</span>
+              <input class="preco-inp" type="number" step="0.01" min="0"
+                style="width:72px;padding:6px 8px;text-align:right;border:1.5px solid var(--bd);border-radius:6px;font-size:14px;font-weight:600;background:var(--bg)"
+                value="${catDados.tabela[aro]||''}" placeholder="0,00"
+                data-aro="${aro}" data-tipo="aro">
+            </div>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+  }
+
+  // Remove modal anterior se existir
+  document.getElementById('modal-overlay')?.remove();
+
+  document.body.insertAdjacentHTML('beforeend', `
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal" style="max-height:90vh">
+      <div class="modal-title">
+        <i class="ti ti-currency-dollar" style="color:var(--gn)"></i>
+        Preços — ${cli.nome.split(' ').slice(0,2).join(' ')}
+      </div>
+      <!-- Abas de categoria -->
+      <div style="display:flex;gap:3px;margin-bottom:1rem;background:#EBEBEA;border-radius:8px;padding:3px;overflow-x:auto">
+        ${CATS_PRECO.map(cat=>`<button class="preco-cat-btn" data-cat="${cat.id}"
+          style="flex:1;padding:7px 4px;font-size:11px;font-weight:600;border:none;border-radius:6px;cursor:pointer;font-family:inherit;white-space:nowrap;min-width:60px;
+          background:${catAtiva===cat.id?'var(--sf)':'transparent'};
+          color:${catAtiva===cat.id?'var(--gn)':'var(--t2)'};
+          box-shadow:${catAtiva===cat.id?'0 1px 3px rgba(0,0,0,.08)':'none'}">
+          ${cat.nome}${cli.precos[cat.id]?` ✓`:''}
+        </button>`).join('')}
+      </div>
+      <!-- Tipo de tabela -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:8px 12px;background:var(--bg);border-radius:var(--rs)">
+        <span style="font-size:12px;color:var(--t2);flex:1">Tipo da tabela para ${CATS_PRECO.find(c=>c.id===catAtiva)?.nome}</span>
+        <select id="sel-tipo-tabela" style="font-size:12px;padding:6px 10px;border:1.5px solid var(--bd);border-radius:6px;background:var(--sf)">
+          <option value="aros" ${!isPorMedida?'selected':''}>Por aro</option>
+          <option value="medidas" ${isPorMedida?'selected':''}>Por medida</option>
+        </select>
+      </div>
+      <!-- Grade de preços -->
+      <div id="grade-precos" style="max-height:340px;overflow-y:auto">${gradeHTML}</div>
+      <!-- Botões -->
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button class="btn btn-secondary" style="flex:1;justify-content:center" id="preco-cancelar">Fechar</button>
+        <button class="btn btn-success" style="flex:2;justify-content:center" id="preco-salvar">
+          <i class="ti ti-device-floppy"></i> Salvar preços
+        </button>
+      </div>
+    </div>
+  </div>`);
+
+  // Bind abas de categoria
+  document.querySelectorAll('.preco-cat-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      precoCatAtiva = btn.dataset.cat;
+      renderModalPrecos(cli);
+    });
+  });
+
+  // Mudar tipo da tabela
+  document.getElementById('sel-tipo-tabela')?.addEventListener('change', e=>{
+    if(!cli.precos[catAtiva]) cli.precos[catAtiva] = {tipo: e.target.value, tabela:{}};
+    cli.precos[catAtiva].tipo = e.target.value;
+    renderModalPrecos(cli);
+  });
+
+  // Fechar
+  document.getElementById('preco-cancelar')?.addEventListener('click', fecharModal);
+  document.getElementById('modal-overlay')?.addEventListener('click', e=>{
+    if(e.target.id==='modal-overlay') fecharModal();
+  });
+
+  // Salvar
+  document.getElementById('preco-salvar')?.addEventListener('click',()=>{
+    if(!cli.precos[catAtiva]) cli.precos[catAtiva] = {tipo: isPorMedida?'medidas':'aros', tabela:{}};
+    cli.precos[catAtiva].tipo = isPorMedida?'medidas':'aros';
+
+    if(isPorMedida){
+      document.querySelectorAll('.preco-inp[data-tipo="medida"]').forEach(inp=>{
+        const aro = inp.dataset.aro;
+        const idx = parseInt(inp.dataset.idx);
+        if(!cli.precos[catAtiva].tabela[aro]) cli.precos[catAtiva].tabela[aro] = [];
+        if(!cli.precos[catAtiva].tabela[aro][idx])
+          cli.precos[catAtiva].tabela[aro][idx] = {m: getMedsAro(aro)[idx]||'', p:0};
+        cli.precos[catAtiva].tabela[aro][idx].p = parseFloat(inp.value)||0;
+      });
+    } else {
+      document.querySelectorAll('.preco-inp[data-tipo="aro"]').forEach(inp=>{
+        cli.precos[catAtiva].tabela[inp.dataset.aro] = parseFloat(inp.value)||0;
+      });
+    }
+
+    // Atualizar cliente na lista
+    CLIENTES = CLIENTES.map(x=>x.id===cli.id?cli:x);
+    salvarDados();
+    mostrarSucesso('Preços salvos!');
+    renderModalPrecos(cli); // re-render para atualizar ✓ nas abas
+  });
+}
+
+// ── Helpers UI ────────────────────────────────────────────────────
+
+// ── Helpers UI ────────────────────────────────────────────────────
+function fecharModal(){
+  document.getElementById('modal-overlay')?.remove();
+  editando=null;
+}
+function mostrarSucesso(msg){
+  const el=document.createElement('div');
+  el.style.cssText='position:fixed;bottom:1rem;left:50%;transform:translateX(-50%);background:var(--gn);color:#fff;padding:10px 20px;border-radius:var(--rs);font-size:13px;font-weight:600;z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.15)';
+  el.textContent='✅ '+msg;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),2500);
+}
+</script>
+</body>
+</html>

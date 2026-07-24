@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Tyre Eco — Vendas</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F7F7F5;--sf:#FFF;--bd:#E5E4E0;--bl:#EFEFED;
+  --tx:#1A1A18;--t2:#6B6B65;--t3:#A8A8A2;
+  --gn:#1D7A4F;--gnb:#EBF5EF;--gnl:#C5DFC9;
+  --bl2:#1A5FA8;--bb:#EBF2FB;--bll:#C9DFF5;
+  --or:#B85C00;--ob:#FDF0E5;--ol:#FAD9B4;
+  --rd:#B02020;--rb:#FDECEC;--rl:#F5C0C0;
+  --pu:#5040A8;--pb:#F0EEFB;--pl:#CFC9F2;
+  --tl:#0A6E5C;--tb:#E8F5F2;--tll:#B8E0D8;
+  --r:12px;--rs:8px;--rx:6px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--tx);-webkit-tap-highlight-color:transparent;min-height:100vh}
+.app{max-width:520px;margin:0 auto}
+/* Topbar */
+.topbar{background:var(--sf);border-bottom:1px solid var(--bd);height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 1rem;position:sticky;top:0;z-index:50}
+.tl-l{display:flex;align-items:center;gap:8px}
+.tlogo{width:30px;height:30px;border-radius:8px;background:var(--tl);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px}
+.th1{font-size:14px;font-weight:600}.th2{font-size:11px;color:var(--t2)}
+.content{padding:1rem}
+/* Nav tabs */
+.nav{display:flex;gap:0;border-bottom:1px solid var(--bd);margin-bottom:1rem;overflow-x:auto}
+.nav-item{flex:1;padding:10px 6px;font-size:12px;font-weight:600;text-align:center;cursor:pointer;border-bottom:2.5px solid transparent;color:var(--t2);white-space:nowrap;min-width:60px;font-family:inherit;background:none;border-top:none;border-left:none;border-right:none;transition:all .15s}
+.nav-item.active{color:var(--tl);border-bottom-color:var(--tl)}
+/* Buttons */
+.btn{padding:10px 14px;border-radius:var(--rs);font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:all .15s;touch-action:manipulation}
+.btn-teal{background:var(--tl);color:#fff}
+.btn-green{background:var(--gn);color:#fff}
+.btn-sec{background:var(--sf);color:var(--tx);border:1px solid var(--bd)}
+.btn-sec:hover{background:var(--bg)}
+.btn-sm{padding:5px 10px;font-size:11px;font-weight:500}
+.btn-block{width:100%;justify-content:center;margin-top:8px;padding:13px;font-size:14px}
+.btn-dis{opacity:.4;pointer-events:none}
+.back-btn{background:none;border:1px solid var(--bd);border-radius:var(--rx);padding:6px 10px;cursor:pointer;font-size:12px;color:var(--t2);font-family:inherit;display:inline-flex;align-items:center;gap:5px;margin-bottom:1rem}
+/* Cards */
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:1rem;margin-bottom:10px}
+.card-sm{background:var(--sf);border:1px solid var(--bd);border-radius:var(--rs);padding:.75rem}
+/* Form */
+label{display:block;font-size:11px;font-weight:700;color:var(--t2);letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px;margin-top:10px}
+input,select,textarea{width:100%;padding:10px 12px;border:1.5px solid var(--bd);border-radius:var(--rs);font-size:14px;font-family:inherit;background:var(--bg);color:var(--tx)}
+input:focus,select:focus{outline:none;border-color:var(--tl);background:#fff}
+/* Rows */
+.row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--bl);font-size:13px}
+.row:last-child{border-bottom:none}
+.rl{color:var(--t2)}.rv{font-weight:600}
+.pos{color:var(--gn)}.neg{color:var(--rd)}.warn{color:var(--or)}
+/* Alerts */
+.alert{border-radius:var(--rs);padding:10px 14px;margin-bottom:10px;display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.5}
+.alert i{font-size:15px;flex-shrink:0;margin-top:1px}
+.a-ok{background:var(--gnb);color:var(--gn)}
+.a-teal{background:var(--tb);color:var(--tl)}
+.a-blue{background:var(--bb);color:var(--bl2)}
+.a-warn{background:var(--ob);color:var(--or)}
+.a-red{background:var(--rb);color:var(--rd)}
+.a-purple{background:var(--pb);color:var(--pu)}
+/* Stats */
+.sg2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.sg3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+.sb{background:var(--bg);border:1px solid var(--bd);border-radius:var(--rs);padding:10px;text-align:center}
+.sv{font-size:18px;font-weight:700}.sl{font-size:10px;color:var(--t2);margin-top:2px;text-transform:uppercase;letter-spacing:.03em}
+/* Search */
+.s-wrap{position:relative;margin-bottom:8px}
+.s-wrap input{padding-left:34px}
+.s-wrap i{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--t3);font-size:15px}
+/* Cliente list */
+.cli-list{max-height:260px;overflow-y:auto;border:1px solid var(--bd);border-radius:var(--r)}
+.cli-row{display:flex;align-items:center;gap:10px;padding:11px 12px;border-bottom:1px solid var(--bl);cursor:pointer;touch-action:manipulation}
+.cli-row:last-child{border-bottom:none}
+.cli-row:active,.cli-row:hover{background:var(--bg)}
+.cli-row.sel{background:var(--tb)}
+.cli-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;background:var(--bg);color:var(--t2)}
+.cli-av.sel{background:var(--tb);color:var(--tl)}
+.cli-av.has{background:var(--gnb);color:var(--gn)}
+/* Grade */
+.grade-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -1rem;padding:0 1rem}
+.grade{border-collapse:collapse;min-width:340px;width:100%}
+.grade th{font-size:10px;font-weight:700;color:var(--t2);padding:7px 4px;text-align:center;border-bottom:2px solid var(--bd);background:var(--sf);text-transform:uppercase;letter-spacing:.04em;position:sticky;top:0}
+.grade th:first-child{text-align:left;padding-left:4px}
+.grade td{padding:3px 2px;border-bottom:1px solid var(--bl);vertical-align:middle}
+.gi{width:50px;height:44px;padding:0;text-align:center;border:1.5px solid var(--bd);border-radius:7px;font-size:15px;font-weight:600;background:var(--sf);color:var(--tx);-moz-appearance:textfield;touch-action:manipulation}
+.gi::-webkit-inner-spin-button,.gi::-webkit-outer-spin-button{-webkit-appearance:none}
+.gi:focus{outline:none;border:2px solid var(--tl);background:var(--tb)}
+.gi.tem{background:var(--tb);border-color:var(--tl);color:var(--tl)}
+.grade .lbl{font-size:12px;font-weight:700;padding:5px 2px 5px 4px;white-space:nowrap}
+.grade .sub{font-size:11px;font-weight:600;text-align:right;padding-right:4px;color:var(--t2)}
+.grade .sub.tem{color:var(--tl)}
+.grade .tot-row td{font-size:11px;font-weight:600;text-align:center;padding:7px 3px;background:var(--bg);border-top:2px solid var(--bd);color:var(--t2)}
+.grade .tot-row .geral{font-size:14px;font-weight:700;color:var(--tx);text-align:right;padding-right:4px}
+.grade .tot-row .geral.ok{color:var(--tl)}
+/* Pagamentos */
+.pag-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
+.pag-opt{border:1.5px solid var(--bd);border-radius:var(--rs);padding:9px 4px;cursor:pointer;text-align:center;touch-action:manipulation;background:var(--sf)}
+.pag-opt.sel{border-color:var(--tl);background:var(--tb)}
+.pag-opt i{font-size:19px;display:block;margin-bottom:3px;color:var(--t2)}
+.pag-opt.sel i{color:var(--tl)}
+.pag-opt span{font-size:10px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.02em}
+.pag-opt.sel span{color:var(--tl)}
+/* Crédito badge */
+.credito-badge{background:var(--gnb);border:1px solid var(--gnl);border-radius:var(--rs);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.credito-badge .cb-label{font-size:12px;color:var(--gn);font-weight:600}
+.credito-badge .cb-val{font-size:18px;font-weight:700;color:var(--gn)}
+/* Mix bars */
+.mix-row{margin-bottom:7px}
+.mix-label{display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px}
+.mix-bg{background:var(--bg);border-radius:20px;height:7px;overflow:hidden}
+.mix-fill{height:7px;border-radius:20px;transition:width .4s}
+/* Extrato */
+.ext-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--bl)}
+.ext-item:last-child{border-bottom:none}
+.ext-icon{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.ext-info{flex:1;min-width:0}
+.ext-info strong{font-size:13px;font-weight:600;display:block}
+.ext-info span{font-size:11px;color:var(--t2)}
+.ext-val{text-align:right;flex-shrink:0}
+.ext-val .ev{font-size:14px;font-weight:700}
+.ext-val .es{font-size:10px;color:var(--t2)}
+/* Período */
+.per-bar{display:flex;gap:3px;margin-bottom:12px;background:#EBEBEA;border-radius:10px;padding:3px}
+.per-pill{flex:1;padding:6px 4px;font-size:11px;border:none;background:none;cursor:pointer;border-radius:8px;color:var(--t2);font-family:inherit;text-align:center;font-weight:500}
+.per-pill.active{background:var(--sf);color:var(--tx);font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+/* Section title */
+.stitle{font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;margin-top:4px}
+.empty{text-align:center;padding:2.5rem 1rem;color:var(--t2)}
+.empty i{font-size:30px;display:block;margin-bottom:8px;opacity:.3}
+.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:700}
+.b-gn{background:var(--gnb);color:var(--gn)}.b-rd{background:var(--rb);color:var(--rd)}.b-or{background:var(--ob);color:var(--or)}.b-pu{background:var(--pb);color:var(--pu)}.b-tl{background:var(--tb);color:var(--tl)}.b-gy{background:var(--bg);color:var(--t2);border:1px solid var(--bd)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="tl-l">
+      <div class="tlogo"><i class="ti ti-shopping-cart" style="font-size:14px"></i></div>
+      <div><div class="th1">Vendas</div><div class="th2" id="sub-title">Módulo comercial</div></div>
+    </div>
+    <button class="btn btn-teal btn-sm" id="btn-nova-venda"><i class="ti ti-plus"></i> Nova venda</button>
+  </div>
+
+  <div class="content" id="main"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// DADOS
+// ═══════════════════════════════════════════════════════════════════
+const CLIENTES = [
+  {id:'357',nome:'TCP ECOLOGY TYRE',       tipo:'medidas',categoria:'carcaca',
+   tabela:{'13':[{m:'165/70R13',p:45},{m:'175/70R13',p:50},{m:'175/75R13',p:40}],'14':[{m:'175/65R14',p:45},{m:'175/70R14',p:55},{m:'185/65R14',p:50},{m:'185/70R14',p:50}],'15':[{m:'185/60R15',p:22},{m:'185/65R15',p:25},{m:'195/55R15',p:20},{m:'195/65R15',p:25},{m:'205/60R15',p:20},{m:'205/65R15',p:40}],'16':[{m:'205/55R16',p:10},{m:'205/60R16',p:15},{m:'215/65R16',p:30}],'17':[{m:'215/45R17',p:20},{m:'225/45R17',p:15},{m:'225/50R17',p:15}]}},
+  {id:'6',  nome:'JATOBA PNEUS',            tipo:'aros',   categoria:'risco',    precos:{'13':35,'14':35,'15':35,'16':35,'17':35}},
+  {id:'1',  nome:'BORRACHARIA PEREIRA LTDA',tipo:'aros',   categoria:'meiavida', precos:{'13':55,'14':55,'15':55,'16':55}},
+  {id:'63', nome:'MESQUITAO COMERCIO PNEUS',tipo:'aros',   categoria:'carcaca',  precos:{'13':30,'14':28,'15':22,'16':10}},
+  {id:'82', nome:'TRUCKERS PNEUS',          tipo:'aros',   categoria:'carcaca',  precos:{'13':35,'14':30,'15':25,'16':10,'17':5}},
+  {id:'399',nome:'AGILI DISTRIBUIDORA',     tipo:'aros',   categoria:'meiavida', precos:{'13':55,'14':55,'15':55,'16':55,'17':55}},
+  {id:'371',nome:'JCM COMERCIO DE PNEUS',   tipo:'aros',   categoria:'risco',    precos:{'13':35,'14':35,'15':35,'16':35}},
+  {id:'363',nome:'SARADAO PNEUS',           tipo:'aros',   categoria:'cortados', precos:{'13':45,'14':45,'15':45,'16':45}},
+  {id:'73', nome:'ROQUE WHEELS',            tipo:'aros',   categoria:'risco',    precos:{'13':35,'14':35,'15':35}},
+];
+
+const PAGS = [
+  {id:'dinheiro',n:'Dinheiro',i:'ti-cash'},
+  {id:'pix',     n:'PIX',     i:'ti-qrcode'},
+  {id:'credito', n:'Crédito', i:'ti-credit-card'},
+  {id:'debito',  n:'Débito',  i:'ti-credit-card'},
+  {id:'boleto',  n:'Boleto',  i:'ti-file-invoice'},
+  {id:'fiado',   n:'Fiado',   i:'ti-clock'},
+  {id:'cheque',  n:'Cheque',  i:'ti-writing'},
+];
+
+const CAT_NOME = {carcaca:'Carcaça',risco:'Risco',meiavida:'Meia Vida',cortados:'Cortados',outros:'Outros'};
+
+// ── Estado global ──────────────────────────────────────────────────
+let nav = 'vendas'; // vendas | devolucoes | extrato | mix
+let vendas = []; // [{id,data,hora,clienteId,clienteNome,categoria,itens:[{aro,medida?,qtd,preco}],pagamento,bruto,creditoAplicado,liquido,obs}]
+let devolucoes = []; // [{id,data,hora,vendaId,clienteId,clienteNome,itens:[{aro,medida?,qtd,preco}],total,obs}]
+let pagamentos = []; // [{id,data,hora,clienteId,clienteNome,valor,forma,obs}] — pagamentos avulsos (quitação de fiado etc)
+let creditos = {}; // {clienteId: saldo}
+let extPeriodo = 'tudo', mixPeriodo = '30d', mixCliId = 'todos', mixCatId = 'todas';
+
+// Venda em progresso
+let vs = {tela:'cli', cli:null, busca:'', qtds:{}, pag:null, valor:'', obs:'', creditoUsar:0};
+
+// ═══════════════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════════════
+const fmtM = v => 'R$'+(+v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const ini   = n => n.split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+const now   = () => new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+const today = () => new Date().toLocaleDateString('pt-BR');
+const uid   = () => 'id'+Date.now()+Math.random().toString(36).slice(2,6);
+
+function getCli(id){ return CLIENTES.find(c=>c.id===id); }
+function getSaldo(cliId){ return creditos[cliId]||0; }
+
+// Itens da grade atual → [{aro, medida?, qtd, preco, sub}]
+function getItensVenda(){
+  const cli = vs.cli; if(!cli) return [];
+  const itens = [];
+  if(cli.tipo==='medidas'){
+    Object.entries(cli.tabela).forEach(([aro,meds])=>{
+      meds.forEach((m,i)=>{
+        const qtd = parseInt(vs.qtds[`${aro}|${i}`])||0;
+        if(qtd>0) itens.push({aro, medida:m.m, qtd, preco:m.p, sub:qtd*m.p});
+      });
+    });
+  } else {
+    Object.entries(cli.precos||{}).forEach(([aro,preco])=>{
+      const qtd = parseInt(vs.qtds[aro])||0;
+      if(qtd>0) itens.push({aro, qtd, preco, sub:qtd*preco});
+    });
+  }
+  return itens;
+}
+
+function calcBruto(itens){ return itens.reduce((s,i)=>s+i.sub,0); }
+
+function calcMix(itens){
+  const porAro={};
+  itens.forEach(it=>{ porAro[it.aro]=(porAro[it.aro]||0)+it.qtd; });
+  const total=Object.values(porAro).reduce((s,v)=>s+v,0);
+  return Object.entries(porAro).map(([aro,qtd])=>({aro,qtd,pct:total?Math.round(qtd/total*100):0})).sort((a,b)=>b.qtd-a.qtd);
+}
+
+function filtrarPorPeriodo(lista, campo='data'){
+  const hj=new Date(); hj.setHours(23,59,59);
+  return lista.filter(v=>{
+    if(mixPeriodo==='tudo') return true;
+    const [d,m,a]=(v[campo]||'').split('/').map(Number);
+    const dt=new Date(a,m-1,d);
+    const diff=Math.floor((hj-dt)/864e5);
+    if(mixPeriodo==='hoje') return diff===0;
+    if(mixPeriodo==='7d')   return diff<=7;
+    if(mixPeriodo==='30d')  return diff<=30;
+    return true;
+  });
+}
+
+// Atualiza saldo de crédito do cliente
+function adicionarCredito(cliId, valor){
+  creditos[cliId] = (creditos[cliId]||0)+valor;
+}
+function consumirCredito(cliId, valor){
+  creditos[cliId] = Math.max(0,(creditos[cliId]||0)-valor);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// RENDER PRINCIPAL
+// ═══════════════════════════════════════════════════════════════════
+function render(){
+  document.getElementById('sub-title').textContent = {
+    vendas:'Nova venda · Histórico',
+    devolucoes:'Registrar devolução',
+    extrato:'Extrato por cliente',
+    mix:'Análise de mix'
+  }[nav]||'';
+  document.getElementById('main').innerHTML = `
+    <div class="nav">
+      ${[['vendas','🛒 Vendas'],['devolucoes','↩️ Devoluções'],['extrato','📋 Extrato'],['mix','📊 Mix']].map(([k,l])=>
+        `<button class="nav-item${nav===k?' active':''}" data-nav="${k}">${l}</button>`).join('')}
+    </div>
+    <div id="content">${renderNav()}</div>`;
+  bindAll();
+}
+
+function renderNav(){
+  if(nav==='vendas')     return renderVendas();
+  if(nav==='devolucoes') return renderDevolucoes();
+  if(nav==='extrato')    return renderExtrato();
+  return renderMix();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// MÓDULO VENDAS
+// ═══════════════════════════════════════════════════════════════════
+function renderVendas(){
+  if(vs.tela==='cli')      return renderVCli();
+  if(vs.tela==='grade')    return renderVGrade();
+  if(vs.tela==='pag')      return renderVPag();
+  if(vs.tela==='ok')       return renderVOk();
+  return renderVHist();
+}
+
+// ── Tela 1: Selecionar cliente ─────────────────────────────────────
+function renderVCli(){
+  const b=vs.busca.toLowerCase();
+  const lista=CLIENTES.filter(c=>!b||c.nome.toLowerCase().includes(b)||c.id.includes(b));
+  return `
+  <div class="s-wrap"><i class="ti ti-search"></i>
+    <input id="busca-cli" type="text" placeholder="Buscar cliente por nome ou código..." value="${vs.busca}" autocomplete="off" autocorrect="off">
+  </div>
+  <div class="cli-list">
+    ${lista.map(c=>{
+      const sel=vs.cli?.id===c.id;
+      const saldo=getSaldo(c.id);
+      return `<div class="cli-row${sel?' sel':''}" data-cli="${c.id}">
+        <div class="cli-av${sel?' sel':saldo>0?' has':''}">${sel?'<i class="ti ti-check" style="font-size:13px"></i>':ini(c.nome)}</div>
+        <div style="flex:1;min-width:0">
+          <strong style="font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.nome}</strong>
+          <span style="font-size:11px;color:var(--t2)">${CAT_NOME[c.categoria]||c.categoria}${saldo>0?` · <span style="color:var(--gn);font-weight:600">Crédito: ${fmtM(saldo)}</span>`:''}</span>
+        </div>
+        ${sel?`<i class="ti ti-chevron-right" style="color:var(--tl);font-size:16px;flex-shrink:0"></i>`:''}
+      </div>`;
+    }).join('')}
+    ${!lista.length?`<div class="empty" style="padding:1.5rem"><i class="ti ti-search-off"></i><p>Nenhum cliente</p></div>`:''}
+  </div>
+  <button class="btn btn-teal btn-block${vs.cli?'':' btn-dis'}" id="btn-cli-ok">
+    ${vs.cli?`Continuar com ${vs.cli.nome.split(' ')[0]} ›`:'Selecione um cliente'}
+  </button>
+
+  ${vendas.length?`
+  <div class="stitle" style="margin-top:1rem">Últimas vendas</div>
+  ${[...vendas].reverse().slice(0,3).map(v=>renderCardVenda(v,'mini')).join('')}`:''}`;
+}
+
+// ── Tela 2: Grade ──────────────────────────────────────────────────
+function renderVGrade(){
+  const cli=vs.cli; if(!cli) return '';
+  const itens=getItensVenda();
+  const tot=itens.reduce((s,i)=>s+i.qtd,0);
+  const bruto=calcBruto(itens);
+  const saldo=getSaldo(cli.id);
+
+  return `
+  <button class="back-btn" id="btn-grade-back"><i class="ti ti-arrow-left"></i> Clientes</button>
+  <!-- Header cliente -->
+  <div style="display:flex;align-items:center;gap:10px;padding-bottom:12px;border-bottom:1px solid var(--bl);margin-bottom:12px">
+    <div style="width:38px;height:38px;border-radius:50%;background:var(--tb);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--tl);flex-shrink:0">${ini(cli.nome)}</div>
+    <div style="flex:1;min-width:0">
+      <strong style="font-size:14px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cli.nome}</strong>
+      <span style="font-size:12px;font-weight:600;color:var(--tl)">${CAT_NOME[cli.categoria]}</span>
+      <span style="font-size:11px;color:var(--t2);margin-left:6px">· tabela ${cli.tipo==='medidas'?'por medida':'por aro'}</span>
+    </div>
+    ${saldo>0?`<div style="background:var(--gnb);border:1px solid var(--gnl);border-radius:var(--rs);padding:5px 10px;text-align:center;flex-shrink:0"><div style="font-size:12px;font-weight:700;color:var(--gn)">${fmtM(saldo)}</div><div style="font-size:9px;color:var(--gn)">Crédito</div></div>`:''}
+  </div>
+
+  <!-- Grade -->
+  <div class="grade-wrap">
+    ${cli.tipo==='medidas'?renderGradeMedidas(cli):renderGradeAros(cli)}
+  </div>
+
+  <!-- Resumo + botão -->
+  <div style="background:var(--bg);border-radius:var(--rs);padding:10px 12px;margin-top:10px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;border:1px solid var(--bl)">
+    <span style="font-size:13px;color:var(--t2)">${tot} pneu${tot!==1?'s':''}</span>
+    <span style="font-size:16px;font-weight:700;color:${tot>0?'var(--tl)':'var(--t2)'}">${bruto>0?fmtM(bruto):'—'}</span>
+  </div>
+  <button class="btn btn-teal btn-block${tot>0?'':' btn-dis'}" id="btn-ir-pag">
+    ${tot>0?`Pagamento — ${tot} pneu${tot!==1?'s':('')}${bruto>0?' · '+fmtM(bruto):''} ›`:'Preencha ao menos 1 pneu'}
+  </button>`;
+}
+
+function renderGradeMedidas(cli){
+  return Object.keys(cli.tabela).map(aro=>{
+    const meds=cli.tabela[aro];
+    const qtdAro=meds.reduce((s,m,i)=>s+(parseInt(vs.qtds[`${aro}|${i}`])||0),0);
+    const subAro=meds.reduce((s,m,i)=>s+(parseInt(vs.qtds[`${aro}|${i}`])||0)*m.p,0);
+    return `<div style="margin-bottom:12px">
+      <div style="background:var(--bg);border:1px solid var(--bd);border-bottom:none;border-radius:var(--rs) var(--rs) 0 0;padding:7px 10px;display:flex;justify-content:space-between;align-items:center">
+        <strong style="font-size:13px">Aro ${aro}</strong>
+        ${qtdAro>0?`<span style="font-size:12px;font-weight:700;color:var(--tl)">${qtdAro}un · ${fmtM(subAro)}</span>`:''}
+      </div>
+      <table class="grade" style="border:1px solid var(--bd);border-top:none;border-radius:0 0 var(--rs) var(--rs);overflow:hidden">
+        <thead><tr>
+          <th style="text-align:left;padding-left:8px">Medida</th>
+          <th>R$/un</th><th>Qtd</th><th>Sub</th>
+        </tr></thead>
+        <tbody>${meds.map((m,i)=>{
+          const k=`${aro}|${i}`;const q=parseInt(vs.qtds[k])||0;const sub=q*m.p;
+          return `<tr>
+            <td style="font-size:13px;font-weight:500;padding:5px 8px">${m.m}</td>
+            <td style="text-align:center;font-size:12px;color:var(--tl);font-weight:600">${fmtM(m.p)}</td>
+            <td style="text-align:center;padding:3px"><input class="gi${q>0?' tem':''}" type="number" inputmode="numeric" min="0" value="${q||''}" placeholder="·" data-k="${k}"></td>
+            <td class="sub${sub>0?' tem':''}" id="sub-${k}">${sub>0?fmtM(sub):'—'}</td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table>
+    </div>`;
+  }).join('');
+}
+
+function renderGradeAros(cli){
+  const precos=cli.precos||{};
+  return `<table class="grade" style="border:1px solid var(--bd);border-radius:var(--rs);overflow:hidden;margin-bottom:10px">
+    <thead><tr>
+      <th style="text-align:left;padding-left:8px">Aro</th>
+      <th>R$/un</th><th>Qtd</th><th>Sub</th>
+    </tr></thead>
+    <tbody>${Object.entries(precos).map(([aro,preco])=>{
+      const q=parseInt(vs.qtds[aro])||0;const sub=q*preco;
+      return `<tr>
+        <td class="lbl">Aro ${aro}</td>
+        <td style="text-align:center;font-size:12px;color:var(--tl);font-weight:600">${fmtM(preco)}</td>
+        <td style="text-align:center;padding:3px"><input class="gi${q>0?' tem':''}" type="number" inputmode="numeric" min="0" value="${q||''}" placeholder="·" data-k="${aro}"></td>
+        <td class="sub${sub>0?' tem':''}" id="sub-${aro}">${sub>0?fmtM(sub):'—'}</td>
+      </tr>`;
+    }).join('')}
+    </tbody>
+    <tfoot><tr class="tot-row">
+      <td colspan="2" style="text-align:left;padding-left:8px;font-size:10px;text-transform:uppercase;letter-spacing:.04em">Total</td>
+      <td style="color:var(--tl);font-weight:700">${Object.keys(precos).reduce((s,a)=>s+(parseInt(vs.qtds[a])||0),0)||'—'}</td>
+      <td class="geral${calcBruto(getItensVenda())>0?' ok':''}">${calcBruto(getItensVenda())>0?fmtM(calcBruto(getItensVenda())):'—'}</td>
+    </tr></tfoot>
+  </table>`;
+}
+
+// ── Tela 3: Pagamento ──────────────────────────────────────────────
+function renderVPag(){
+  const itens=getItensVenda();
+  const bruto=calcBruto(itens);
+  const saldo=getSaldo(vs.cli?.id||'');
+  const creditoMax=Math.min(saldo,bruto);
+  if(!vs.valor&&bruto>0) vs.valor=String((bruto-vs.creditoUsar).toFixed(2));
+
+  return `
+  <button class="back-btn" id="btn-pag-back"><i class="ti ti-arrow-left"></i> Editar pedido</button>
+
+  <!-- Resumo -->
+  <div style="background:var(--tb);border:1px solid var(--tll);border-radius:var(--r);padding:12px 14px;margin-bottom:12px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <strong style="font-size:14px;color:var(--tl)">${vs.cli?.nome.split(' ')[0]}</strong>
+      <span style="font-size:15px;font-weight:700;color:var(--tl)">${fmtM(bruto)}</span>
+    </div>
+    <div style="font-size:12px;color:var(--tl)">${itens.reduce((s,i)=>s+i.qtd,0)} pneus · ${CAT_NOME[vs.cli?.categoria]}</div>
+  </div>
+
+  <!-- Crédito disponível -->
+  ${saldo>0?`
+  <div class="credito-badge">
+    <div>
+      <div class="cb-label"><i class="ti ti-coin" style="font-size:13px;margin-right:4px"></i>Crédito disponível</div>
+      <div style="font-size:12px;color:var(--gn);margin-top:2px">Aplicar na venda?</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="cb-val">${fmtM(saldo)}</div>
+      <button class="btn btn-sm" id="btn-aplicar-cred" style="background:var(--gn);color:#fff;font-size:11px">
+        ${vs.creditoUsar>0?'Remover':'Aplicar '+fmtM(creditoMax)}
+      </button>
+    </div>
+  </div>`:''}
+
+  <!-- Pagamento -->
+  <div class="stitle">Forma de pagamento</div>
+  <div class="pag-grid">
+    ${PAGS.map(p=>`<div class="pag-opt${vs.pag===p.id?' sel':''}" data-pag="${p.id}">
+      <i class="ti ${p.i}"></i><span>${p.n}</span>
+    </div>`).join('')}
+  </div>
+
+  <!-- Valor -->
+  <div class="stitle">Valor a receber</div>
+  <input id="inp-valor" type="number" inputmode="decimal" step="0.01" min="0"
+    value="${vs.valor||''}" placeholder="0,00"
+    style="font-size:22px;font-weight:700;color:var(--tl);border-color:var(--tl);text-align:center;padding:12px;margin-bottom:6px">
+  ${vs.creditoUsar>0?`<p style="font-size:12px;color:var(--gn);text-align:center;margin-bottom:8px">✓ Crédito de ${fmtM(vs.creditoUsar)} aplicado · Bruto: ${fmtM(bruto)}</p>`:`<p style="font-size:11px;color:var(--t2);text-align:center;margin-bottom:8px">Valor bruto: ${fmtM(bruto)}</p>`}
+
+  <label>Observação (opcional)</label>
+  <input id="inp-obs" type="text" placeholder="Desconto, entrega, parcelado..." value="${vs.obs}" style="margin-bottom:12px">
+
+  <button class="btn btn-green btn-block${vs.pag&&vs.valor?'':' btn-dis'}" id="btn-confirmar">
+    <i class="ti ti-check"></i> Confirmar venda
+  </button>`;
+}
+
+// ── Tela 4: Confirmado ─────────────────────────────────────────────
+function renderVOk(){
+  const v=vendas[vendas.length-1];if(!v)return '';
+  const mix=calcMix(v.itens);
+  return `
+  <div style="text-align:center;padding:.5rem 0 1.5rem">
+    <div style="width:72px;height:72px;border-radius:50%;background:var(--gnb);display:flex;align-items:center;justify-content:center;margin:0 auto 12px"><i class="ti ti-circle-check" style="font-size:36px;color:var(--gn)"></i></div>
+    <p style="font-size:20px;font-weight:700;color:var(--gn)">Venda registrada!</p>
+    <p style="font-size:12px;color:var(--t2);margin-top:4px">${v.data} ${v.hora}</p>
+  </div>
+  <div class="card">
+    <div class="row"><span class="rl">Cliente</span><span class="rv">${v.clienteNome}</span></div>
+    <div class="row"><span class="rl">Categoria</span><span class="rv">${CAT_NOME[v.categoria]}</span></div>
+    <div class="row"><span class="rl">Pneus</span><span class="rv">${v.itens.reduce((s,i)=>s+i.qtd,0)} un</span></div>
+    <div class="row"><span class="rl">Pagamento</span><span class="rv">${PAGS.find(p=>p.id===v.pagamento)?.n||v.pagamento}</span></div>
+    ${v.creditoAplicado>0?`<div class="row"><span class="rl">Crédito aplicado</span><span class="rv" style="color:var(--gn)">-${fmtM(v.creditoAplicado)}</span></div>`:''}
+    <div class="row" style="font-size:16px"><span class="rl">Valor líquido</span><span class="rv pos">${fmtM(v.liquido)}</span></div>
+    ${v.obs?`<div class="row"><span class="rl">Obs.</span><span class="rv">${v.obs}</span></div>`:''}
+  </div>
+  ${mix.length?`
+  <div class="stitle">Mix enviado</div>
+  <div class="card">${mix.map(m=>`<div class="mix-row">
+    <div class="mix-label"><span style="font-weight:600">Aro ${m.aro}</span><span style="color:var(--tl);font-weight:600">${m.qtd} un · ${m.pct}%</span></div>
+    <div class="mix-bg"><div class="mix-fill" style="width:${m.pct}%;background:var(--tl)"></div></div>
+  </div>`).join('')}</div>`:''}
+  <div style="display:flex;gap:8px;margin-top:4px">
+    <button class="btn btn-sec" style="flex:1;justify-content:center" id="btn-wpp-ok"><i class="ti ti-brand-whatsapp"></i> Mix WPP</button>
+    <button class="btn btn-teal" style="flex:2;justify-content:center" id="btn-nova-ok"><i class="ti ti-plus"></i> Nova venda</button>
+  </div>`;
+}
+
+// ── Histórico de vendas ─────────────────────────────────────────────
+function renderVHist(){
+  return `
+  <div class="sg2">
+    <div class="sb"><div class="sv" style="color:var(--tl)">${vendas.length}</div><div class="sl">Vendas</div></div>
+    <div class="sb"><div class="sv" style="font-size:15px;color:var(--gn)">${fmtM(vendas.reduce((s,v)=>s+v.liquido,0))}</div><div class="sl">Total líquido</div></div>
+  </div>
+  ${vendas.length===0?`<div class="empty"><i class="ti ti-shopping-cart-off"></i><p>Nenhuma venda registrada.</p></div>`
+  :[...vendas].reverse().map(v=>renderCardVenda(v,'full')).join('')}`;
+}
+
+function renderCardVenda(v,modo){
+  const devs=devolucoes.filter(d=>d.vendaId===v.id);
+  const totalDev=devs.reduce((s,d)=>s+d.total,0);
+  return `<div class="card" style="border-left:3px solid ${devs.length?'var(--or)':'var(--tl)'}">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+      <div>
+        <strong style="font-size:14px">${v.clienteNome.split(' ').slice(0,2).join(' ')}</strong>
+        ${devs.length?`<span class="badge b-or" style="margin-left:6px">Dev. ${devs.length}x</span>`:''}
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:15px;font-weight:700;color:var(--tl)">${fmtM(v.liquido)}</div>
+        ${totalDev>0?`<div style="font-size:11px;color:var(--or)">Dev: -${fmtM(totalDev)}</div>`:''}
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--t2)">${v.data} ${v.hora} · ${v.itens.reduce((s,i)=>s+i.qtd,0)} pneus · ${PAGS.find(p=>p.id===v.pagamento)?.n||v.pagamento}</div>
+    ${modo==='full'?`<div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap">
+      ${calcMix(v.itens).map(m=>`<span style="font-size:10px;padding:2px 7px;border-radius:20px;background:var(--tb);color:var(--tl);font-weight:600">Aro ${m.aro}: ${m.qtd}</span>`).join('')}
+    </div>`:''}
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// MÓDULO DEVOLUÇÕES
+// ═══════════════════════════════════════════════════════════════════
+let ds = {tela:'lista', vendaId:null, buscaVenda:'', itens:{}, obs:''};
+
+function renderDevolucoes(){
+  if(ds.tela==='lista')    return renderDLista();
+  if(ds.tela==='grade')    return renderDGrade();
+  if(ds.tela==='ok')       return renderDOk();
+  return renderDLista();
+}
+
+function renderDLista(){
+  const b=ds.buscaVenda.toLowerCase();
+  // Mostrar apenas vendas que podem ter devolução (todas)
+  const lista=[...vendas].reverse().filter(v=>!b||v.clienteNome.toLowerCase().includes(b));
+  return `
+  <div class="alert a-blue"><i class="ti ti-info-circle"></i>
+    <p>Selecione a venda que terá devolução. O crédito será gerado automaticamente e ficará disponível para abater na próxima venda.</p>
+  </div>
+  <div class="s-wrap"><i class="ti ti-search"></i>
+    <input id="busca-venda-dev" type="text" placeholder="Buscar por cliente..." value="${ds.buscaVenda}" autocomplete="off">
+  </div>
+  ${lista.length===0?`<div class="empty"><i class="ti ti-receipt-off"></i><p>Nenhuma venda para devolver.${!vendas.length?' Registre uma venda primeiro.':''}</p></div>`:''}
+  ${lista.map(v=>{
+    const devs=devolucoes.filter(d=>d.vendaId===v.id);
+    const totalDev=devs.reduce((s,d)=>s+d.total,0);
+    return `<div class="card" style="cursor:pointer;border-left:3px solid ${devs.length?'var(--or)':'var(--bd)'}" data-venda-dev="${v.id}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+        <strong style="font-size:14px">${v.clienteNome.split(' ').slice(0,2).join(' ')}</strong>
+        <div style="text-align:right">
+          <div style="font-size:14px;font-weight:700;color:var(--tl)">${fmtM(v.liquido)}</div>
+          ${totalDev>0?`<div style="font-size:10px;color:var(--or)">Dev. anterior: ${fmtM(totalDev)}</div>`:''}
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--t2)">${v.data} ${v.hora} · ${v.itens.reduce((s,i)=>s+i.qtd,0)} pneus</div>
+      <div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap">
+        ${calcMix(v.itens).map(m=>`<span style="font-size:10px;padding:2px 6px;border-radius:20px;background:var(--bg);color:var(--t2);border:1px solid var(--bd)">Aro ${m.aro}: ${m.qtd}</span>`).join('')}
+      </div>
+      <div style="margin-top:6px;font-size:12px;color:var(--tl);font-weight:500">Toque para registrar devolução →</div>
+    </div>`;
+  }).join('')}
+
+  ${devolucoes.length?`
+  <div class="stitle" style="margin-top:1rem">Devoluções registradas</div>
+  ${[...devolucoes].reverse().slice(0,5).map(d=>`<div class="card" style="border-left:3px solid var(--or);padding:.75rem">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div><strong style="font-size:13px">${d.clienteNome.split(' ').slice(0,2).join(' ')}</strong>
+        <div style="font-size:11px;color:var(--t2)">${d.data} ${d.hora} · venda ${d.vendaId}</div></div>
+      <div style="text-align:right"><div style="font-size:14px;font-weight:700;color:var(--rd)">-${fmtM(d.total)}</div>
+        <div style="font-size:10px;color:var(--gn);font-weight:600">+crédito</div></div>
+    </div>
+  </div>`).join('')}`:''}`;
+}
+
+function renderDGrade(){
+  const v=vendas.find(x=>x.id===ds.vendaId);if(!v)return renderDLista();
+  const cli=getCli(v.clienteId);
+  // Aros disponíveis para devolução = aros que foram vendidos
+  const arosVendidos=[...new Set(v.itens.map(i=>i.aro))];
+  // Calcular total já devolvido nesta venda
+  const jaDevolvido={};
+  devolucoes.filter(d=>d.vendaId===v.id).forEach(d=>{
+    d.itens.forEach(i=>{ jaDevolvido[i.aro]=(jaDevolvido[i.aro]||0)+i.qtd; });
+  });
+
+  // Total da devolução atual
+  let totalDev=0, valorDev=0;
+  v.itens.forEach(it=>{
+    const k=cli?.tipo==='medidas'?`${it.aro}|${it.medida}`:`${it.aro}`;
+    const qtd=parseInt(ds.itens[k])||0;
+    totalDev+=qtd; valorDev+=qtd*it.preco;
+  });
+
+  return `
+  <button class="back-btn" id="btn-dev-back"><i class="ti ti-arrow-left"></i> Selecionar venda</button>
+  <div style="background:var(--ob);border:1px solid var(--ol);border-radius:var(--r);padding:12px 14px;margin-bottom:12px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+      <strong style="font-size:14px;color:var(--or)">${v.clienteNome.split(' ').slice(0,2).join(' ')}</strong>
+      <span class="badge b-or">Devolução</span>
+    </div>
+    <div style="font-size:12px;color:var(--or)">Venda: ${v.data} ${v.hora} · ${fmtM(v.liquido)}</div>
+  </div>
+
+  <div class="alert a-warn"><i class="ti ti-info-circle"></i>
+    <p>Informe as quantidades a devolver. O valor será calculado com os preços da venda original.</p>
+  </div>
+
+  <!-- Grade de devolução -->
+  <div class="card" style="padding:.75rem 1rem">
+    <div style="display:grid;grid-template-columns:${cli?.tipo==='medidas'?'1fr 55px 55px 55px':'80px 55px 55px 55px'};gap:4px;padding:5px 0;border-bottom:1px solid var(--bd);margin-bottom:4px">
+      <span style="font-size:10px;font-weight:700;color:var(--t2)">ARO/MEDIDA</span>
+      <span style="font-size:10px;font-weight:700;color:var(--bl2);text-align:center">VEND.</span>
+      <span style="font-size:10px;font-weight:700;color:var(--rd);text-align:center">DEV.</span>
+      <span style="font-size:10px;font-weight:700;color:var(--gn);text-align:right">FICA</span>
+    </div>
+    ${v.itens.map(it=>{
+      const k=cli?.tipo==='medidas'?`${it.aro}|${it.medida}`:`${it.aro}`;
+      const qtdDev=parseInt(ds.itens[k])||0;
+      const jadev=jaDevolvido[it.aro]||0;
+      const maxDev=Math.max(0,it.qtd-jadev);
+      const ficou=it.qtd-qtdDev-jadev;
+      return `<div style="display:grid;grid-template-columns:${cli?.tipo==='medidas'?'1fr 55px 55px 55px':'80px 55px 55px 55px'};gap:4px;align-items:center;padding:5px 0;border-bottom:1px solid var(--bl)">
+        <span style="font-size:12px;font-weight:600">${cli?.tipo==='medidas'?it.medida:`Aro ${it.aro}`}</span>
+        <span style="text-align:center;font-size:13px;font-weight:700;color:var(--bl2)">${it.qtd}${jadev>0?`<br><span style="font-size:9px;color:var(--or)">-${jadev}</span>`:''}</span>
+        <div style="text-align:center">
+          <input class="gi dev-inp${qtdDev>0?' tem':''}\" style="border-color:${qtdDev>0?'var(--rd)':'var(--bd)'};background:${qtdDev>0?'var(--rb)':'var(--sf)'};color:${qtdDev>0?'var(--rd)':'var(--tx)'};width:50px;height:40px;font-size:14px"
+            type="number" inputmode="numeric" min="0" max="${maxDev}"
+            value="${qtdDev||''}" placeholder="0" data-k="${k}" data-max="${maxDev}" data-preco="${it.preco}">
+        </div>
+        <span style="text-align:right;font-size:13px;font-weight:700;color:${ficou>0?'var(--gn)':'var(--t2)'}">${Math.max(0,ficou)}</span>
+      </div>`;
+    }).join('')}
+  </div>
+
+  <!-- Observação -->
+  <label>Observação (opcional)</label>
+  <input id="dev-obs" type="text" placeholder="Motivo, conferente, etc..." value="${ds.obs}" style="margin-bottom:12px">
+
+  <!-- Total e botão -->
+  <div style="background:var(--rb);border:1px solid var(--rl);border-radius:var(--rs);padding:10px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+    <span style="font-size:13px;font-weight:600;color:var(--rd)">${totalDev} pneu${totalDev!==1?'s':''} devolvidos</span>
+    <div style="text-align:right">
+      <div style="font-size:16px;font-weight:700;color:var(--rd)">-${fmtM(valorDev)}</div>
+      ${valorDev>0?`<div style="font-size:11px;color:var(--gn);font-weight:600">→ Crédito: +${fmtM(valorDev)}</div>`:''}
+    </div>
+  </div>
+
+  <button class="btn btn-green btn-block${totalDev>0?'':' btn-dis'}" id="btn-confirmar-dev">
+    <i class="ti ti-circle-check"></i> Confirmar devolução e gerar crédito
+  </button>`;
+}
+
+function renderDOk(){
+  const d=devolucoes[devolucoes.length-1];if(!d)return '';
+  const saldo=getSaldo(d.clienteId);
+  return `
+  <div style="text-align:center;padding:.5rem 0 1.5rem">
+    <div style="width:72px;height:72px;border-radius:50%;background:var(--gnb);display:flex;align-items:center;justify-content:center;margin:0 auto 12px"><i class="ti ti-coin" style="font-size:36px;color:var(--gn)"></i></div>
+    <p style="font-size:20px;font-weight:700;color:var(--gn)">Crédito gerado!</p>
+    <p style="font-size:12px;color:var(--t2);margin-top:4px">${d.data} ${d.hora}</p>
+  </div>
+  <div class="card">
+    <div class="row"><span class="rl">Cliente</span><span class="rv">${d.clienteNome}</span></div>
+    <div class="row"><span class="rl">Pneus devolvidos</span><span class="rv">${d.itens.reduce((s,i)=>s+i.qtd,0)} un</span></div>
+    <div class="row"><span class="rl">Valor da devolução</span><span class="rv neg">-${fmtM(d.total)}</span></div>
+    <div class="row" style="font-size:15px"><span class="rl">Crédito gerado</span><span class="rv pos">+${fmtM(d.total)}</span></div>
+    <div class="row" style="font-size:15px;font-weight:700;border-top:2px solid var(--bd);margin-top:4px;padding-top:10px"><span class="rl">Saldo total do cliente</span><span class="rv pos">${fmtM(saldo)}</span></div>
+    ${d.obs?`<div class="row"><span class="rl">Obs.</span><span class="rv">${d.obs}</span></div>`:''}
+  </div>
+  <button class="btn btn-teal btn-block" id="btn-nova-dev"><i class="ti ti-plus"></i> Nova devolução</button>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// MÓDULO EXTRATO
+// ═══════════════════════════════════════════════════════════════════
+let extCliId = null, extBusca = '';
+
+function renderExtrato(){
+  if(extCliId) return renderExtratoCli();
+  // Lista de clientes com movimento
+  const comMovimento=[...new Set([...vendas.map(v=>v.clienteId),...devolucoes.map(d=>d.clienteId),...pagamentos.map(p=>p.clienteId)])];
+  const eb=extBusca.toLowerCase();
+  const lista=CLIENTES.filter(c=>comMovimento.includes(c.id)||(eb&&(c.nome.toLowerCase().includes(eb)||c.id.includes(eb))));
+  return `
+  <div class="s-wrap"><i class="ti ti-search"></i>
+    <input id="busca-ext" type="text" placeholder="Buscar cliente..." value="${extBusca}" autocomplete="off">
+  </div>
+  ${lista.length===0?`<div class="empty"><i class="ti ti-user-off"></i><p>Nenhum cliente com movimento.</p></div>`:''}
+  ${CLIENTES.filter(c=>!eb||c.nome.toLowerCase().includes(eb)||c.id.includes(eb)).map(c=>{
+    const vC=vendas.filter(v=>v.clienteId===c.id);
+    const dC=devolucoes.filter(d=>d.clienteId===c.id);
+    const pC=pagamentos.filter(p=>p.clienteId===c.id);
+    const totalV=vC.reduce((s,v)=>s+v.liquido,0);
+    const totalD=dC.reduce((s,d)=>s+d.total,0);
+    const saldo=getSaldo(c.id);
+    if(!vC.length&&!dC.length&&!pC.length&&saldo===0) return '';
+    return `<div class="card" style="cursor:pointer" data-ext-cli="${c.id}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:34px;height:34px;border-radius:50%;background:var(--tb);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--tl);flex-shrink:0">${ini(c.nome)}</div>
+          <strong style="font-size:14px">${c.nome.split(' ').slice(0,2).join(' ')}</strong>
+        </div>
+        ${saldo>0?`<span class="badge b-gn">Crédito: ${fmtM(saldo)}</span>`:''}
+      </div>
+      <div class="sg3" style="margin-bottom:0">
+        <div class="sb"><div class="sv" style="font-size:14px;color:var(--tl)">${fmtM(totalV)}</div><div class="sl">Compras</div></div>
+        <div class="sb"><div class="sv" style="font-size:14px;color:var(--rd)">${fmtM(totalD)}</div><div class="sl">Dev.</div></div>
+        <div class="sb"><div class="sv" style="font-size:14px;color:var(--gn)">${fmtM(saldo)}</div><div class="sl">Crédito</div></div>
+      </div>
+    </div>`;
+  }).join('')}`;
+}
+
+function renderExtratoCli(){
+  const cli=CLIENTES.find(c=>c.id===extCliId);if(!cli)return '';
+  // Montar todos os eventos do cliente em ordem cronológica
+  const eventos=[];
+  vendas.filter(v=>v.clienteId===extCliId).forEach(v=>eventos.push({tipo:'venda',data:v.data,hora:v.hora,valor:v.liquido,bruto:v.bruto,cred:v.creditoAplicado,pag:PAGS.find(p=>p.id===v.pagamento)?.n||v.pagamento,obs:v.obs,id:v.id}));
+  devolucoes.filter(d=>d.clienteId===extCliId).forEach(d=>eventos.push({tipo:'devolucao',data:d.data,hora:d.hora,valor:-d.total,obs:d.obs,vendaId:d.vendaId,id:d.id}));
+  pagamentos.filter(p=>p.clienteId===extCliId).forEach(p=>eventos.push({tipo:'pagamento',data:p.data,hora:p.hora,valor:p.valor,forma:p.forma,obs:p.obs,id:p.id}));
+  eventos.sort((a,b)=>{const [da,ma,aa]=a.data.split('/').map(Number);const [db,mb,ab]=b.data.split('/').map(Number);return new Date(aa,ma-1,da)-new Date(ab,mb-1,db)||a.hora.localeCompare(b.hora);});
+
+  const totalVendas=vendas.filter(v=>v.clienteId===extCliId).reduce((s,v)=>s+v.liquido,0);
+  const totalDev=devolucoes.filter(d=>d.clienteId===extCliId).reduce((s,d)=>s+d.total,0);
+  const saldo=getSaldo(extCliId);
+
+  const ICONES={venda:{icon:'ti-shopping-cart',bg:'var(--tb)',cor:'var(--tl)'},devolucao:{icon:'ti-arrow-back-up',bg:'var(--rb)',cor:'var(--rd)'},pagamento:{icon:'ti-cash',bg:'var(--gnb)',cor:'var(--gn)'}};
+
+  return `
+  <button class="back-btn" id="btn-ext-back"><i class="ti ti-arrow-left"></i> Clientes</button>
+  <div class="card" style="border-left:3px solid var(--tl)">
+    <strong style="font-size:16px;display:block;margin-bottom:8px">${cli.nome}</strong>
+    <div class="sg3" style="margin-bottom:0">
+      <div class="sb"><div class="sv" style="font-size:14px;color:var(--tl)">${fmtM(totalVendas)}</div><div class="sl">Vendas</div></div>
+      <div class="sb"><div class="sv" style="font-size:14px;color:var(--rd)">${fmtM(totalDev)}</div><div class="sl">Dev.</div></div>
+      <div class="sb${saldo>0?' ':''}" style="${saldo>0?'background:var(--gnb);border-color:var(--gnl)':''}"><div class="sv" style="font-size:14px;color:${saldo>0?'var(--gn)':'var(--t2)'}">${fmtM(saldo)}</div><div class="sl" style="${saldo>0?'color:var(--gn)':''}">Crédito</div></div>
+    </div>
+  </div>
+
+  <!-- Registrar pagamento avulso -->
+  <div class="stitle">Registrar pagamento</div>
+  <div class="card" style="padding:.75rem 1rem">
+    <div style="display:flex;gap:8px;align-items:center">
+      <input id="inp-pag-avulso" type="number" step="0.01" min="0" placeholder="Valor (R$)" style="flex:1;font-size:14px;padding:8px 10px">
+      <select id="sel-pag-avulso" style="flex:1;font-size:13px;padding:8px 10px">
+        ${PAGS.map(p=>`<option value="${p.id}">${p.n}</option>`).join('')}
+      </select>
+      <button class="btn btn-green btn-sm" id="btn-reg-pag"><i class="ti ti-check"></i></button>
+    </div>
+  </div>
+
+  <div class="stitle">Extrato completo</div>
+  <div class="card" style="padding:.75rem 1rem">
+    ${eventos.length===0?`<div class="empty" style="padding:1rem"><i class="ti ti-inbox"></i><p>Sem movimentações.</p></div>`:''}
+    ${[...eventos].reverse().map(e=>{
+      const ic=ICONES[e.tipo]||{icon:'ti-circle',bg:'var(--bg)',cor:'var(--t2)'};
+      const valColor=e.tipo==='venda'?'var(--tl)':e.tipo==='devolucao'?'var(--rd)':'var(--gn)';
+      const sinal=e.tipo==='venda'?'+':e.tipo==='devolucao'?'-':'+';
+      return `<div class="ext-item">
+        <div class="ext-icon" style="background:${ic.bg}"><i class="ti ${ic.icon}" style="color:${ic.cor}"></i></div>
+        <div class="ext-info">
+          <strong>${e.tipo==='venda'?'Venda':e.tipo==='devolucao'?'Devolução':'Pagamento recebido'}</strong>
+          <span>${e.data} ${e.hora}${e.pag?' · '+e.pag:''}${e.forma?' · '+PAGS.find(p=>p.id===e.forma)?.n:''}${e.obs?' · '+e.obs:''}</span>
+          ${e.tipo==='venda'&&e.cred>0?`<span style="color:var(--gn);font-size:10px">Crédito aplicado: -${fmtM(e.cred)}</span>`:''}
+        </div>
+        <div class="ext-val">
+          <div class="ev" style="color:${valColor}">${sinal}${fmtM(Math.abs(e.valor))}</div>
+          <div class="es">${e.tipo==='devolucao'?'crédito gerado':''}</div>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// MÓDULO MIX
+// ═══════════════════════════════════════════════════════════════════
+function renderMix(){
+  const CATS_DISP=[...new Set(vendas.map(v=>v.categoria))];
+  const vendasF=filtrarPorPeriodo(vendas).filter(v=>(mixCliId==='todos'||v.clienteId===mixCliId)&&(mixCatId==='todas'||v.categoria===mixCatId));
+  const itensAll=vendasF.flatMap(v=>v.itens);
+  const mix=calcMix(itensAll);
+  const totalPneus=itensAll.reduce((s,i)=>s+i.qtd,0);
+  const totalValor=vendasF.reduce((s,v)=>s+v.liquido,0);
+
+  // Mix por cliente
+  const porCli={};
+  vendasF.forEach(v=>{v.itens.forEach(it=>{if(!porCli[v.clienteId])porCli[v.clienteId]={nome:v.clienteNome,itens:[]};porCli[v.clienteId].itens.push(it);});});
+
+  // Mix por categoria
+  const porCat={};
+  vendasF.forEach(v=>{if(!porCat[v.categoria])porCat[v.categoria]={cat:v.categoria,itens:[]};porCat[v.categoria].itens.push(...v.itens);});
+
+  const cores=['var(--tl)','var(--bl2)','var(--pu)','var(--gn)','var(--or)','var(--rd)'];
+
+  return `
+  <!-- Período -->
+  <div class="per-bar">
+    ${[['hoje','Hoje'],['7d','7 dias'],['30d','30 dias'],['tudo','Tudo']].map(([k,l])=>
+      `<button class="per-pill${mixPeriodo===k?' active':''}" data-per="${k}">${l}</button>`).join('')}
+  </div>
+
+  <!-- Filtros -->
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <select id="sel-mix-cli" style="flex:1;font-size:12px;padding:8px 10px">
+      <option value="todos">Todos os clientes</option>
+      ${CLIENTES.map(c=>`<option value="${c.id}"${mixCliId===c.id?' selected':''}>${c.nome.split(' ').slice(0,2).join(' ')}</option>`).join('')}
+    </select>
+    <select id="sel-mix-cat" style="flex:1;font-size:12px;padding:8px 10px">
+      <option value="todas">Todas categorias</option>
+      ${Object.entries(CAT_NOME).map(([k,v])=>`<option value="${k}"${mixCatId===k?' selected':''}>${v}</option>`).join('')}
+    </select>
+  </div>
+
+  ${vendasF.length===0?`<div class="empty"><i class="ti ti-chart-bar-off"></i><p>Sem vendas no período.</p></div>`:``}
+
+  ${mix.length?`
+  <!-- KPIs -->
+  <div class="sg3">
+    <div class="sb"><div class="sv" style="color:var(--tl)">${vendasF.length}</div><div class="sl">Vendas</div></div>
+    <div class="sb"><div class="sv" style="color:var(--tx)">${totalPneus}</div><div class="sl">Pneus</div></div>
+    <div class="sb"><div class="sv" style="font-size:14px;color:var(--gn)">${fmtM(totalValor)}</div><div class="sl">Total</div></div>
+  </div>
+
+  <!-- Mix global -->
+  <div class="stitle">Mix global por aro</div>
+  <div class="card">
+    ${mix.map((m,i)=>`<div class="mix-row">
+      <div class="mix-label">
+        <span style="font-weight:700">Aro ${m.aro}</span>
+        <span style="font-weight:700;color:${cores[i%cores.length]}">${m.qtd} un · ${m.pct}%</span>
+      </div>
+      <div class="mix-bg"><div class="mix-fill" style="width:${m.pct}%;background:${cores[i%cores.length]}"></div></div>
+    </div>`).join('')}
+  </div>
+
+  <!-- Mix por categoria -->
+  ${Object.keys(porCat).length>1?`
+  <div class="stitle">Mix por categoria</div>
+  ${Object.entries(porCat).map(([cat,d])=>{
+    const mixC=calcMix(d.itens);const totC=d.itens.reduce((s,i)=>s+i.qtd,0);
+    return `<div class="card" style="padding:.75rem 1rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <strong style="font-size:13px">${CAT_NOME[cat]||cat}</strong>
+        <span style="font-size:12px;font-weight:600;color:var(--t2)">${totC} pneus</span>
+      </div>
+      ${mixC.map((m,i)=>`<div class="mix-row">
+        <div class="mix-label" style="font-size:11px"><span>Aro ${m.aro}</span><span style="color:${cores[i%cores.length]}">${m.qtd} · ${m.pct}%</span></div>
+        <div class="mix-bg" style="height:5px"><div class="mix-fill" style="height:5px;width:${m.pct}%;background:${cores[i%cores.length]}"></div></div>
+      </div>`).join('')}
+    </div>`;
+  }).join('')}`:''}
+
+  <!-- Mix por cliente -->
+  <div class="stitle">Mix por cliente</div>
+  ${Object.entries(porCli).map(([cliId,d])=>{
+    const mixC=calcMix(d.itens);const totC=d.itens.reduce((s,i)=>s+i.qtd,0);
+    return `<div class="card" style="padding:.75rem 1rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <strong style="font-size:13px">${d.nome.split(' ').slice(0,2).join(' ')}</strong>
+        <span style="font-size:12px;font-weight:600;color:var(--t2)">${totC} pneus</span>
+      </div>
+      ${mixC.map((m,i)=>`<div class="mix-row">
+        <div class="mix-label" style="font-size:11px"><span>Aro ${m.aro}</span><span style="color:${cores[i%cores.length]}">${m.qtd} · ${m.pct}%</span></div>
+        <div class="mix-bg" style="height:5px"><div class="mix-fill" style="height:5px;width:${m.pct}%;background:${cores[i%cores.length]}"></div></div>
+      </div>`).join('')}
+    </div>`;
+  }).join('')}`:''}`;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// BIND EVENTOS
+// ═══════════════════════════════════════════════════════════════════
+function bindAll(){
+  // Nav
+  document.querySelectorAll('[data-nav]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      nav=btn.dataset.nav;
+      if(nav==='vendas') vs.tela='hist';
+      render();
+    });
+  });
+
+  // Botão nova venda (topbar)
+  document.getElementById('btn-nova-venda')?.addEventListener('click',()=>{
+    nav='vendas';vs={tela:'cli',cli:null,busca:'',qtds:{},pag:null,valor:'',obs:'',creditoUsar:0};
+    render();
+  });
+
+  // ── VENDAS ──────────────────────────────────────────────────────
+  // Busca cliente
+  document.getElementById('busca-cli')?.addEventListener('input',e=>{vs.busca=e.target.value;render();});
+
+  // Selecionar cliente
+  document.querySelectorAll('[data-cli]').forEach(el=>{
+    el.addEventListener('click',()=>{vs.cli=CLIENTES.find(c=>c.id===el.dataset.cli);render();});
+  });
+
+  // Avançar do cliente para grade
+  document.getElementById('btn-cli-ok')?.addEventListener('click',()=>{
+    if(!vs.cli)return;
+    vs.qtds={};vs.pag=null;vs.valor='';vs.obs='';vs.creditoUsar=0;
+    vs.tela='grade';render();
+  });
+
+  // Grade — inputs
+  document.querySelectorAll('.gi[data-k]').forEach(inp=>{
+    inp.addEventListener('focus',()=>inp.select());
+    inp.addEventListener('input',()=>{
+      const val=Math.max(0,parseInt(inp.value)||0);
+      vs.qtds[inp.dataset.k]=val; inp.value=val||'';
+      inp.className='gi'+(val>0?' tem':'');
+      // Atualiza sub
+      const cli=vs.cli;
+      let preco=0;
+      if(cli?.tipo==='medidas'){
+        const[aro,idx]=inp.dataset.k.split('|');
+        preco=cli.tabela[aro]?.[parseInt(idx)]?.p||0;
+      } else {
+        preco=parseFloat(cli?.precos?.[inp.dataset.k])||0;
+      }
+      const sub=val*preco;
+      const el=document.getElementById('sub-'+inp.dataset.k);
+      if(el){el.textContent=sub>0?fmtM(sub):'—';el.className='sub'+(sub>0?' tem':'');}
+      // Botão
+      const itens=getItensVenda();const tot=itens.reduce((s,i)=>s+i.qtd,0);const bruto=calcBruto(itens);
+      const btn=document.getElementById('btn-ir-pag');
+      if(btn){if(tot>0){btn.innerHTML=`Pagamento — ${tot} pneu${tot!==1?'s':''}${bruto>0?' · '+fmtM(bruto):''} ›`;btn.classList.remove('btn-dis');}else{btn.textContent='Preencha ao menos 1 pneu';btn.classList.add('btn-dis');}}
+    });
+  });
+
+  document.getElementById('btn-grade-back')?.addEventListener('click',()=>{vs.tela='cli';render();});
+  document.getElementById('btn-ir-pag')?.addEventListener('click',()=>{
+    const itens=getItensVenda();if(!itens.length)return;
+    const bruto=calcBruto(itens);
+    vs.valor=String(bruto.toFixed(2));vs.tela='pag';render();
+  });
+
+  // Pagamento
+  document.getElementById('btn-pag-back')?.addEventListener('click',()=>{vs.tela='grade';render();});
+  document.querySelectorAll('[data-pag]').forEach(el=>{
+    el.addEventListener('click',()=>{
+      vs.pag=el.dataset.pag;
+      document.querySelectorAll('[data-pag]').forEach(e=>e.classList.remove('sel'));
+      el.classList.add('sel');
+      const btn=document.getElementById('btn-confirmar');
+      if(btn&&vs.valor) btn.classList.remove('btn-dis');
+    });
+  });
+  document.getElementById('inp-valor')?.addEventListener('input',e=>{
+    vs.valor=e.target.value;
+    const btn=document.getElementById('btn-confirmar');
+    if(btn){btn.classList.toggle('btn-dis',!(vs.pag&&vs.valor));}
+  });
+  document.getElementById('inp-obs')?.addEventListener('input',e=>{vs.obs=e.target.value;});
+
+  // Aplicar crédito
+  document.getElementById('btn-aplicar-cred')?.addEventListener('click',()=>{
+    const itens=getItensVenda();const bruto=calcBruto(itens);
+    const saldo=getSaldo(vs.cli?.id||'');
+    if(vs.creditoUsar>0){vs.creditoUsar=0;vs.valor=String(bruto.toFixed(2));}
+    else{vs.creditoUsar=Math.min(saldo,bruto);vs.valor=String(Math.max(0,bruto-vs.creditoUsar).toFixed(2));}
+    render();
+  });
+
+  // Confirmar venda
+  document.getElementById('btn-confirmar')?.addEventListener('click',()=>{
+    const itens=getItensVenda();if(!itens.length||!vs.pag||!vs.valor)return;
+    const v=document.getElementById('inp-valor')?.value||vs.valor;
+    const o=document.getElementById('inp-obs')?.value||vs.obs;
+    const bruto=calcBruto(itens);
+    const cred=vs.creditoUsar;
+    if(cred>0) consumirCredito(vs.cli.id,cred);
+    const venda={
+      id:uid(), data:today(), hora:now(),
+      clienteId:vs.cli.id, clienteNome:vs.cli.nome,
+      categoria:vs.cli.categoria,
+      itens:[...itens], pagamento:vs.pag,
+      bruto, creditoAplicado:cred, liquido:parseFloat(v), obs:o
+    };
+    vendas.push(venda);
+    vs.tela='ok';render();
+  });
+
+  // OK — nova venda
+  document.getElementById('btn-nova-ok')?.addEventListener('click',()=>{
+    vs={tela:'cli',cli:null,busca:'',qtds:{},pag:null,valor:'',obs:'',creditoUsar:0};render();
+  });
+  document.getElementById('btn-wpp-ok')?.addEventListener('click',()=>{
+    const v=vendas[vendas.length-1];if(!v)return;
+    const mix=calcMix(v.itens);
+    const msg=`📦 *Mix de venda — ${v.clienteNome}*\n\nCategoria: *${CAT_NOME[v.categoria]}*\nTotal: *${v.itens.reduce((s,i)=>s+i.qtd,0)} pneus*\nValor: *${fmtM(v.liquido)}*\nPagamento: ${PAGS.find(p=>p.id===v.pagamento)?.n}\n\n*Mix por aro:*\n${mix.map(m=>`Aro ${m.aro}: ${m.qtd} un — ${m.pct}%`).join('\n')}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
+  });
+
+  // ── DEVOLUÇÕES ───────────────────────────────────────────────────
+  document.getElementById('busca-venda-dev')?.addEventListener('input',e=>{ds.buscaVenda=e.target.value;render();});
+  document.querySelectorAll('[data-venda-dev]').forEach(el=>{
+    el.addEventListener('click',()=>{ds.vendaId=el.dataset.vendaDev;ds.itens={};ds.obs='';ds.tela='grade';render();});
+  });
+  document.getElementById('btn-dev-back')?.addEventListener('click',()=>{ds.tela='lista';render();});
+
+  // Grade devolução — inputs
+  document.querySelectorAll('.dev-inp').forEach(inp=>{
+    inp.addEventListener('focus',()=>inp.select());
+    inp.addEventListener('input',()=>{
+      const max=parseInt(inp.dataset.max)||0;
+      const val=Math.min(Math.max(0,parseInt(inp.value)||0),max);
+      inp.value=val||'';ds.itens[inp.dataset.k]=val;
+      inp.style.borderColor=val>0?'var(--rd)':'var(--bd)';
+      inp.style.background=val>0?'var(--rb)':'var(--sf)';
+      inp.style.color=val>0?'var(--rd)':'var(--tx)';
+    });
+  });
+
+  document.getElementById('btn-confirmar-dev')?.addEventListener('click',()=>{
+    const v=vendas.find(x=>x.id===ds.vendaId);if(!v)return;
+    const o=document.getElementById('dev-obs')?.value||ds.obs;
+    const cli=getCli(v.clienteId);
+    // Montar itens da devolução
+    const itens=[];
+    v.itens.forEach(it=>{
+      const k=cli?.tipo==='medidas'?`${it.aro}|${it.medida}`:`${it.aro}`;
+      const qtd=parseInt(ds.itens[k])||0;
+      if(qtd>0) itens.push({aro:it.aro,medida:it.medida,qtd,preco:it.preco,sub:qtd*it.preco});
+    });
+    if(!itens.length)return;
+    const total=itens.reduce((s,i)=>s+i.sub,0);
+    const dev={
+      id:uid(), data:today(), hora:now(),
+      vendaId:v.id, clienteId:v.clienteId, clienteNome:v.clienteNome,
+      itens, total, obs:o
+    };
+    devolucoes.push(dev);
+    adicionarCredito(v.clienteId,total);
+    ds.tela='ok';render();
+  });
+
+  document.getElementById('btn-nova-dev')?.addEventListener('click',()=>{ds={tela:'lista',vendaId:null,buscaVenda:'',itens:{},obs:''};render();});
+
+  // ── EXTRATO ──────────────────────────────────────────────────────
+  document.getElementById('busca-ext')?.addEventListener('input',e=>{extBusca=e.target.value;render();});
+  document.querySelectorAll('[data-ext-cli]').forEach(el=>{
+    el.addEventListener('click',()=>{extCliId=el.dataset.extCli;render();});
+  });
+  document.getElementById('btn-ext-back')?.addEventListener('click',()=>{extCliId=null;render();});
+  document.getElementById('btn-reg-pag')?.addEventListener('click',()=>{
+    const val=parseFloat(document.getElementById('inp-pag-avulso')?.value)||0;
+    const forma=document.getElementById('sel-pag-avulso')?.value||'dinheiro';
+    if(!val||!extCliId)return;
+    const cli=CLIENTES.find(c=>c.id===extCliId);
+    pagamentos.push({id:uid(),data:today(),hora:now(),clienteId:extCliId,clienteNome:cli?.nome||'',valor:val,forma,obs:''});
+    // Pagamento avulso pode ser para quitar fiado — não altera crédito automaticamente
+    document.getElementById('inp-pag-avulso').value='';
+    render();
+  });
+
+  // ── MIX ──────────────────────────────────────────────────────────
+  document.querySelectorAll('[data-per]').forEach(btn=>{
+    btn.addEventListener('click',()=>{mixPeriodo=btn.dataset.per;render();});
+  });
+  document.getElementById('sel-mix-cli')?.addEventListener('change',e=>{mixCliId=e.target.value;render();});
+  document.getElementById('sel-mix-cat')?.addEventListener('change',e=>{mixCatId=e.target.value;render();});
+}
+
+// ── DEMO: Pré-popular com dados para testar ──────────────────────
+(function demo(){
+  const TCP=CLIENTES[0],JAT=CLIENTES[1],BOR=CLIENTES[2];
+  // Venda TCP
+  const v1={id:'v001',data:'09/06/2026',hora:'10:15',clienteId:TCP.id,clienteNome:TCP.nome,categoria:TCP.categoria,
+    itens:[{aro:'13',medida:'165/70R13',qtd:50,preco:45,sub:2250},{aro:'14',medida:'175/65R14',qtd:20,preco:45,sub:900},{aro:'15',medida:'185/65R15',qtd:30,preco:25,sub:750}],
+    pagamento:'pix',bruto:3900,creditoAplicado:0,liquido:3900,obs:''};
+  const v2={id:'v002',data:'10/06/2026',hora:'14:30',clienteId:JAT.id,clienteNome:JAT.nome,categoria:JAT.categoria,
+    itens:[{aro:'13',qtd:40,preco:35,sub:1400},{aro:'15',qtd:30,preco:35,sub:1050}],
+    pagamento:'dinheiro',bruto:2450,creditoAplicado:0,liquido:2450,obs:''};
+  const v3={id:'v003',data:'11/06/2026',hora:'09:00',clienteId:BOR.id,clienteNome:BOR.nome,categoria:BOR.categoria,
+    itens:[{aro:'13',qtd:30,preco:55,sub:1650},{aro:'14',qtd:25,preco:55,sub:1375}],
+    pagamento:'pix',bruto:3025,creditoAplicado:0,liquido:3025,obs:''};
+  vendas.push(v1,v2,v3);
+
+  // Devolução na v1 (TCP devolveu 10 do aro 13)
+  const d1={id:'d001',data:'11/06/2026',hora:'11:00',vendaId:'v001',clienteId:TCP.id,clienteNome:TCP.nome,
+    itens:[{aro:'13',medida:'165/70R13',qtd:10,preco:45,sub:450}],total:450,obs:'Pneus com defeito'};
+  devolucoes.push(d1);
+  adicionarCredito(TCP.id,450);
+})();
+
+render();
+</script>
+</body>
+</html>

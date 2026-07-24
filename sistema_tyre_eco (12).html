@@ -1,0 +1,2308 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Tyre Eco — Sistema Logístico</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+/* ── Reset & Base ── */
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F7F7F5;--surface:#FFFFFF;--border:#E5E4E0;--border-light:#EFEFED;
+  --text:#1A1A18;--text2:#6B6B65;--text3:#A8A8A2;
+  --green:#1D7A4F;--green-bg:#EBF5EF;--green-light:#D1EDD9;
+  --blue:#1A5FA8;--blue-bg:#EBF2FB;--blue-light:#C9DFF5;
+  --orange:#B85C00;--orange-bg:#FDF0E5;--orange-light:#FAD9B4;
+  --red:#B02020;--red-bg:#FDECEC;--red-light:#F5C0C0;
+  --purple:#5040A8;--purple-bg:#F0EEFB;--purple-light:#CFC9F2;
+  --teal:#0A6E5C;--teal-bg:#E8F5F2;--teal-light:#B8E0D8;
+  --yellow:#8A6E00;--yellow-bg:#FDF8E5;--yellow-light:#F5E5A0;
+  --radius:12px;--radius-sm:8px;--radius-xs:6px;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.05);
+  --shadow-md:0 4px 12px rgba(0,0,0,.10),0 2px 4px rgba(0,0,0,.06);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-tap-highlight-color:transparent}
+.hidden{display:none!important}
+
+/* ── Tela de Login ── */
+#tela-login{
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:1.5rem;
+  background:linear-gradient(145deg,#0B3D26 0%,#1D7A4F 55%,#0A5E4A 100%);
+}
+.login-logo{
+  width:90px;height:90px;border-radius:26px;
+  background:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:40px;color:var(--green);margin-bottom:1.25rem;
+  box-shadow:0 16px 40px rgba(0,0,0,.22)
+}
+.login-title{font-size:26px;font-weight:700;color:#fff;letter-spacing:-.5px;margin-bottom:4px;text-shadow:0 1px 4px rgba(0,0,0,.2)}
+.login-sub{font-size:14px;color:rgba(255,255,255,.72);margin-bottom:2rem}
+.login-card{
+  width:100%;max-width:380px;background:#fff;
+  border-radius:20px;padding:2rem;
+  box-shadow:0 24px 64px rgba(0,0,0,.28);border:none;
+}
+.login-label{font-size:11px;font-weight:700;color:var(--text2);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;display:block}
+.login-input{
+  width:100%;padding:13px 16px;
+  border:2px solid var(--border);border-radius:12px;
+  font-size:15px;font-family:inherit;color:var(--text);background:var(--bg);
+  transition:all .15s;margin-bottom:14px;
+}
+.login-input:focus{outline:none;border-color:var(--green);background:#fff;box-shadow:0 0 0 4px rgba(29,122,79,.1)}
+.btn-login{
+  width:100%;padding:14px;
+  background:linear-gradient(135deg,#1D7A4F 0%,#0A6E5C 100%);
+  color:#fff;border:none;border-radius:12px;
+  font-size:15px;font-weight:700;cursor:pointer;margin-top:4px;
+  transition:all .18s;display:flex;align-items:center;justify-content:center;gap:8px;
+  box-shadow:0 4px 16px rgba(29,122,79,.4);letter-spacing:.02em;
+}
+.btn-login:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(29,122,79,.45)}
+.btn-login:active{transform:translateY(0)}
+.login-erro{font-size:13px;color:var(--red);text-align:center;margin-top:10px;padding:10px;background:var(--red-bg);border-radius:10px;display:none;font-weight:500}
+.login-hint{margin-top:1.5rem;border-top:1px solid var(--border-light);padding-top:1.25rem}
+.login-hint p{font-size:11px;color:var(--text3);text-align:center;margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+.hint-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.hint-item{
+  background:var(--bg);border:1.5px solid var(--border);
+  border-radius:10px;padding:9px 12px;cursor:pointer;transition:all .15s;
+}
+.hint-item:hover{border-color:var(--green);background:var(--green-bg);transform:translateY(-1px);box-shadow:0 4px 12px rgba(29,122,79,.12)}
+.hint-item .hi-nome{font-size:12px;font-weight:700;color:var(--text)}
+.hint-item .hi-cargo{font-size:10px;color:var(--text2);margin-top:1px}
+
+/* ── App shell ── */
+#app{display:none;flex-direction:column;min-height:100vh}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 1rem;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;flex-shrink:0}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.topbar-logo{width:32px;height:32px;border-radius:8px;background:var(--green);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700}
+.topbar-info h1{font-size:14px;font-weight:600;color:var(--text);line-height:1.2}
+.topbar-info span{font-size:11px;color:var(--text2)}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.btn-logout{padding:6px 10px;background:none;border:1px solid var(--border);border-radius:var(--radius-xs);font-size:12px;color:var(--text2);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px}
+.btn-logout:hover{background:var(--red-bg);border-color:var(--red-light);color:var(--red)}
+.content-area{flex:1;padding:1rem;max-width:540px;margin:0 auto;width:100%}
+
+/* ── Dashboard ── */
+.dash-greeting{font-size:20px;font-weight:700;color:var(--text);margin-bottom:4px;letter-spacing:-.3px}
+.dash-date{font-size:13px;color:var(--text2);margin-bottom:1.25rem}
+.modules-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mod-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.mod-card:hover,.mod-card:active{transform:translateY(-1px);box-shadow:var(--shadow-md)}
+.mod-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.mod-card.verde::before{background:var(--green)}
+.mod-card.azul::before{background:var(--blue)}
+.mod-card.laranja::before{background:var(--orange)}
+.mod-card.roxo::before{background:var(--purple)}
+.mod-card.teal::before{background:var(--teal)}
+.mod-card.amarelo::before{background:var(--yellow)}
+.mod-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:10px}
+.mod-icon.verde{background:var(--green-bg);color:var(--green)}
+.mod-icon.azul{background:var(--blue-bg);color:var(--blue)}
+.mod-icon.laranja{background:var(--orange-bg);color:var(--orange)}
+.mod-icon.roxo{background:var(--purple-bg);color:var(--purple)}
+.mod-icon.teal{background:var(--teal-bg);color:var(--teal)}
+.mod-icon.amarelo{background:var(--yellow-bg);color:var(--yellow)}
+.mod-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px}
+.mod-desc{font-size:11px;color:var(--text2);line-height:1.4}
+.mod-badge{position:absolute;top:10px;right:10px;background:var(--red);color:#fff;border-radius:20px;padding:2px 7px;font-size:10px;font-weight:700}
+
+/* ── Módulo header ── */
+.mod-header{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:1px solid var(--border-light)}
+.mod-header-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.mod-header h2{font-size:16px;font-weight:700;color:var(--text);letter-spacing:-.2px}
+.mod-header span{font-size:12px;color:var(--text2)}
+.btn-back{background:none;border:1px solid var(--border);border-radius:var(--radius-xs);padding:6px 10px;font-size:12px;color:var(--text2);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;margin-bottom:1rem}
+.btn-back:hover{background:var(--bg)}
+
+/* ── Componentes comuns ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;margin-bottom:10px}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:600;white-space:nowrap}
+.badge.verde{background:var(--green-bg);color:var(--green)}
+.badge.azul{background:var(--blue-bg);color:var(--blue)}
+.badge.laranja{background:var(--orange-bg);color:var(--orange)}
+.badge.vermelho{background:var(--red-bg);color:var(--red)}
+.badge.roxo{background:var(--purple-bg);color:var(--purple)}
+.badge.cinza{background:var(--bg);color:var(--text2)}
+.section-title{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;margin-top:1rem}
+.row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border-light)}
+.row:last-child{border-bottom:none}
+.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:1rem}
+.stat-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:1rem}
+.stat-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px;text-align:center}
+.stat-box .sv{font-size:20px;font-weight:700;color:var(--text)}
+.stat-box .sl{font-size:10px;color:var(--text2);margin-top:2px;text-transform:uppercase;letter-spacing:.03em}
+.stat-box.verde .sv{color:var(--green)}
+.stat-box.azul .sv{color:var(--blue)}
+.stat-box.laranja .sv{color:var(--orange)}
+.stat-box.vermelho .sv{color:var(--red)}
+.fin-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border-light);font-size:13px}
+.fin-row:last-child{border-bottom:none}
+.fin-row .fl{color:var(--text2)}
+.fin-row .fv{font-weight:600}
+.pos{color:var(--green)}.neg{color:var(--red)}.warn{color:var(--orange)}
+.alert{border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:12px;display:flex;gap:10px;align-items:flex-start;font-size:13px}
+.alert.verde{background:var(--green-bg);border:1px solid var(--green-light);color:var(--green)}
+.alert.azul{background:var(--blue-bg);border:1px solid var(--blue-light);color:var(--blue)}
+.alert.laranja{background:var(--orange-bg);border:1px solid var(--orange-light);color:var(--orange)}
+.alert.vermelho{background:var(--red-bg);border:1px solid var(--red-light);color:var(--red)}
+.alert i{font-size:16px;flex-shrink:0;margin-top:1px}
+.alert p{line-height:1.5}
+.btn{padding:10px 16px;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:6px;touch-action:manipulation}
+.btn-primary{background:var(--green);color:#fff}
+.btn-primary:hover{background:#176040}
+.btn-secondary{background:var(--surface);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--bg)}
+.btn-danger{background:var(--red-bg);color:var(--red);border:1px solid var(--red-light)}
+.btn-block{width:100%;justify-content:center;padding:13px}
+.btn-sm{padding:6px 10px;font-size:12px}
+.btn-dis{opacity:.4;pointer-events:none}
+input,select,textarea{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;color:var(--text);background:var(--bg);transition:border .15s}
+input:focus,select:focus{outline:none;border-color:var(--green);background:#fff}
+.form-group{margin-bottom:12px}
+.form-group label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.03em}
+.search-wrap{position:relative;margin-bottom:10px}
+.search-wrap input{padding-left:36px}
+.search-wrap i{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:16px}
+.list-box{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;max-height:280px;overflow-y:auto}
+.list-row{display:flex;align-items:center;gap:10px;padding:11px 12px;border-bottom:1px solid var(--border-light);cursor:pointer;transition:background .1s;touch-action:manipulation}
+.list-row:last-child{border-bottom:none}
+.list-row:hover,.list-row:active{background:var(--bg)}
+.list-row.sel{background:var(--green-bg)}
+.avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.avatar.verde{background:var(--green-bg);color:var(--green)}
+.avatar.azul{background:var(--blue-bg);color:var(--blue)}
+.avatar.cinza{background:var(--bg);color:var(--text2)}
+.avatar.teal{background:var(--teal-bg);color:var(--teal)}
+
+/* ── Grade triagem/vendas ── */
+.grade-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -1rem;padding:0 1rem}
+.grade{border-collapse:collapse;min-width:420px;width:100%}
+.grade th{font-size:10px;font-weight:700;color:var(--text2);padding:7px 4px;text-align:center;border-bottom:2px solid var(--border);background:var(--surface);text-transform:uppercase;letter-spacing:.04em;position:sticky;top:0}
+.grade th.lbl{text-align:left;padding-left:6px;min-width:90px}
+.grade td{padding:3px 2px;border-bottom:1px solid var(--border-light);vertical-align:middle}
+.grade .cell-inp{width:44px;height:44px;padding:0;text-align:center;border:1.5px solid var(--border);border-radius:8px;font-size:15px;font-weight:600;background:var(--surface);color:var(--text);-moz-appearance:textfield;touch-action:manipulation}
+.grade .cell-inp::-webkit-inner-spin-button,.grade .cell-inp::-webkit-outer-spin-button{-webkit-appearance:none}
+.grade .cell-inp:focus{outline:none;border-color:var(--green);background:var(--green-bg)}
+.grade .cell-inp.tem{background:var(--green-bg);border-color:var(--green);color:var(--green)}
+.grade .cat-label{font-size:12px;font-weight:700;padding:6px 4px 6px 6px;white-space:nowrap}
+.grade .tot-col{font-size:13px;font-weight:700;text-align:right;padding-right:6px}
+.grade .tot-col.tem{color:var(--green)}
+.grade .total-row td{font-size:11px;font-weight:600;color:var(--text2);text-align:center;padding:7px 3px;background:var(--bg);border-top:2px solid var(--border)}
+.grade .total-row .geral{font-size:14px;color:var(--text);font-weight:700;text-align:right;padding-right:6px}
+.grade .total-row .geral.ok{color:var(--green)}
+.pag-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px}
+.pag-opt{border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 4px;cursor:pointer;text-align:center;touch-action:manipulation;transition:all .15s;background:var(--surface)}
+.pag-opt:active{background:var(--bg)}
+.pag-opt.sel{border-color:var(--green);background:var(--green-bg)}
+.pag-opt i{font-size:20px;display:block;margin-bottom:4px;color:var(--text2)}
+.pag-opt.sel i{color:var(--green)}
+.pag-opt span{font-size:10px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.02em}
+.pag-opt.sel span{color:var(--green)}
+.foto-slot{border:2px dashed var(--border);border-radius:var(--radius);padding:1.25rem;text-align:center;cursor:pointer;position:relative;margin-bottom:10px;transition:all .15s;background:var(--surface)}
+.foto-slot input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.foto-slot i{font-size:28px;color:var(--text3);display:block;margin-bottom:6px}
+.foto-slot p{font-size:13px;color:var(--text2)}
+.foto-slot.done{border-style:solid;border-color:var(--green);background:var(--green-bg)}
+.foto-slot.done i,.foto-slot.done p{color:var(--green);font-weight:600}
+.prog-wrap{background:var(--bg);border-radius:20px;height:6px;overflow:hidden;margin:6px 0}
+.prog-bar{height:6px;border-radius:20px;background:var(--green);transition:width .3s}
+.prog-bar.warn{background:var(--orange)}
+.prog-bar.err{background:var(--red)}
+.steps-bar{display:flex;gap:4px;margin-bottom:1rem}
+.step-dot{flex:1;height:3px;border-radius:2px;background:var(--border)}
+.step-dot.done{background:var(--green)}
+.step-dot.active{background:var(--green);opacity:.5}
+.empty{text-align:center;padding:2.5rem 1rem;color:var(--text2)}
+.empty i{font-size:32px;display:block;margin-bottom:10px;opacity:.3}
+.empty p{font-size:14px}
+.sig-pad{border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);cursor:crosshair;display:block;width:100%;touch-action:none}
+.cli-list{max-height:260px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius)}
+.cli-row{display:flex;align-items:center;gap:10px;padding:11px 12px;border-bottom:1px solid var(--border-light);cursor:pointer;touch-action:manipulation}
+.cli-row:last-child{border-bottom:none}
+.cli-row:hover,.cli-row:active{background:var(--bg)}
+.cli-row.sel{background:var(--green-bg)}
+
+/* ── Motivo tags de vencimento ── */
+.vc-vencido{background:var(--red-bg);color:var(--red)}
+.vc-hoje{background:var(--red-bg);color:var(--red)}
+.vc-amanha{background:var(--orange-bg);color:var(--orange)}
+.vc-breve{background:var(--yellow-bg);color:var(--yellow)}
+.vc-ok{background:var(--green-bg);color:var(--green)}
+
+/* ── Tabela de conferência ── */
+.conf-table{width:100%;border-collapse:collapse}
+.conf-table th{font-size:10px;font-weight:700;color:var(--text2);padding:5px 6px;border-bottom:2px solid var(--border);text-align:right;text-transform:uppercase}
+.conf-table th:first-child{text-align:left}
+.conf-table td{padding:7px 6px;border-bottom:1px solid var(--border-light);font-size:13px;vertical-align:middle}
+.conf-table tr.div-row{background:var(--red-bg)}
+.conf-table .conf-inp{width:64px;padding:5px 7px;text-align:right;border:1.5px solid var(--border);border-radius:6px;font-size:13px;font-weight:600}
+.conf-table .conf-inp:focus{outline:none;border-color:var(--green)}
+.conf-table .conf-inp.ok{border-color:var(--green);background:var(--green-bg);color:var(--green)}
+.conf-table .conf-inp.diverge{border-color:var(--red);background:var(--red-bg);color:var(--red)}
+</style>
+</head>
+<body>
+
+<!-- ── TELA DE LOGIN ── -->
+<div id="tela-login">
+  <div class="login-logo"><i class="ti ti-tire"></i></div>
+  <div class="login-title">Tyre Eco</div>
+  <div class="login-sub">Sistema Logístico — Osasco/SP</div>
+  <div class="login-card">
+    <div class="form-group">
+      <label class="login-label">Usuário</label>
+      <input class="login-input" id="inp-usuario" type="text" placeholder="seu.usuario" autocomplete="username" autocorrect="off" autocapitalize="none">
+    </div>
+    <div class="form-group">
+      <label class="login-label">Senha</label>
+      <input class="login-input" id="inp-senha" type="password" placeholder="••••••" autocomplete="current-password">
+    </div>
+    <button class="btn-login" id="btn-entrar">
+      <i class="ti ti-login"></i> Entrar
+    </button>
+    <div class="login-erro" id="login-erro">Usuário ou senha incorretos.</div>
+    <div class="login-hint">
+      <p>Entrar como</p>
+      <div class="hint-grid">
+        <div class="hint-item" data-user="gestor" data-pass="tyre2024"><div class="hi-nome">Gestor</div><div class="hi-cargo">Logística</div></div>
+        <div class="hint-item" data-user="motorista" data-pass="tyre2024"><div class="hi-nome">Motorista</div><div class="hi-cargo">Herlon Carrera</div></div>
+        <div class="hint-item" data-user="conferente" data-pass="tyre2024"><div class="hi-nome">Conferente Op.</div><div class="hi-cargo">Descarga</div></div>
+        <div class="hint-item" data-user="fiscal" data-pass="tyre2024"><div class="hi-nome">Conferente Fisc.</div><div class="hi-cargo">NF-e</div></div>
+        <div class="hint-item" data-user="triagem" data-pass="tyre2024"><div class="hi-nome">Triagem</div><div class="hi-cargo">Pneus</div></div>
+        <div class="hint-item" data-user="vendas" data-pass="tyre2024"><div class="hi-nome">Vendas</div><div class="hi-cargo">Comercial</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── APP ── -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-logo"><i class="ti ti-tire"></i></div>
+      <div class="topbar-info">
+        <h1 id="topbar-titulo">Tyre Eco</h1>
+        <span id="topbar-sub">Carregando...</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn-logout" id="btn-logout"><i class="ti ti-logout"></i> Sair</button>
+    </div>
+  </div>
+  <div class="content-area" id="content-area"></div>
+</div>
+
+<script>
+// ── Usuários ──────────────────────────────────────────────────────────────────
+const USUARIOS = {
+  'gestor':     {senha:'tyre2024', nome:'Gestor Logística',    perfil:'gestor',     cor:'verde'},
+  'motorista':  {senha:'tyre2024', nome:'Herlon Carrera',      perfil:'motorista',  cor:'azul'},
+  'conferente': {senha:'tyre2024', nome:'Conferente Operacional', perfil:'conferente', cor:'laranja'},
+  'fiscal':     {senha:'tyre2024', nome:'Conferente Fiscal',   perfil:'fiscal',     cor:'roxo'},
+  'triagem':    {senha:'tyre2024', nome:'Triagem',              perfil:'triagem',    cor:'teal'},
+  'vendas':     {senha:'tyre2024', nome:'Vendas',               perfil:'vendas',     cor:'amarelo'},
+};
+
+let usuarioAtual = null;
+let telaAtual = 'dashboard';
+
+// ── Dados demo compartilhados ─────────────────────────────────────────────────
+const CAMINHOES_CONF = [
+  {id:'c1',placa:'FPW-9J58',motorista:'Herlon Carrera',rota:'Rota Barretos/Batatais',chegada:'Hoje 14:30',totalPneus:459,status:'aguardando',
+   lojas:[{nome:'DPASCHOAL BARRETOS',marca:'DP',pneus:317},{nome:'CAMPNEUS BARRETOS',marca:'CP',pneus:98},{nome:'DPASCHOAL BATATAIS',marca:'DP',pneus:44}]},
+  {id:'c2',placa:'DEU-8A98',motorista:'Renan Marcondes',rota:'Rota Campinas',chegada:'Hoje 15:10',totalPneus:177,status:'aguardando',
+   lojas:[{nome:'DPASCHOAL CAMPINAS',marca:'DP',pneus:57},{nome:'CAMPNEUS NORTE SUL',marca:'CP',pneus:82},{nome:'CAMPNEUS BARAO',marca:'CP',pneus:38}]},
+  {id:'c3',placa:'GGA-0262',motorista:'Leonardo Vinicius',rota:'Rota Mogi',chegada:'Hoje 16:00',totalPneus:133,status:'conferido',
+   lojas:[{nome:'DPASCHOAL MOGI GUACU',marca:'DP',pneus:133}]},
+];
+
+const ROTA_MOTORISTA = {
+  nome:'Rota Barretos/Batatais', data:'11/06/2026',
+  placa:'FPW-9J58', ajudante:'Kaike Santana', kmTotal:412,
+  lojas:[
+    {id:'l1',nome:'DPASCHOAL BARRETOS DP132',cidade:'Barretos/SP',marca:'DP',dist:210,checkin:null},
+    {id:'l2',nome:'CAMPNEUS BARRETOS CP128',cidade:'Barretos/SP',marca:'CP',dist:3,checkin:null},
+    {id:'l3',nome:'DPASCHOAL BATATAIS DP101',cidade:'Batatais/SP',marca:'DP',dist:48,checkin:null},
+  ],distVolta:154
+};
+
+const CATS_TRIAGEM=[{id:'carcaca',nome:'Carcaça',cor:'var(--blue)'},{id:'risco',nome:'Risco',cor:'var(--green)'},{id:'meiavida',nome:'Meia Vida',cor:'var(--orange)'},{id:'cortados',nome:'Cortados',cor:'var(--red)'},{id:'lixo',nome:'Lixo',cor:'var(--text2)'}];
+const AROS=['13','14','15','16','17','SUV','Cam.','Cam-hão'];
+const AROS_FULL=['13','14','15','16','17','SUV','Camionete','Caminhão'];
+const PAGS=[{id:'dinheiro',nome:'Dinheiro',icon:'ti-cash'},{id:'pix',nome:'PIX',icon:'ti-qrcode'},{id:'credito',nome:'Crédito',icon:'ti-credit-card'},{id:'debito',nome:'Débito',icon:'ti-credit-card'},{id:'boleto',nome:'Boleto',icon:'ti-file-invoice'},{id:'fiado',nome:'Fiado',icon:'ti-clock'},{id:'cheque',nome:'Cheque',icon:'ti-writing'}];
+
+// Estado por módulo
+let motorState={viagemIniciada:false,checkins:{}};
+let confState={camId:null,conferencias:{}};
+let triagemState={camId:null,grade:{},salvas:{}};
+let triagemGrade={};
+let vendasState={tela:'cliente',cliSel:null,busca:'',qtds:{},foto:false,pagamento:null,valor:'',obs:'',historico:[]};
+let fiscalState={tab:'entrada'};
+let sigCtx=null,drawing=false,lx=0,ly=0;
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function ini(n){return n.split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase();}
+function fmtM(v){return 'R$'+(+v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function now(){return new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});}
+function today(){return new Date().toLocaleDateString('pt-BR');}
+function totalTriagem(){return Object.values(triagemGrade).reduce((s,v)=>s+(parseInt(v)||0),0);}
+function totalQtdVendas(){return Object.values(vendasState.qtds).reduce((s,v)=>s+(parseInt(v)||0),0);}
+
+// ── Login ─────────────────────────────────────────────────────────────────────
+document.getElementById('btn-entrar').addEventListener('click',fazerLogin);
+document.getElementById('inp-senha').addEventListener('keydown',e=>{if(e.key==='Enter')fazerLogin();});
+document.querySelectorAll('.hint-item').forEach(el=>{
+  el.addEventListener('click',()=>{
+    document.getElementById('inp-usuario').value=el.dataset.user;
+    document.getElementById('inp-senha').value=el.dataset.pass;
+    fazerLogin();
+  });
+});
+
+function fazerLogin(){
+  const u=document.getElementById('inp-usuario').value.trim().toLowerCase();
+  const s=document.getElementById('inp-senha').value;
+  const user=USUARIOS[u];
+  if(!user||user.senha!==s){
+    const err=document.getElementById('login-erro');
+    err.style.display='block';
+    setTimeout(()=>err.style.display='none',3000);
+    return;
+  }
+  usuarioAtual={...user,login:u};
+  document.getElementById('tela-login').style.display='none';
+  document.getElementById('app').style.display='flex';
+  document.getElementById('topbar-titulo').textContent='Tyre Eco';
+  document.getElementById('topbar-sub').textContent=usuarioAtual.nome;
+  sincronizarCadastros().then(()=>renderDashboard());
+}
+
+document.getElementById('btn-logout').addEventListener('click',()=>{
+  usuarioAtual=null;
+  document.getElementById('tela-login').style.display='flex';
+  document.getElementById('app').style.display='none';
+  document.getElementById('inp-usuario').value='';
+  document.getElementById('inp-senha').value='';
+});
+
+// ── Dashboard ─────────────────────────────────────────────────────────────────
+function renderDashboard(){
+  telaAtual='dashboard';
+  document.getElementById('topbar-titulo').textContent='Tyre Eco';
+  document.getElementById('topbar-sub').textContent=usuarioAtual.nome;
+  const perfil=usuarioAtual.perfil;
+  const mods={
+    gestor:[
+      {id:'rota',icon:'ti-route-2',cor:'verde',nome:'Roterizador',desc:'Criar e gerenciar rotas'},
+      {id:'financeiro',icon:'ti-report-money',cor:'laranja',nome:'Financeiro',desc:'Fechamento de rotas'},
+      {id:'dashboard_gestor',icon:'ti-layout-dashboard',cor:'roxo',nome:'Dashboard',desc:'Visão geral do dia'},{id:'alertas',icon:'ti-brand-whatsapp',cor:'verde',nome:'Alertas WhatsApp',desc:'Z-API · Avisos de lixo'},
+    ],
+    motorista:[
+      {id:'motorista_rota',icon:'ti-map-pin',cor:'azul',nome:'Rota do dia',desc:'FPW-9J58 · Barretos'},
+      {id:'motorista_checkin',icon:'ti-clipboard-check',cor:'verde',nome:'Check-in',desc:'Registrar coleta'},
+      {id:'motorista_hist',icon:'ti-history',cor:'laranja',nome:'Histórico',desc:'Viagens anteriores'},
+    ],
+    conferente:[
+      {id:'conf_lista',icon:'ti-truck',cor:'laranja',nome:'Caminhões',desc:'Selecionar para conferir',badge:CAMINHOES_CONF.filter(c=>c.status==='aguardando').length},
+    ],
+    fiscal:[
+      {id:'fiscal_entrada',icon:'ti-arrow-bar-to-down',cor:'azul',nome:'NF Entrada',desc:'NFs das lojas'},
+      {id:'fiscal_saida',icon:'ti-arrow-bar-up',cor:'verde',nome:'NF Saída',desc:'NFs para destino'},
+    ],
+    triagem:[
+      {id:'triagem_lista',icon:'ti-filter',cor:'teal',nome:'Triagem',desc:'Pneus por categoria e aro'},
+    ],
+    vendas:[
+      {id:'vendas_nova',icon:'ti-shopping-cart',cor:'amarelo',nome:'Nova venda',desc:'699 clientes cadastrados'},
+      {id:'vendas_hist',icon:'ti-history',cor:'verde',nome:'Histórico',desc:'Vendas do dia'},
+    ],
+  };
+
+  const items=mods[perfil]||[];
+  const hora=new Date().getHours();
+  const saudacao=hora<12?'Bom dia':hora<18?'Boa tarde':'Boa noite';
+
+  document.getElementById('content-area').innerHTML=`
+    <p class="dash-greeting">${saudacao}, ${usuarioAtual.nome.split(' ')[0]}!</p>
+    <p class="dash-date">${today()} · ${now()}</p>
+    <div class="modules-grid">
+      ${items.map(m=>`<div class="mod-card ${m.cor}" id="mod-${m.id}">
+        ${m.badge?`<div class="mod-badge">${m.badge}</div>`:''}
+        <div class="mod-icon ${m.cor}"><i class="ti ${m.icon}"></i></div>
+        <div class="mod-name">${m.nome}</div>
+        <div class="mod-desc">${m.desc}</div>
+      </div>`).join('')}
+    </div>`;
+
+  items.forEach(m=>{
+    document.getElementById(`mod-${m.id}`)?.addEventListener('click',()=>abrirModulo(m.id));
+  });
+}
+
+// ── Roteador de módulos ───────────────────────────────────────────────────────
+function abrirModulo(id){
+  telaAtual=id;
+  const mapa={
+    'rota':renderRotaGestor,'financeiro':renderFinanceiro,
+    'dashboard_gestor':renderDashboardGestor,'alertas':renderAlertas,
+    'motorista_rota':renderMotoristaRota,'motorista_checkin':renderMotoristaCheckin,
+    'motorista_hist':renderMotoristaHist,
+    'conf_lista':renderConferenteLista,
+    'fiscal_entrada':()=>renderFiscal('entrada'),'fiscal_saida':()=>renderFiscal('saida'),
+    'triagem_lista':renderTriagemLista,
+    'vendas_nova':()=>{vendasState.tela='cliente';renderVendas();},'vendas_hist':renderVendasHist,
+  };
+  mapa[id]?.();
+}
+
+function btnBack(label){
+  return `<button class="btn btn-secondary btn-sm" id="btn-back-mod" style="margin-bottom:1rem"><i class="ti ti-arrow-left"></i> ${label||'Voltar'}</button>`;
+}
+function bindBack(){document.getElementById('btn-back-mod')?.addEventListener('click',renderDashboard);}
+
+// ── GESTOR: Roteizador ────────────────────────────────────────────────────────
+// ── ROTEIZADOR — dados ────────────────────────────────────────────────────────
+const BASE_ROT={lat:-23.5329,lng:-46.7919,endereco:'Rua Caraibas, Osasco, SP, Brasil'};
+const FORNS_ROT=[
+  {id:'f597',nome:'DPASCHOAL CAMPINAS CENTRO DP03',cidade:'CAMPINAS',uf:'SP',marca:'DP',cep:'13010080',endereco:'Avenida Dr Campos Salles 254, Campinas SP',uc:'2026-05-20',ciclo:30},
+  {id:'f157',nome:'CAMPNEUS BARAO DE ITAPURA CP120',cidade:'CAMPINAS',uf:'SP',marca:'CP',cep:'13020431',endereco:'Avenida Barao de Itapura 797, Campinas SP',uc:'2026-06-04',ciclo:21},
+  {id:'f154',nome:'CAMPNEUS NORTE SUL CP118',cidade:'CAMPINAS',uf:'SP',marca:'CP',cep:'13025320',endereco:'Avenida Jose de Souza Campos 1133, Campinas SP',uc:'2026-05-15',ciclo:30},
+  {id:'f369',nome:'CAMPNEUS BARAO GERALDO CP234',cidade:'CAMPINAS',uf:'SP',marca:'CP',cep:'13030405',endereco:'Avenida Albino Jose Barbosa 556, Campinas SP',uc:'2026-06-10',ciclo:7},
+  {id:'f174',nome:'CAMPNEUS IMPERATRIZ LEOPOLDINA CP190',cidade:'CAMPINAS',uf:'SP',marca:'CP',cep:'13073035',endereco:'Avenida Imperatriz Leopoldina 206, Campinas SP',uc:'2026-05-01',ciclo:45},
+  {id:'f653',nome:'DPASCHOAL BATATAIS DP101',cidade:'BATATAIS',uf:'SP',marca:'DP',cep:'14300001',endereco:'Avenida 14 de Marco 820, Batatais SP',uc:'2026-06-01',ciclo:30},
+  {id:'f665',nome:'DPASCHOAL BARRETOS DP132',cidade:'BARRETOS',uf:'SP',marca:'DP',cep:'14781321',endereco:'Avenida 43 854, Barretos SP',uc:'2026-05-25',ciclo:21},
+  {id:'f187',nome:'CAMPNEUS BARRETOS CP128',cidade:'BARRETOS',uf:'SP',marca:'CP',cep:'14780420',endereco:'Avenida Quarenta e Tres 279, Barretos SP',uc:'2026-06-08',ciclo:14},
+  {id:'f642',nome:'DPASCHOAL MOGI GUACU DP81',cidade:'MOGI GUACU',uf:'SP',marca:'DP',cep:'13840056',endereco:'Avenida Nove de Abril 540, Mogi Guacu SP',uc:'2026-04-20',ciclo:60},
+  {id:'f283',nome:'CAMPNEUS OSASCO CENTRO CP222',cidade:'OSASCO',uf:'SP',marca:'CP',cep:'06090020',endereco:'Avenida dos Autonomistas 2331, Osasco SP',uc:'2026-06-05',ciclo:14},
+  {id:'f264',nome:'CAMPNEUS OSASCO KM18 CP220',cidade:'OSASCO',uf:'SP',marca:'CP',cep:'06194050',endereco:'Avenida dos Autonomistas 6097, Osasco SP',uc:'2026-06-03',ciclo:14},
+  {id:'f260',nome:'CAMPNEUS CARAPICUIBA CP226',cidade:'CARAPICUIBA',uf:'SP',marca:'CP',cep:'06090023',endereco:'Avenida dos Autonomistas 3396, Osasco SP',uc:'2026-05-28',ciclo:21},
+  {id:'f172',nome:'CAMPNEUS MOGI MIRIM CP101',cidade:'MOGI MIRIM',uf:'SP',marca:'CP',cep:'13800033',endereco:'Rua Padre Roque 601, Mogi Mirim SP',uc:'2026-05-10',ciclo:30},
+  {id:'f643',nome:'DPASCHOAL ITAJAI DP86',cidade:'ITAJAI',uf:'SC',marca:'DP',cep:'88305110',endereco:'Rua Stringari 194, Itajai SC',uc:'2026-05-28',ciclo:15},
+];
+const VEICULOS_ROT=[
+  {placa:'FNY-0G23',modelo:'VW Express 4X2', consumo:9.0},
+  {placa:'DEU-8A98',modelo:'VW 13180 6X2',  consumo:5.0},
+  {placa:'GGA-0262',modelo:'Actros 2546LS',  consumo:4.0},
+  {placa:'EEK-1A92',modelo:'Iveco Daily',    consumo:8.0},
+  {placa:'TJX-4G17',modelo:'Actros 2651S',   consumo:3.8},
+  {placa:'FPW-9J58',modelo:'VW 24.280 6X2',  consumo:4.5},
+];
+const DIESEL_PRECO = 6.50; // R$/litro — sincroniza com cadastros.html
+function getCustoKmPlaca(placa){
+  const v=VEICULOS_ROT.find(x=>x.placa===placa);
+  const consumo=v?.consumo||4.5;
+  return (DIESEL_PRECO/consumo).toFixed(2); // R$/km
+}
+const MOTORISTAS_ROT=[
+  {id:'mr1',nome:'Herlon Carrera'},{id:'mr2',nome:'Renan Marcondes'},
+  {id:'mr3',nome:'Kayo Candido'},{id:'mr4',nome:'Leonardo Vinicius'},
+  {id:'mr5',nome:'Rodrigo Souto'},{id:'mr6',nome:'Alife Eduardo'},
+];
+// ── Sincronização com cadastros.html ─────────────────────────────
+async function sincronizarCadastros(){
+  try{
+    const f=await window.storage?.get('cad_frota');
+    if(f){
+      const frota=JSON.parse(f.value);
+      frota.forEach(v=>{
+        const idx=VEICULOS_ROT.findIndex(x=>x.placa===v.placa);
+        if(idx>=0) VEICULOS_ROT[idx]={...VEICULOS_ROT[idx],...v};
+        else VEICULOS_ROT.push(v);
+        if(v.bau) CAPACIDADE_BAU[v.placa]=v.bau;
+      });
+    }
+    const fn=await window.storage?.get('cad_funcs');
+    if(fn){
+      const motoristas=JSON.parse(fn.value).filter(x=>x.cargo==='Motorista');
+      if(motoristas.length>0)
+        MOTORISTAS_ROT.splice(0,MOTORISTAS_ROT.length,...motoristas.map((m,i)=>({id:'mr'+(i+1),nome:m.nome})));
+    }
+    const pd=await window.storage?.get('cad_preco_diesel');
+    if(pd) window._DIESEL_PRECO=parseFloat(pd.value)||6.50;
+  }catch(e){console.warn('Sync cadastros:',e);}
+}
+
+let rotCoordCache={};
+let rotState={
+  tela:'selecao', // selecao | calculando | resultado | salvas
+  sel:new Set(), busca:'', filtroUF:'Todos',
+  nRotas:2, custoKm:'2.50',
+  loading:false, loadMsg:'',
+  rotasSugeridas:[], atribuicoes:{},
+  rotasSalvas:[], expandido:{},
+};
+
+// Helpers geográficos
+function hav(a,b,c,d){const R=6371,dL=(c-a)*Math.PI/180,dO=(d-b)*Math.PI/180,e=Math.sin(dL/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dO/2)**2;return R*2*Math.atan2(Math.sqrt(e),Math.sqrt(1-e));}
+function cityFallback(cidade){return({'CAMPINAS':{lat:-22.9056,lng:-47.0608},'OSASCO':{lat:-23.5329,lng:-46.7919},'BARRETOS':{lat:-20.5570,lng:-48.5655},'BATATAIS':{lat:-20.8908,lng:-47.5906},'MOGI GUACU':{lat:-22.3715,lng:-46.9424},'MOGI MIRIM':{lat:-22.4312,lng:-46.9557},'ITAJAI':{lat:-26.9072,lng:-48.6619},'CARAPICUIBA':{lat:-23.5224,lng:-46.8356}}[cidade])||{lat:-23.5505,lng:-46.6333};}
+async function getCoords(cep,cidade){
+  const k=cep.replace(/\D/g,'');
+  if(rotCoordCache[k])return rotCoordCache[k];
+  try{
+    const vr=await fetch(`https://viacep.com.br/ws/${k}/json/`);
+    const vd=await vr.json();
+    if(vd.erro)throw new Error();
+    const q=`${vd.logradouro||''} ${vd.localidade} ${vd.uf} Brasil`.trim();
+    const nr=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1`,{headers:{'Accept-Language':'pt-BR','User-Agent':'TyreEco/1.0'}});
+    const nd=await nr.json();
+    if(!nd.length)throw new Error();
+    const c={lat:parseFloat(nd[0].lat),lng:parseFloat(nd[0].lon)};
+    rotCoordCache[k]=c;return c;
+  }catch(e){return cityFallback(cidade);}
+}
+function kMeans(pts,k,iters=20){
+  if(pts.length<=k)return pts.map((_,i)=>i%k);
+  let cents=[pts[Math.floor(Math.random()*pts.length)]];
+  while(cents.length<k){const ds=pts.map(p=>Math.min(...cents.map(c=>hav(p.lat,p.lng,c.lat,c.lng))));const tot=ds.reduce((a,b)=>a+b,0);let r=Math.random()*tot,cum=0;for(let i=0;i<pts.length;i++){cum+=ds[i];if(cum>=r){cents.push(pts[i]);break;}}}
+  let cls=new Array(pts.length).fill(0);
+  for(let it=0;it<iters;it++){pts.forEach((p,i)=>{let best=0,bd=Infinity;cents.forEach((c,ci)=>{const d=hav(p.lat,p.lng,c.lat,c.lng);if(d<bd){bd=d;best=ci;}});cls[i]=best;});cents=Array.from({length:k},(_,ci)=>{const g=pts.filter((_,i)=>cls[i]===ci);if(!g.length)return cents[ci];return{lat:g.reduce((s,p)=>s+p.lat,0)/g.length,lng:g.reduce((s,p)=>s+p.lng,0)/g.length};});}
+  return cls;
+}
+function nearestNeighbor(origem,pts){
+  let resto=[...pts],rota=[],atual=origem;
+  while(resto.length){let mi=0,md=Infinity;resto.forEach((p,i)=>{const d=hav(atual.lat,atual.lng,p.lat,p.lng);if(d<md){md=d;mi=i;}});const prox=resto.splice(mi,1)[0];prox._dist=hav(atual.lat,atual.lng,prox.lat,prox.lng);rota.push(prox);atual=prox;}
+  return rota;
+}
+function calcKmRota(rota){const kmIda=rota.reduce((s,p)=>s+(p._dist||0),0);const kmVolta=rota.length?hav(rota[rota.length-1].lat,rota[rota.length-1].lng,BASE_ROT.lat,BASE_ROT.lng):0;return{kmIda,kmVolta,kmTotal:kmIda+kmVolta};}
+function buildMapsUrl(lojas){const orig=encodeURIComponent(BASE_ROT.endereco);const wps=lojas.slice(0,9).map(f=>encodeURIComponent(f.endereco)).join('|');return `https://www.google.com/maps/dir/?api=1&origin=${orig}&destination=${orig}&waypoints=${wps}&travelmode=driving`;}
+
+// Vencimento
+function isUtil(d){return d.getDay()!==0&&d.getDay()!==6;}
+function addDU(ds,n){let d=new Date(ds+'T12:00:00'),a=0;while(a<n){d.setDate(d.getDate()+1);if(isUtil(d))a++;}return d;}
+function duEntre(ds,d2){let d=new Date(ds+'T12:00:00'),c=0,cur=new Date(d);cur.setDate(cur.getDate()+1);while(cur<=d2){if(isUtil(cur))c++;cur.setDate(cur.getDate()+1);}return c;}
+function getVenc(f){
+  if(!f.uc)return{status:'sem',label:'—',diff:99};
+  const prox=addDU(f.uc,f.ciclo),hj=new Date();hj.setHours(12,0,0,0);
+  const diff=prox>=hj?duEntre(new Date().toISOString().split('T')[0],prox):-duEntre(prox.toISOString().split('T')[0],hj);
+  if(diff<0)return{status:'vencido',label:`Venc.${Math.abs(diff)}du`,diff};
+  if(diff===0)return{status:'hoje',label:'Hoje',diff:0};
+  if(diff===1)return{status:'amanha',label:'Amanhã',diff:1};
+  if(diff<=5)return{status:'breve',label:`${diff}du`,diff};
+  return{status:'ok',label:`${diff}du`,diff};
+}
+function vcBadge(s){return{vencido:'vermelho',hoje:'vermelho',amanha:'laranja',breve:'laranja',ok:'verde',sem:'cinza'}[s]||'cinza';}
+
+function renderRotaGestor(){
+  rotState.tela='selecao';
+  _renderRoteizador();
+}
+
+function _renderRoteizador(){
+  const s=rotState;
+  if(s.tela==='calculando'){
+    document.getElementById('content-area').innerHTML=`
+      ${btnBack('Dashboard')}
+      <div class="mod-header"><div class="mod-header-icon verde"><i class="ti ti-route-2"></i></div><div><h2>Roteizador</h2><span>Calculando rotas...</span></div></div>
+      <div style="background:var(--green-bg);border:1px solid var(--green-light);border-radius:var(--radius);padding:2rem;text-align:center;margin-top:1rem">
+        <i class="ti ti-loader-2" style="font-size:36px;color:var(--green);display:block;margin-bottom:10px;animation:spin 1s linear infinite"></i>
+        <p style="font-size:14px;font-weight:600;color:var(--green)">${s.loadMsg}</p>
+      </div>`;
+    document.getElementById('btn-back-mod')?.addEventListener('click',renderDashboard);
+    return;
+  }
+  if(s.tela==='resultado') return _renderResultado();
+  if(s.tela==='salvas') return _renderSalvas();
+
+  // ── TELA SELEÇÃO ──
+  const ufs=['Todos',...new Set(FORNS_ROT.map(f=>f.uf))].sort();
+  const b=s.busca.toLowerCase();
+  const lista=FORNS_ROT.filter(f=>(s.filtroUF==='Todos'||f.uf===s.filtroUF)&&(!b||f.nome.toLowerCase().includes(b)||f.cidade.toLowerCase().includes(b)));
+  const cidades=[...new Set(lista.map(f=>f.cidade))];
+  const nSel=s.sel.size;
+  const todosVis=lista.length>0&&lista.every(f=>s.sel.has(f.id));
+  const algunsVis=lista.some(f=>s.sel.has(f.id));
+  const urgentes=FORNS_ROT.filter(f=>['vencido','hoje','amanha'].includes(getVenc(f).status)).length;
+
+  document.getElementById('content-area').innerHTML=`
+    ${btnBack('Dashboard')}
+    <div class="mod-header"><div class="mod-header-icon verde"><i class="ti ti-route-2"></i></div><div><h2>Roteizador</h2><span>Multi-rota inteligente</span></div></div>
+
+    <!-- Nº de rotas -->
+    <div style="display:flex;align-items:center;gap:12px;background:var(--bg);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:10px;border:1px solid var(--border)">
+      <span style="font-size:14px;flex:1"><i class="ti ti-truck" style="margin-right:5px;color:var(--text2)"></i>Número de rotas</span>
+      <div id="rot-minus" style="width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;user-select:none">−</div>
+      <strong style="font-size:20px;min-width:28px;text-align:center">${s.nRotas}</strong>
+      <div id="rot-plus" style="width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;user-select:none">+</div>
+    </div>
+
+    <!-- Custo/km — calculado automaticamente pela placa -->
+    <div style="background:var(--green-bg);border:1px solid var(--green-light);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;gap:10px">
+      <i class="ti ti-gas-station" style="color:var(--green);font-size:18px;flex-shrink:0"></i>
+      <div style="flex:1">
+        <div style="font-size:12px;font-weight:600;color:var(--green)">Custo por km — calculado pela placa</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px">Diesel S10: R$${DIESEL_PRECO}/l · Atribua veículos nas rotas para ver o custo real</div>
+      </div>
+    </div>
+
+    <!-- Toolbar de seleção -->
+    <div style="display:flex;align-items:center;gap:6px;padding:8px 10px;background:var(--bg);border-radius:var(--radius-sm);margin-bottom:6px;flex-wrap:wrap;border:1px solid var(--border)">
+      <span style="font-size:13px;font-weight:600;flex:1"><span style="color:var(--green)">${nSel}</span> de ${FORNS_ROT.length} lojas</span>
+      ${urgentes>0?`<button class="btn btn-secondary btn-sm" id="rot-urgentes"><i class="ti ti-alert-triangle"></i> Urgentes (${urgentes})</button>`:''}
+      ${nSel>0?`<button class="btn btn-danger btn-sm" id="rot-limpar"><i class="ti ti-x"></i> Limpar</button>`:''}
+    </div>
+
+    <!-- Filtros UF -->
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">
+      ${ufs.map(u=>`<button class="rot-uf-pill${s.filtroUF===u?' active':''}" data-uf="${u}" style="padding:4px 10px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid ${s.filtroUF===u?'var(--green)':'var(--border)'};background:${s.filtroUF===u?'var(--green)':'var(--surface)'};color:${s.filtroUF===u?'#fff':'var(--text2)'};font-family:inherit">${u}</button>`).join('')}
+    </div>
+
+    <!-- Busca -->
+    <div class="search-wrap"><i class="ti ti-search"></i><input id="rot-busca" type="text" placeholder="Buscar loja ou cidade..." value="${s.busca}" autocomplete="off"></div>
+
+    <!-- Checkbox todos -->
+    <div id="rot-lista-container">${lista.length>0?`
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg);border-radius:var(--radius-sm) var(--radius-sm) 0 0;border:1px solid var(--border);border-bottom:none;cursor:pointer" id="rot-todos-wrap">
+      <div style="width:20px;height:20px;border-radius:4px;border:1.5px solid ${todosVis?'var(--green)':algunsVis?'var(--green)':'var(--border)'};background:${todosVis?'var(--green)':algunsVis?'var(--green-bg)':'var(--surface)'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        ${todosVis?'<i class="ti ti-check" style="font-size:11px;color:#fff"></i>':algunsVis?'<i class="ti ti-minus" style="font-size:11px;color:var(--green)"></i>':''}
+      </div>
+      <span style="flex:1;font-size:12px;font-weight:600;color:var(--text2)">${todosVis?'Desmarcar todos visíveis':'Selecionar todos visíveis'} (${lista.length})</span>
+      <span style="font-size:12px;color:var(--text2)">${lista.filter(f=>s.sel.has(f.id)).length} sel.</span>
+    </div>
+    <div style="border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);max-height:320px;overflow-y:auto">
+      ${cidades.map(cidade=>{
+        const dc=lista.filter(f=>f.cidade===cidade);
+        const todosC=dc.every(f=>s.sel.has(f.id));
+        const nSelC=dc.filter(f=>s.sel.has(f.id)).length;
+        return `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 12px;background:var(--bg);border-bottom:1px solid var(--border-light)">
+          <span style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.04em"><i class="ti ti-map-pin" style="font-size:10px;margin-right:3px"></i>${cidade} · ${dc.length}</span>
+          <button class="rot-cidade-btn${todosC?' active':''}" data-cidade="${cidade}" style="font-size:10px;padding:2px 8px;border-radius:20px;cursor:pointer;border:1px solid ${todosC?'var(--green)':'var(--border)'};background:${todosC?'var(--green-bg)':'var(--surface)'};color:${todosC?'var(--green)':'var(--text2)'};font-family:inherit">
+            ${todosC?`✓ ${nSelC} sel.`:`Sel. ${dc.length===1?'':dc.length}`}
+          </button>
+        </div>
+        ${dc.map(f=>{
+          const v=getVenc(f);const sel=s.sel.has(f.id);
+          return `<div class="rot-forn-row${sel?' sel':''}" data-fid="${f.id}" style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--border-light);cursor:pointer;background:${sel?'var(--green-bg)':'var(--surface)'}">
+            <div style="width:20px;height:20px;border-radius:4px;border:1.5px solid ${sel?'var(--green)':'var(--border)'};background:${sel?'var(--green)':'var(--surface)'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              ${sel?'<i class="ti ti-check" style="font-size:11px;color:#fff"></i>':''}
+            </div>
+            <div style="flex:1;min-width:0">
+              <strong style="font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${f.nome}</strong>
+              <span style="font-size:11px;color:var(--text2)">${f.cidade}/${f.uf}</span>
+            </div>
+            <span class="badge ${f.marca==='CP'?'azul':'verde'}" style="flex-shrink:0">${f.marca}</span>
+            <span class="badge ${vcBadge(v.status)}" style="flex-shrink:0;font-size:9px">${v.label}</span>
+          </div>`;
+        }).join('')}`;
+      }).join('')}
+    </div>`:`<div class="empty"><i class="ti ti-search-off"></i><p>Nenhuma loja encontrada</p></div>`}
+
+    </div><!-- /rot-lista-container -->
+
+    <!-- Botão calcular -->
+    ${nSel>=s.nRotas?`
+    <button class="btn btn-primary btn-block" id="rot-calcular" style="margin-top:12px;font-size:15px;padding:13px">
+      <i class="ti ti-sparkles"></i> Calcular ${s.nRotas} rota${s.nRotas>1?'s':''} para ${nSel} loja${nSel>1?'s':''}
+    </button>`:`
+    <p style="text-align:center;font-size:13px;color:var(--text2);margin-top:12px">${nSel===0?'Selecione as lojas acima.':
+    `Selecione ao menos ${s.nRotas} loja${s.nRotas>1?'s':''} — faltam ${s.nRotas-nSel}.`}</p>`}
+
+    <!-- Rotas salvas -->
+    ${s.rotasSalvas.length>0?`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:1rem;margin-bottom:6px">
+      <span class="section-title" style="margin:0">Rotas salvas (${s.rotasSalvas.length})</span>
+      <button class="btn btn-secondary btn-sm" id="rot-ver-salvas">Ver todas</button>
+    </div>
+    ${s.rotasSalvas.slice(-2).reverse().map(r=>`<div class="card" style="padding:.75rem 1rem">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <strong style="font-size:13px">${r.nome}</strong>
+        <span class="badge verde">Criada</span>
+      </div>
+      <div style="font-size:12px;color:var(--text2);margin-top:4px">${r.nLojas} lojas · ~${Math.round(r.kmTotal)} km · ${r.placa||'—'}</div>
+    </div>`).join('')}`:''}`;
+
+  // Bind eventos
+  document.getElementById('btn-back-mod')?.addEventListener('click',renderDashboard);
+
+function _gerarHTMLLista(s){
+  const b=s.busca.toLowerCase();
+  const lista=FORNS_ROT.filter(f=>(s.filtroUF==='Todos'||f.uf===s.filtroUF)&&(!b||f.nome.toLowerCase().includes(b)||f.cidade.toLowerCase().includes(b)));
+  const cidades=[...new Set(lista.map(f=>f.cidade))].sort();
+  const todosVis=lista.length>0&&lista.every(f=>s.sel.has(f.id));
+  const algunsVis=lista.some(f=>s.sel.has(f.id));
+  const nSel=s.sel.size;
+  if(!lista.length) return '<div class="empty"><i class="ti ti-search-off"></i><p>Nenhuma loja encontrada</p></div>';
+  return `<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg);border-radius:var(--radius-sm) var(--radius-sm) 0 0;border:1px solid var(--border);border-bottom:none;cursor:pointer" id="rot-todos-wrap">
+    <div style="width:20px;height:20px;border-radius:4px;border:1.5px solid ${todosVis?'var(--green)':algunsVis?'var(--green)':'var(--border)'};background:${todosVis?'var(--green)':algunsVis?'var(--green-bg)':'var(--surface)'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      ${todosVis?'<i class="ti ti-check" style="font-size:11px;color:#fff"></i>':algunsVis?'<i class="ti ti-minus" style="font-size:11px;color:var(--green)"></i>':''}
+    </div>
+    <span style="flex:1;font-size:12px;font-weight:600;color:var(--text2)">${todosVis?'Desmarcar todos visíveis':'Selecionar todos visíveis'} (${lista.length})</span>
+    <span style="font-size:12px;color:var(--text2)">${lista.filter(f=>s.sel.has(f.id)).length} sel.</span>
+  </div>
+  <div style="border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);max-height:320px;overflow-y:auto">
+    ${cidades.map(cidade=>{
+      const dc=lista.filter(f=>f.cidade===cidade);
+      const todosC=dc.every(f=>s.sel.has(f.id));
+      const nSelC=dc.filter(f=>s.sel.has(f.id)).length;
+      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 12px;background:var(--bg);border-bottom:1px solid var(--border-light)"><span style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.04em"><i class="ti ti-map-pin" style="font-size:10px;margin-right:3px"></i>'+cidade+' · '+dc.length+'</span><button class="rot-cidade-btn'+(todosC?' active':'')+'" data-cidade="'+cidade+'" style="font-size:10px;padding:2px 8px;border-radius:20px;cursor:pointer;border:1px solid '+(todosC?'var(--green)':'var(--border)')+';background:'+(todosC?'var(--green-bg)':'var(--surface)')+';color:'+(todosC?'var(--green)':'var(--text2)')+';font-family:inherit">'+(todosC?'✓ '+nSelC+' sel.':'Sel. '+(dc.length===1?'':dc.length))+'</button></div>'+
+      dc.map(f=>{const v=getVenc(f);const sel=s.sel.has(f.id);return '<div class="rot-forn-row'+(sel?' sel':'')+'" data-fid="'+f.id+'" style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--border-light);cursor:pointer;background:'+(sel?'var(--green-bg)':'var(--surface)')+'"><div style="width:20px;height:20px;border-radius:4px;border:1.5px solid '+(sel?'var(--green)':'var(--border)')+';background:'+(sel?'var(--green)':'var(--surface)')+';display:flex;align-items:center;justify-content:center;flex-shrink:0">'+(sel?'<i class="ti ti-check" style="font-size:11px;color:#fff"></i>':'')+'</div><div style="flex:1;min-width:0"><strong style="font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+f.nome+'</strong><span style="font-size:11px;color:var(--text2)">'+f.cidade+'/'+f.uf+'</span></div><span class="badge '+(f.marca==='CP'?'azul':'verde')+'" style="flex-shrink:0">'+f.marca+'</span><span class="badge '+vcBadge(v.status)+'" style="flex-shrink:0;font-size:9px">'+v.label+'</span></div>';}).join('');
+    }).join('')}
+  </div>`;
+}
+
+function _bindListaLojas(){
+  document.getElementById('rot-todos-wrap')?.addEventListener('click',()=>{const s=rotState;const b=s.busca.toLowerCase();const lista=FORNS_ROT.filter(f=>(s.filtroUF==='Todos'||f.uf===s.filtroUF)&&(!b||f.nome.toLowerCase().includes(b)||f.cidade.toLowerCase().includes(b)));const todosOn=lista.every(f=>s.sel.has(f.id));lista.forEach(f=>todosOn?s.sel.delete(f.id):s.sel.add(f.id));_atualizarListaLojas();});
+  document.querySelectorAll('.rot-forn-row').forEach(el=>el.addEventListener('click',()=>{const id=el.dataset.fid;rotState.sel.has(id)?rotState.sel.delete(id):rotState.sel.add(id);_atualizarListaLojas();}));
+  document.querySelectorAll('.rot-cidade-btn').forEach(el=>el.addEventListener('click',e=>{e.stopPropagation();const cidade=el.dataset.cidade;const dc=FORNS_ROT.filter(f=>f.cidade===cidade);const on=dc.every(f=>rotState.sel.has(f.id));dc.forEach(f=>on?rotState.sel.delete(f.id):rotState.sel.add(f.id));_atualizarListaLojas();}));
+}
+
+function _atualizarListaLojas(){
+  const el=document.getElementById('rot-lista-container');
+  if(!el){_renderRoteizador();return;}
+  el.innerHTML=_gerarHTMLLista(rotState);
+  _bindListaLojas();
+  // Atualizar contador de selecionadas e botão calcular
+  const nSel=rotState.sel.size;
+  const btnCalc=document.getElementById('rot-calcular');
+  if(btnCalc) btnCalc.textContent='🗺️ Gerar '+rotState.nRotas+' rota'+(rotState.nRotas>1?'s':'')+' com '+nSel+' loja'+(nSel!==1?'s':'');
+}
+
+    document.getElementById('rot-minus')?.addEventListener('click',()=>{rotState.nRotas=Math.max(1,rotState.nRotas-1);_renderRoteizador();});
+  document.getElementById('rot-plus')?.addEventListener('click',()=>{rotState.nRotas=Math.min(6,rotState.nRotas+1);_renderRoteizador();});
+  // custo/km agora calculado automaticamente pela placa
+  document.getElementById('rot-busca')?.addEventListener('input',e=>{
+    rotState.busca=e.target.value;
+    const pos=e.target.selectionStart;
+    _renderRoteizador();
+    // Restaurar foco e cursor após re-render
+    const inp=document.getElementById('rot-busca');
+    if(inp){inp.focus();try{inp.setSelectionRange(pos,pos);}catch(err){}}
+  });
+  document.getElementById('rot-urgentes')?.addEventListener('click',()=>{FORNS_ROT.forEach(f=>{if(['vencido','hoje','amanha'].includes(getVenc(f).status))rotState.sel.add(f.id);});_renderRoteizador();});
+  document.getElementById('rot-limpar')?.addEventListener('click',()=>{rotState.sel.clear();_renderRoteizador();});
+  // rot-todos-wrap agora em _bindListaLojas()
+  document.querySelectorAll('.rot-uf-pill').forEach(el=>el.addEventListener('click',()=>{rotState.filtroUF=el.dataset.uf;_renderRoteizador();}));
+  // rot-forn-row e rot-cidade-btn agora bindados em _bindListaLojas()
+  // rot-cidade-btn agora em _bindListaLojas()
+  document.getElementById('rot-calcular')?.addEventListener('click',calcularRotas);
+  document.getElementById('rot-ver-salvas')?.addEventListener('click',()=>{rotState.tela='salvas';_renderRoteizador();});
+  _bindListaLojas(); // bind inicial da lista
+}
+
+async function calcularRotas(){
+  const fornsSel=FORNS_ROT.filter(f=>rotState.sel.has(f.id));
+  rotState.tela='calculando'; rotState.loadMsg=`Geocodificando 1/${fornsSel.length}...`; _renderRoteizador();
+  const pontos=[];
+  for(let i=0;i<fornsSel.length;i++){
+    rotState.loadMsg=`Geocodificando ${i+1}/${fornsSel.length}: ${fornsSel[i].cidade}...`; _renderRoteizador();
+    const c=await getCoords(fornsSel[i].cep,fornsSel[i].cidade);
+    pontos.push({...fornsSel[i],...c});
+    await new Promise(r=>setTimeout(r,320));
+  }
+  rotState.loadMsg='Agrupando por proximidade...'; _renderRoteizador();
+  const k=Math.min(rotState.nRotas,pontos.length);
+  const cls=kMeans(pontos,k);
+  const grupos=Array.from({length:k},()=>[]);
+  pontos.forEach((p,i)=>grupos[cls[i]].push(p));
+  rotState.loadMsg='Otimizando sequência...'; _renderRoteizador();
+  rotState.rotasSugeridas=grupos.filter(g=>g.length>0).map(grupo=>{
+    const otimizada=nearestNeighbor(BASE_ROT,grupo);
+    const {kmIda,kmVolta,kmTotal}=calcKmRota(otimizada);
+    return{lojas:otimizada,kmIda,kmVolta,kmTotal,mapsUrl:buildMapsUrl(otimizada)};
+  }).sort((a,b)=>a.kmTotal-b.kmTotal);
+  rotState.atribuicoes={};
+  rotState.tela='resultado'; _renderRoteizador();
+}
+
+function _renderResultado(){
+  const s=rotState;
+  const ckm=parseFloat(s.custoKm)||parseFloat(getCustoKmPlaca(''))||1.5;
+  const kmGeral=s.rotasSugeridas.reduce((t,r)=>t+r.kmTotal,0);
+  const custoGeral=kmGeral*ckm;
+  const CORES=['var(--green)','var(--blue)','var(--red)','var(--orange)','var(--purple)','var(--teal)'];
+  const BGS=['var(--green-bg)','var(--blue-bg)','var(--red-bg)','var(--orange-bg)','var(--purple-bg)','var(--teal-bg)'];
+
+  document.getElementById('content-area').innerHTML=`
+    ${btnBack('Dashboard')}
+    <div class="mod-header"><div class="mod-header-icon verde"><i class="ti ti-route-2"></i></div><div><h2>Rotas sugeridas</h2><span>${s.rotasSugeridas.length} rotas · ${s.sel.size} lojas</span></div></div>
+
+    <div class="stat-grid-3" style="margin-bottom:12px">
+      <div class="stat-box"><div class="sv">${s.rotasSugeridas.length}</div><div class="sl">Rotas</div></div>
+      <div class="stat-box"><div class="sv">~${Math.round(kmGeral)}</div><div class="sl">Km total</div></div>
+      <div class="stat-box ${ckm>0?'laranja':''}"><div class="sv" style="font-size:16px">${ckm>0?fmtM(custoGeral):'—'}</div><div class="sl">Custo est.</div></div>
+    </div>
+
+    ${s.rotasSugeridas.map((rota,ri)=>{
+      const a=s.atribuicoes[ri]||{};
+      const custo=rota.kmTotal*ckm;
+      const frete=parseFloat(a.frete)||0;
+      const margem=frete-custo;
+      const exp=s.expandido[ri]!==false;
+      return `<div style="border:1.5px solid ${CORES[ri]};border-radius:var(--radius);overflow:hidden;margin-bottom:10px">
+        <div style="padding:12px 14px;background:${BGS[ri]};display:flex;align-items:center;gap:10px;cursor:pointer" data-rot-exp="${ri}">
+          <div style="width:28px;height:28px;border-radius:50%;background:${CORES[ri]};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0">${ri+1}</div>
+          <div style="flex:1">
+            <strong style="font-size:14px;display:block">Rota ${ri+1}</strong>
+            <span style="font-size:12px;color:var(--text2)">${rota.lojas.length} lojas · ~${Math.round(rota.kmTotal)} km (ida+volta)</span>
+          </div>
+          <i class="ti ti-chevron-${exp?'up':'down'}" style="font-size:14px;color:var(--text2)"></i>
+        </div>
+        ${exp?`<div style="padding:12px 14px">
+          <!-- Km breakdown -->
+          <div style="background:var(--bg);border-radius:var(--radius-sm);padding:10px;margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;font-size:12px;padding:2px 0;color:var(--text2)"><span>Ida (base → lojas)</span><strong>~${Math.round(rota.kmIda)} km</strong></div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;padding:2px 0;color:var(--text2)"><span>Volta (última → base)</span><strong>~${Math.round(rota.kmVolta)} km</strong></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;padding-top:6px;margin-top:4px;border-top:1px solid var(--border)"><span>Total</span><span>~${Math.round(rota.kmTotal)} km</span></div>
+            ${ckm>0?`<div style="display:flex;justify-content:space-between;font-size:12px;padding-top:4px;color:var(--orange)"><span>Custo logístico (aprox.)</span><strong>${fmtM(custo)}</strong></div>`:''}
+          </div>
+
+          <!-- Lojas -->
+          ${rota.lojas.map((f,i)=>{const v=getVenc(f);return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border-light)">
+            <div style="width:22px;height:22px;border-radius:50%;background:${CORES[ri]};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">${i+1}</div>
+            <div style="flex:1;min-width:0"><strong style="font-size:12px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${f.nome}</strong><span style="font-size:10px;color:var(--text2)">${f.cidade}</span></div>
+            <span class="badge ${vcBadge(v.status)}" style="font-size:9px;flex-shrink:0">${v.label}</span>
+            ${f._dist?`<span style="font-size:10px;padding:1px 5px;border-radius:10px;background:var(--bg);color:var(--text2);flex-shrink:0">${f._dist.toFixed(1)}km</span>`:''}
+          </div>`;}).join('')}
+          <div style="display:flex;align-items:center;gap:8px;padding:6px 0">
+            <div style="width:22px;height:22px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-home" style="font-size:10px;color:#fff"></i></div>
+            <span style="font-size:12px;color:var(--text2)">Retorno — Base Osasco</span>
+            <span style="font-size:10px;padding:1px 5px;border-radius:10px;background:var(--orange-bg);color:var(--orange);margin-left:auto">~${Math.round(rota.kmVolta)}km</span>
+          </div>
+
+          <!-- Atribuição -->
+          <div style="border-top:1px solid var(--border);padding-top:10px;margin-top:6px">
+            <p style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Atribuir motorista e veículo</p>
+            <div style="margin-bottom:8px"><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px">Nome da rota</label><input class="rot-atr-nome" type="text" placeholder="Ex: Rota SP Interior ${ri+1}" value="${a.nome||''}" data-ri="${ri}" style="font-size:13px;padding:8px 10px"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+              <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px">Veículo</label>
+                <select class="rot-atr-vei" data-ri="${ri}" style="font-size:12px;padding:8px 10px">
+                  <option value="">Selecionar...</option>
+                  ${VEICULOS_ROT.map(v=>`<option value="${v.placa}" ${a.veiculo===v.placa?'selected':''}>${v.placa}</option>`).join('')}
+                </select>
+              </div>
+              <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px">Motorista</label>
+                <select class="rot-atr-mot" data-ri="${ri}" style="font-size:12px;padding:8px 10px">
+                  <option value="">Selecionar...</option>
+                  ${MOTORISTAS_ROT.map(m=>`<option value="${m.id}" ${a.motorista===m.id?'selected':''}>${m.nome}</option>`).join('')}
+                </select>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px">Ajudante</label><input class="rot-atr-ajud" type="text" placeholder="Opcional" value="${a.ajudante||''}" data-ri="${ri}" style="font-size:13px;padding:8px 10px"></div>
+              <div><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px">Frete ida (R$)</label><input class="rot-atr-frete" type="number" placeholder="0,00" value="${a.frete||''}" data-ri="${ri}" style="font-size:13px;padding:8px 10px"></div>
+            </div>
+            ${frete>0&&ckm>0?`<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border-light);display:flex;justify-content:space-between;font-size:13px;font-weight:600"><span>Margem prevista</span><span style="color:${margem>=0?'var(--green)':'var(--red)'}">${margem>=0?'+':''}${fmtM(margem)}</span></div>`:''}
+          </div>
+
+          <!-- Google Maps -->
+          ${rota.mapsUrl?`<a href="${rota.mapsUrl}" target="_blank" style="text-decoration:none;display:block;margin-top:10px"><button class="btn btn-block" style="background:#1A73E8;color:#fff;border:none;font-size:13px;padding:10px"><i class="ti ti-map-pin"></i> Abrir no Google Maps (rota circular)</button></a>`:''}
+        </div>`:``}
+      </div>`;
+    }).join('')}
+
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn btn-secondary" style="flex:1;justify-content:center" id="rot-back-sel"><i class="ti ti-edit"></i> Ajustar</button>
+      <button class="btn btn-primary" style="flex:2;justify-content:center" id="rot-criar-todas"><i class="ti ti-send"></i> Criar ${s.rotasSugeridas.length} rotas</button>
+    </div>`;
+
+  document.getElementById('btn-back-mod')?.addEventListener('click',renderDashboard);
+  document.getElementById('rot-back-sel')?.addEventListener('click',()=>{rotState.tela='selecao';_renderRoteizador();});
+  document.getElementById('rot-criar-todas')?.addEventListener('click',salvarTodasRotas);
+  document.querySelectorAll('[data-rot-exp]').forEach(el=>el.addEventListener('click',()=>{const ri=parseInt(el.dataset.rotExp);rotState.expandido[ri]=rotState.expandido[ri]===false?true:false;_renderRoteizador();}));
+  document.querySelectorAll('.rot-atr-nome,.rot-atr-ajud,.rot-atr-frete').forEach(inp=>inp.addEventListener('input',()=>{const ri=parseInt(inp.dataset.ri);if(!rotState.atribuicoes[ri])rotState.atribuicoes[ri]={};const field=inp.classList.contains('rot-atr-nome')?'nome':inp.classList.contains('rot-atr-ajud')?'ajudante':'frete';rotState.atribuicoes[ri][field]=inp.value;}));
+  document.querySelectorAll('.rot-atr-vei,.rot-atr-mot').forEach(sel=>sel.addEventListener('change',()=>{const ri=parseInt(sel.dataset.ri);if(!rotState.atribuicoes[ri])rotState.atribuicoes[ri]={};const field=sel.classList.contains('rot-atr-vei')?'veiculo':'motorista';rotState.atribuicoes[ri][field]=sel.value;_renderRoteizador();}));
+}
+
+function salvarTodasRotas(){
+  // Custo por km calculado pela placa atribuída ou média da frota
+  const getCkmRota=(ri)=>{
+    const placa=rotState.atribuicoes[ri]?.veiculo||'';
+    return placa?parseFloat(getCustoKmPlaca(placa)):parseFloat(rotState.custoKm)||1.5;
+  };
+  const ckm=parseFloat(rotState.custoKm)||1.5;
+  rotState.rotasSugeridas.forEach((rota,ri)=>{
+    const a=rotState.atribuicoes[ri]||{};
+    const mot=MOTORISTAS_ROT.find(m=>m.id===a.motorista);
+    rotState.rotasSalvas.push({
+      id:'r'+Date.now()+ri, nome:a.nome||`Rota ${ri+1}`,
+      nLojas:rota.lojas.length, kmIda:rota.kmIda, kmVolta:rota.kmVolta, kmTotal:rota.kmTotal,
+      custoLog:rota.kmTotal*ckm, frete:parseFloat(a.frete)||0,
+      placa:a.veiculo||'', motoristaNome:mot?.nome||'', mapsUrl:rota.mapsUrl,
+    });
+  });
+  rotState.sel.clear(); rotState.rotasSugeridas=[];
+  rotState.tela='salvas'; _renderRoteizador();
+  setTimeout(()=>alert(`✅ ${rotState.rotasSalvas.length} rota(s) criada(s)!\nMotoristas notificados.`),100);
+}
+
+function _renderSalvas(){
+  const s=rotState;
+  document.getElementById('content-area').innerHTML=`
+    ${btnBack('Dashboard')}
+    <div class="mod-header"><div class="mod-header-icon verde"><i class="ti ti-route-2"></i></div><div><h2>Rotas salvas</h2><span>${s.rotasSalvas.length} rotas criadas</span></div></div>
+    <button class="btn btn-primary btn-block" id="rot-nova" style="margin-bottom:12px"><i class="ti ti-plus"></i> Nova roterizaçao</button>
+    ${s.rotasSalvas.length===0?`<div class="empty"><i class="ti ti-route-off"></i><p>Nenhuma rota criada ainda.</p></div>`:''}
+    ${[...s.rotasSalvas].reverse().map(r=>`<div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <strong style="font-size:14px">${r.nome}</strong>
+        <span class="badge verde">Criada</span>
+      </div>
+      <div style="background:var(--bg);border-radius:var(--radius-sm);padding:8px 10px;margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);padding:2px 0"><span>Ida</span><strong>~${Math.round(r.kmIda)} km</strong></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);padding:2px 0"><span>Volta</span><strong>~${Math.round(r.kmVolta)} km</strong></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;padding-top:5px;margin-top:3px;border-top:1px solid var(--border)"><span>Total</span><span>~${Math.round(r.kmTotal)} km</span></div>
+        ${r.custoLog>0?`<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--orange);padding-top:3px"><span>Custo logístico (aprox.)</span><strong>${fmtM(r.custoLog)}</strong></div>`:''}
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${r.placa?`<span class="badge azul"><i class="ti ti-truck" style="font-size:10px"></i> ${r.placa}</span>`:''}
+        ${r.motoristaNome?`<span class="badge verde"><i class="ti ti-user" style="font-size:10px"></i> ${r.motoristaNome}</span>`:''}
+      </div>
+      ${r.mapsUrl?`<a href="${r.mapsUrl}" target="_blank" style="text-decoration:none;display:block;margin-top:8px"><button class="btn btn-block" style="background:#1A73E8;color:#fff;border:none;font-size:12px;padding:8px"><i class="ti ti-map-pin"></i> Google Maps</button></a>`:''}
+    </div>`).join('')}`;
+  document.getElementById('btn-back-mod')?.addEventListener('click',renderDashboard);
+  document.getElementById('rot-nova')?.addEventListener('click',()=>{rotState.tela='selecao';rotState.rotasSugeridas=[];_renderRoteizador();});
+}
+
+// ── GESTOR: Frota ─────────────────────────────────────────────────────────────
+// ── ALERTAS WHATSAPP ──────────────────────────────────────────────────────────
+function renderAlertas(){
+  const c=window.wppCfg||{};
+  const log=window.wppLog||[];
+  const conectado=c.instanceId&&c.instanceToken&&c.clientToken&&c.grupoId;
+  const tabA=window._wppTab||'config';
+
+  document.getElementById('content-area').innerHTML=`
+    ${btnBack('Dashboard')}
+    <div class="mod-header">
+      <div class="mod-header-icon verde" style="background:#E7F8DC"><i class="ti ti-brand-whatsapp" style="color:#25D366"></i></div>
+      <div><h2>Alertas WhatsApp</h2><span>Z-API · ${conectado?'Configurado':'Não configurado'}</span></div>
+    </div>
+
+    <div style="display:flex;gap:3px;margin-bottom:1rem;background:var(--bg);border-radius:var(--radius-sm);padding:3px">
+      ${[['config','Configuração'],['alertas','Alertas'],['msgs','Mensagens'],['log',`Log (${log.length})`]].map(([t,l])=>
+        `<button class="btn ${tabA===t?'btn-primary':'btn-secondary'} btn-sm" style="flex:1;justify-content:center;font-size:11px" data-wpp-tab="${t}">${l}</button>`).join('')}
+    </div>
+
+    <div id="wpp-content">
+      ${tabA==='config'?_wppConfig(c,conectado):tabA==='alertas'?_wppAlertas(c):tabA==='msgs'?_wppMsgs(c):_wppLog(log)}
+    </div>`;
+
+  bindBack();
+  document.querySelectorAll('[data-wpp-tab]').forEach(btn=>{
+    btn.addEventListener('click',()=>{window._wppTab=btn.dataset.wppTab;renderAlertas();});
+  });
+  _bindWpp(tabA);
+}
+
+function _wppConfig(c,conectado){
+  return `
+  <div class="alert azul"><i class="ti ti-info-circle"></i><p style="font-size:12px">Crie uma instância em <strong>z-api.io</strong>, conecte o WhatsApp da empresa e cole as credenciais abaixo.</p></div>
+  <div class="card">
+    <div class="form-group"><label>Instance ID</label><input id="wpp-instance" type="text" placeholder="Ex: 3ABC1234DEFG5678" value="${c.instanceId||''}"></div>
+    <div class="form-group"><label>Instance Token</label><input id="wpp-itoken" type="password" placeholder="Token da instância" value="${c.instanceToken||''}"></div>
+    <div class="form-group"><label>Client Token</label><input id="wpp-ctoken" type="password" placeholder="Client-Token do painel Z-API" value="${c.clientToken||''}"></div>
+    <div class="form-group"><label>ID do Grupo WhatsApp</label><input id="wpp-grupo" type="text" placeholder="5511999999999-1234567890@g.us" value="${c.grupoId||''}">
+      <p style="font-size:11px;color:var(--text2);margin-top:4px">Envie uma mensagem no grupo e veja nos webhooks da Z-API para obter o ID.</p>
+    </div>
+  </div>
+  <button class="btn btn-primary btn-block" id="wpp-salvar-cfg"><i class="ti ti-device-floppy"></i> Salvar credenciais</button>
+  <button class="btn btn-block${conectado?'':' btn-dis'}" id="wpp-testar" style="background:#25D366;color:#fff;border-color:#25D366;margin-top:6px"><i class="ti ti-brand-whatsapp"></i> Testar conexão</button>`;
+}
+
+function _wppAlertas(c){
+  return `
+  <!-- Alerta 1: Check-in -->
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div><strong style="font-size:14px">🚚 Check-in — Poucos estourados</strong><p style="font-size:12px;color:var(--text2);margin-top:2px">Dispara quando % de estourados < limite</p></div>
+      <label style="position:relative;width:44px;height:24px;flex-shrink:0">
+        <input type="checkbox" id="wpp-t-checkin" ${c.ativoCheckin!==false?'checked':''} style="opacity:0;width:0;height:0">
+        <span id="sw-checkin" style="position:absolute;inset:0;border-radius:24px;cursor:pointer;transition:background .2s;background:${c.ativoCheckin!==false?'#25D366':'var(--border)'}">
+          <span style="position:absolute;width:18px;height:18px;background:#fff;border-radius:50%;top:3px;transition:transform .2s;left:3px;transform:translateX(${c.ativoCheckin!==false?'20':'0'}px)"></span>
+        </span>
+      </label>
+    </div>
+    <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px">Limite: <strong style="color:#25D366;font-size:16px" id="lbl-lc">${c.limiteCheckin||30}%</strong></label>
+    <input type="range" id="wpp-lc" min="5" max="80" step="5" value="${c.limiteCheckin||30}" style="width:100%;accent-color:#25D366;cursor:pointer">
+  </div>
+
+  <!-- Alerta 2: Triagem -->
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div><strong style="font-size:14px">🔴 Triagem — Lixo</strong><p style="font-size:12px;color:var(--text2);margin-top:2px">Dispara quando % de Lixo ≥ limite</p></div>
+      <label style="position:relative;width:44px;height:24px;flex-shrink:0">
+        <input type="checkbox" id="wpp-t-triagem" ${c.ativoTriagem!==false?'checked':''} style="opacity:0;width:0;height:0">
+        <span id="sw-triagem" style="position:absolute;inset:0;border-radius:24px;cursor:pointer;transition:background .2s;background:${c.ativoTriagem!==false?'#25D366':'var(--border)'}">
+          <span style="position:absolute;width:18px;height:18px;background:#fff;border-radius:50%;top:3px;transition:transform .2s;left:3px;transform:translateX(${c.ativoTriagem!==false?'20':'0'}px)"></span>
+        </span>
+      </label>
+    </div>
+    <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px">Limite: <strong style="color:#25D366;font-size:16px" id="lbl-lt">${c.limiteTriagem||30}%</strong></label>
+    <input type="range" id="wpp-lt" min="5" max="80" step="5" value="${c.limiteTriagem||30}" style="width:100%;accent-color:#25D366;cursor:pointer">
+  </div>
+
+  <button class="btn btn-primary btn-block" id="wpp-salvar-al"><i class="ti ti-device-floppy"></i> Salvar</button>
+
+  <div class="section-title" style="margin-top:1rem">Simular disparos</div>
+  <div style="display:flex;gap:8px">
+    <button class="btn btn-block btn-sm" id="wpp-sim-ci" style="flex:1;background:#25D366;color:#fff;border-color:#25D366"><i class="ti ti-brand-whatsapp"></i> Simular check-in</button>
+    <button class="btn btn-block btn-sm" id="wpp-sim-tr" style="flex:1;background:#25D366;color:#fff;border-color:#25D366"><i class="ti ti-brand-whatsapp"></i> Simular triagem</button>
+  </div>`;
+}
+
+function _wppMsgs(c){
+  const varsCI=['{rota}','{motorista}','{placa}','{loja}','{total}','{estourados}','{pct}','{limite}','{hora}'];
+  const varsTR=['{placa}','{motorista}','{total}','{lixo}','{pct}','{limite}','{hora}'];
+  function preview(tmpl,dados){
+    let m=tmpl;Object.entries(dados).forEach(([k,v])=>{m=m.replaceAll(`{${k}}`,v);});
+    return m.replace(/\*(.*?)\*/g,'<strong>$1</strong>').replace(/_(.*?)_/g,'<em style="color:var(--text2)">$1</em>').replace(/\n/g,'<br>');
+  }
+  const dci={rota:'Rota Barretos',motorista:'Herlon Carrera',placa:'FPW-9J58',loja:'DPASCHOAL BARRETOS',total:'317',estourados:'108',pct:'34',limite:c.limiteCheckin||30,hora:'14:35'};
+  const dtr={placa:'FPW-9J58',motorista:'Herlon Carrera',total:'459',lixo:'156',pct:'34',limite:c.limiteTriagem||30,hora:'16:20'};
+  return `
+  <div class="section-title">Mensagem check-in</div>
+  <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px">${varsCI.map(v=>`<span class="wpp-var" data-v="${v}" data-t="wpp-mci" style="font-size:10px;padding:2px 7px;border-radius:20px;background:var(--bg);border:0.5px solid var(--border);cursor:pointer;color:var(--text2)">${v}</span>`).join('')}</div>
+  <textarea id="wpp-mci" style="font-size:12px;line-height:1.6" rows="6">${c.msgCheckin||''}</textarea>
+  <div style="background:#E7F8DC;border-radius:12px 12px 2px 12px;padding:10px 12px;margin:6px 0;font-size:12px;line-height:1.6;border:0.5px solid #C5E8A3" id="prev-ci">${preview(c.msgCheckin||'',dci)}</div>
+
+  <div class="section-title" style="margin-top:10px">Mensagem triagem</div>
+  <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px">${varsTR.map(v=>`<span class="wpp-var" data-v="${v}" data-t="wpp-mtr" style="font-size:10px;padding:2px 7px;border-radius:20px;background:var(--bg);border:0.5px solid var(--border);cursor:pointer;color:var(--text2)">${v}</span>`).join('')}</div>
+  <textarea id="wpp-mtr" style="font-size:12px;line-height:1.6" rows="6">${c.msgTriagem||''}</textarea>
+  <div style="background:#E7F8DC;border-radius:12px 12px 2px 12px;padding:10px 12px;margin:6px 0;font-size:12px;line-height:1.6;border:0.5px solid #C5E8A3" id="prev-tr">${preview(c.msgTriagem||'',dtr)}</div>
+
+  <button class="btn btn-primary btn-block" id="wpp-salvar-msgs"><i class="ti ti-device-floppy"></i> Salvar mensagens</button>`;
+}
+
+function _wppLog(log){
+  if(!log.length) return `<div class="empty"><i class="ti ti-inbox"></i><p>Nenhum envio registrado.</p></div>`;
+  const ok=log.filter(l=>l.tipo!=='err').length, err=log.filter(l=>l.tipo==='err').length;
+  return `
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+    <div class="stat-box"><div class="sv">${log.length}</div><div class="sl">Total</div></div>
+    <div class="stat-box verde"><div class="sv">${ok}</div><div class="sl">Enviados</div></div>
+    <div class="stat-box vermelho"><div class="sv">${err}</div><div class="sl">Erros</div></div>
+  </div>
+  <div class="card" style="padding:.75rem 1rem">
+    ${[...log].reverse().map(l=>`<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border-light)">
+      <div style="width:32px;height:32px;border-radius:50%;background:${l.tipo==='err'?'var(--red-bg)':l.tipo==='warn'?'var(--orange-bg)':'var(--green-bg)'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <i class="ti ti-${l.tipo==='err'?'alert-circle':l.tipo==='warn'?'alert-triangle':'circle-check'}" style="font-size:15px;color:${l.tipo==='err'?'var(--red)':l.tipo==='warn'?'var(--orange)':'var(--green)'}"></i>
+      </div>
+      <div style="flex:1;min-width:0">
+        <strong style="font-size:13px;display:block">${l.titulo}</strong>
+        <span style="font-size:11px;color:var(--text2)">${l.hora}</span>
+        <div style="font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l.msg}</div>
+      </div>
+    </div>`).join('')}
+  </div>
+  <button class="btn btn-danger btn-sm btn-block" id="wpp-limpar-log"><i class="ti ti-trash"></i> Limpar log</button>`;
+}
+
+function _bindWpp(tabA){
+  // Config
+  document.getElementById('wpp-salvar-cfg')?.addEventListener('click',()=>{
+    window.wppCfg.instanceId=document.getElementById('wpp-instance').value.trim();
+    window.wppCfg.instanceToken=document.getElementById('wpp-itoken').value.trim();
+    window.wppCfg.clientToken=document.getElementById('wpp-ctoken').value.trim();
+    window.wppCfg.grupoId=document.getElementById('wpp-grupo').value.trim();
+    wppSalvarCfg();alert('✅ Credenciais salvas!');renderAlertas();
+  });
+  document.getElementById('wpp-testar')?.addEventListener('click',async()=>{
+    const btn=document.getElementById('wpp-testar');
+    btn.innerHTML='<i class="ti ti-loader-2 spin"></i> Enviando...';btn.disabled=true;
+    try{await wppEnviar('✅ *Tyre Eco — Teste de conexão*\nSistema conectado!\n_'+new Date().toLocaleString('pt-BR')+'_');
+      wppAddLog('ok','Teste OK','Mensagem de teste enviada');alert('✅ Mensagem de teste enviada no grupo!');}
+    catch(e){wppAddLog('err','Teste falhou',e.message);alert('❌ Erro: '+e.message);}
+    wppSalvarLog();renderAlertas();
+  });
+
+  // Alertas sliders
+  document.getElementById('wpp-lc')?.addEventListener('input',e=>{document.getElementById('lbl-lc').textContent=e.target.value+'%';});
+  document.getElementById('wpp-lt')?.addEventListener('input',e=>{document.getElementById('lbl-lt').textContent=e.target.value+'%';});
+  document.getElementById('wpp-t-checkin')?.addEventListener('change',e=>{
+    const sw=document.getElementById('sw-checkin');
+    sw.style.background=e.target.checked?'#25D366':'var(--border)';
+    sw.querySelector('span').style.transform=e.target.checked?'translateX(20px)':'translateX(0)';
+  });
+  document.getElementById('wpp-t-triagem')?.addEventListener('change',e=>{
+    const sw=document.getElementById('sw-triagem');
+    sw.style.background=e.target.checked?'#25D366':'var(--border)';
+    sw.querySelector('span').style.transform=e.target.checked?'translateX(20px)':'translateX(0)';
+  });
+  document.getElementById('wpp-salvar-al')?.addEventListener('click',()=>{
+    window.wppCfg.limiteCheckin=parseInt(document.getElementById('wpp-lc')?.value)||30;
+    window.wppCfg.limiteTriagem=parseInt(document.getElementById('wpp-lt')?.value)||30;
+    window.wppCfg.ativoCheckin=document.getElementById('wpp-t-checkin')?.checked!==false;
+    window.wppCfg.ativoTriagem=document.getElementById('wpp-t-triagem')?.checked!==false;
+    wppSalvarCfg();alert('✅ Alertas salvos!');
+  });
+  document.getElementById('wpp-sim-ci')?.addEventListener('click',async()=>{
+    const btn=document.getElementById('wpp-sim-ci');btn.innerHTML='<i class="ti ti-loader-2 spin"></i>';btn.disabled=true;
+    await window.wppDispararCheckin?.({rota:'Rota Barretos',motorista:'Herlon Carrera',placa:'FPW-9J58',loja:'DPASCHOAL BARRETOS',total:317,estourados:108,pct:35});
+    alert(window.wppLog.slice(-1)[0]?.tipo==='err'?'❌ Erro: '+window.wppLog.slice(-1)[0]?.msg:'✅ Alerta de check-in enviado!');
+    renderAlertas();
+  });
+  document.getElementById('wpp-sim-tr')?.addEventListener('click',async()=>{
+    const btn=document.getElementById('wpp-sim-tr');btn.innerHTML='<i class="ti ti-loader-2 spin"></i>';btn.disabled=true;
+    await window.wppDispararTriagem?.({placa:'FPW-9J58',motorista:'Herlon Carrera',total:459,lixo:160,pct:35});
+    alert(window.wppLog.slice(-1)[0]?.tipo==='err'?'❌ Erro: '+window.wppLog.slice(-1)[0]?.msg:'✅ Alerta de triagem enviado!');
+    renderAlertas();
+  });
+
+  // Mensagens
+  document.getElementById('wpp-mci')?.addEventListener('input',e=>{
+    const dci={rota:'Rota Barretos',motorista:'Herlon Carrera',placa:'FPW-9J58',loja:'DPASCHOAL BARRETOS',total:'317',estourados:'108',pct:'34',limite:window.wppCfg.limiteCheckin||30,hora:'14:35'};
+    let m=e.target.value;Object.entries(dci).forEach(([k,v])=>{m=m.replaceAll(`{${k}}`,v);});
+    const el=document.getElementById('prev-ci');if(el)el.innerHTML=m.replace(/\*(.*?)\*/g,'<strong>$1</strong>').replace(/_(.*?)_/g,'<em>$1</em>').replace(/\n/g,'<br>');
+  });
+  document.getElementById('wpp-salvar-msgs')?.addEventListener('click',()=>{
+    window.wppCfg.msgCheckin=document.getElementById('wpp-mci')?.value||window.wppCfg.msgCheckin;
+    window.wppCfg.msgTriagem=document.getElementById('wpp-mtr')?.value||window.wppCfg.msgTriagem;
+    wppSalvarCfg();alert('✅ Mensagens salvas!');
+  });
+  document.querySelectorAll('.wpp-var').forEach(tag=>{
+    tag.addEventListener('click',()=>{
+      const inp=document.getElementById(tag.dataset.t);if(!inp)return;
+      const p=inp.selectionStart;inp.value=inp.value.slice(0,p)+tag.dataset.v+inp.value.slice(p);
+      inp.focus();inp.selectionStart=inp.selectionEnd=p+tag.dataset.v.length;
+    });
+  });
+
+  // Log
+  document.getElementById('wpp-limpar-log')?.addEventListener('click',()=>{
+    if(confirm('Limpar log?')){window.wppLog=[];wppSalvarLog();renderAlertas();}
+  });
+}
+
+// renderFrota removida — dados gerenciados em cadastros.html
+
+function renderCadastros(){
+  document.getElementById('content-area').innerHTML=`
+    ${btnBack()}
+    <div class="mod-header"><div class="mod-header-icon roxo"><i class="ti ti-settings"></i></div><div><h2>Cadastros</h2><span>Volumes m³ e capacidades</span></div></div>
+
+    <div class="section-title">Volume por item (m³/unidade)</div>
+    <div class="alert azul"><i class="ti ti-info-circle"></i><p>Itens em kg (filtro, papelão, plásticos, sucata) usam 0 — não computam volume.</p></div>
+    <div class="card" style="padding:.75rem 1rem">
+      ${ITENS_CI.map(it=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border-light)">
+        <span style="flex:1;font-size:13px;font-weight:500">${it.nome}</span>
+        <span style="font-size:10px;color:var(--text2);width:22px;flex-shrink:0">${it.un}</span>
+        <input class="vol-inp" type="number" inputmode="decimal" step="0.001" min="0"
+          style="width:70px;padding:6px 8px;text-align:right;border:1.5px solid var(--border);border-radius:6px;font-size:13px;font-weight:600;background:var(--bg)"
+          value="${VOLUMES_M3[it.id]||0}" data-item="${it.id}">
+        <span style="font-size:10px;color:var(--text2);flex-shrink:0">m³</span>
+      </div>`).join('')}
+    </div>
+    <button class="btn btn-primary btn-block" id="btn-salvar-vol"><i class="ti ti-device-floppy"></i> Salvar volumes</button>
+
+    <div class="section-title" style="margin-top:1rem">Capacidade do baú por veículo</div>
+    <div class="card" style="padding:.75rem 1rem">
+      ${Object.entries(CAPACIDADE_BAU).map(([placa,bau])=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border-light)">
+        <span style="flex:1;font-size:13px;font-weight:700">${placa}</span>
+        <input class="bau-inp" type="number" inputmode="decimal" step="0.5" min="1"
+          style="width:70px;padding:6px 8px;text-align:right;border:1.5px solid var(--border);border-radius:6px;font-size:13px;font-weight:600;background:var(--bg)"
+          value="${bau}" data-placa="${placa}">
+        <span style="font-size:10px;color:var(--text2);flex-shrink:0">m³</span>
+      </div>`).join('')}
+    </div>
+    <button class="btn btn-success btn-block" id="btn-salvar-bau"><i class="ti ti-device-floppy"></i> Salvar capacidades</button>
+  `;
+  bindBack();
+  document.getElementById('btn-salvar-vol')?.addEventListener('click',()=>{
+    document.querySelectorAll('.vol-inp').forEach(inp=>{VOLUMES_M3[inp.dataset.item]=parseFloat(inp.value)||0;});
+    alert('Volumes salvos!');
+  });
+  document.getElementById('btn-salvar-bau')?.addEventListener('click',()=>{
+    document.querySelectorAll('.bau-inp').forEach(inp=>{CAPACIDADE_BAU[inp.dataset.placa]=parseFloat(inp.value)||40;});
+    alert('Capacidades salvas!');
+  });
+}
+
+
+// ── GESTOR: Financeiro ────────────────────────────────────────────────────────
+function renderFinanceiro(){
+  document.getElementById('content-area').innerHTML=`
+    ${btnBack()}
+    <div class="mod-header"><div class="mod-header-icon laranja"><i class="ti ti-report-money"></i></div><div><h2>Financeiro</h2><span>Fechamento de rotas</span></div></div>
+    <div class="alert laranja"><i class="ti ti-info-circle"></i><p>Custo logístico é <strong>estimado</strong> (km × R$/km). Custo real fecha após check-in de todas as lojas.</p></div>
+    <div class="stat-grid">
+      <div class="stat-box verde"><div class="sv">R$38.436</div><div class="sl">Receita mês</div></div>
+      <div class="stat-box laranja"><div class="sv">R$12.840</div><div class="sl">Custo logístico</div></div>
+    </div>
+    <div class="section-title">Rotas — status financeiro</div>
+    ${[{nome:'Rota Barretos/Batatais',status:'fechada',custo:'R$1.030',receita:'R$2.198',margem:'+R$1.168'},{nome:'Rota Campinas',status:'andamento',custo:'R$467 (aprox.)',receita:'Pendente',margem:'Aguardando'},{nome:'Rota Mogi Guaçu',status:'prevista',custo:'R$335 (aprox.)',receita:'Pendente',margem:'Aguardando'}].map(r=>`<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <strong style="font-size:14px">${r.nome}</strong>
+        <span class="badge ${r.status==='fechada'?'verde':r.status==='andamento'?'laranja':'cinza'}">${r.status==='fechada'?'Fechada':r.status==='andamento'?'Em andamento':'Prevista'}</span>
+      </div>
+      <div class="fin-row"><span class="fl">Custo logístico</span><span class="fv neg">${r.custo}</span></div>
+      <div class="fin-row"><span class="fl">Custo itens</span><span class="fv neg">${r.receita==='Pendente'?'Pendente check-in':r.receita}</span></div>
+      <div class="fin-row"><span class="fl">Margem</span><span class="fv ${r.margem.startsWith('+')?'pos':'warn'}">${r.margem}</span></div>
+    </div>`).join('')}`;
+  bindBack();
+}
+
+// ── GESTOR: Dashboard ─────────────────────────────────────────────────────────
+function renderDashboardGestor(){
+  document.getElementById('content-area').innerHTML=`
+    ${btnBack()}
+    <div class="mod-header"><div class="mod-header-icon roxo"><i class="ti ti-layout-dashboard"></i></div><div><h2>Dashboard</h2><span>Visão geral do dia</span></div></div>
+    <div class="stat-grid">
+      <div class="stat-box verde"><div class="sv">3</div><div class="sl">Rotas ativas</div></div>
+      <div class="stat-box azul"><div class="sv">769</div><div class="sl">Pneus em trânsito</div></div>
+    </div>
+    <div class="stat-grid-3">
+      <div class="stat-box"><div class="sv">2</div><div class="sl">Conferidos</div></div>
+      <div class="stat-box laranja"><div class="sv">1</div><div class="sl">Triagem pend.</div></div>
+      <div class="stat-box verde"><div class="sv">5</div><div class="sl">Vendas hoje</div></div>
+    </div>
+    <div class="alert verde"><i class="ti ti-circle-check"></i><p>Todas as rotas do dia foram criadas. Próxima coleta urgente: CAMPNEUS BARAO GERALDO (vence amanhã).</p></div>
+    <div class="section-title">Status em tempo real</div>
+    ${CAMINHOES_CONF.map(c=>`<div class="card" style="display:flex;align-items:center;gap:10px">
+      <div class="avatar ${c.status==='conferido'?'verde':'azul'}"><i class="ti ti-truck" style="font-size:14px"></i></div>
+      <div style="flex:1;min-width:0"><strong style="font-size:13px;display:block">${c.placa}</strong><span style="font-size:11px;color:var(--text2)">${c.motorista} · ${c.lojas.length} lojas</span></div>
+      <span class="badge ${c.status==='conferido'?'verde':'laranja'}">${c.status==='conferido'?'Conferido':'Em rota'}</span>
+    </div>`).join('')}`;
+  bindBack();
+}
+
+// ── MOTORISTA: Rota ───────────────────────────────────────────────────────────
+function renderMotoristaRota(){
+  const done=ROTA_MOTORISTA.lojas.filter(l=>motorState.checkins[l.id]?.done).length;
+  const total=ROTA_MOTORISTA.lojas.length;
+  const prox=ROTA_MOTORISTA.lojas.find(l=>!motorState.checkins[l.id]?.done);
+  const pct=Math.round(done/total*100);
+  document.getElementById('content-area').innerHTML=`
+    ${btnBack()}
+    <div class="mod-header"><div class="mod-header-icon azul"><i class="ti ti-map-pin"></i></div><div><h2>${ROTA_MOTORISTA.nome}</h2><span>${ROTA_MOTORISTA.placa} · ${ROTA_MOTORISTA.ajudante}</span></div></div>
+    ${motorState.viagemIniciada?`
+    <div class="prog-wrap"><div class="prog-bar" style="width:${pct}%"></div></div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:12px">${done} de ${total} coletas · ${pct}% concluído</p>
+    ${prox?`<div class="alert azul"><i class="ti ti-map-pin"></i><p><strong>Próxima:</strong> ${prox.nome}</p></div>`:'<div class="alert verde"><i class="ti ti-circle-check"></i><p>Todas as coletas realizadas!</p></div>'}
+    `:''}
+    <div style="border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:12px">
+      <div style="display:flex;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border-light);background:var(--bg)">
+        <div style="width:30px;height:30px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff"><i class="ti ti-building-factory-2" style="font-size:13px"></i></div>
+        <div style="padding-top:4px"><strong style="font-size:13px;display:block">Base — Osasco</strong><span style="font-size:11px;color:var(--text2)">CEP 06233-040 · Partida</span></div>
+      </div>
+      ${ROTA_MOTORISTA.lojas.map((l,i)=>{
+        const ci=motorState.checkins[l.id];
+        const done2=ci?.done;
+        const isProx=motorState.viagemIniciada&&prox?.id===l.id;
+        return `<div style="display:flex;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border-light)">
+          <div style="width:30px;height:30px;border-radius:50%;background:${done2?'var(--green)':isProx?'var(--blue-bg)':'var(--bg)'};border:${isProx?'2px solid var(--blue)':done2?'none':'1px solid var(--border)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;color:${done2?'#fff':isProx?'var(--blue)':'var(--text2)'}">
+            ${done2?`<i class="ti ti-check" style="font-size:12px"></i>`:i+1}
+          </div>
+          <div style="flex:1;padding-top:3px;min-width:0">
+            <strong style="font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l.nome}</strong>
+            <span style="font-size:11px;color:var(--text2)">${l.cidade}</span>
+            ${done2?`<div style="font-size:11px;color:var(--green);margin-top:3px">✓ Coletado às ${ci.hora}</div>`:''}
+            ${isProx&&motorState.viagemIniciada?`<button class="btn btn-primary btn-sm" id="btn-checkin-${l.id}" style="margin-top:6px"><i class="ti ti-clipboard-check"></i> Fazer check-in</button>`:''}
+          </div>
+          <span style="font-size:11px;padding:2px 7px;border-radius:20px;background:var(--bg);color:var(--text2);align-self:flex-start;flex-shrink:0;margin-top:4px">${l.dist} km</span>
+        </div>`;
+      }).join('')}
+      <div style="display:flex;gap:10px;padding:10px 12px;background:var(--bg)">
+        <div style="width:30px;height:30px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff"><i class="ti ti-home" style="font-size:13px"></i></div>
+        <div style="flex:1;padding-top:4px"><strong style="font-size:13px;display:block">Retorno — Base Osasco</strong></div>
+        <span style="font-size:11px;padding:2px 7px;border-radius:20px;background:var(--orange-bg);color:var(--orange);align-self:flex-start;flex-shrink:0;margin-top:4px">${ROTA_MOTORISTA.distVolta} km</span>
+      </div>
+    </div>
+    ${!motorState.viagemIniciada?`<button class="btn btn-primary btn-block" id="btn-iniciar-viagem"><i class="ti ti-player-play"></i> Iniciar viagem</button>`:''}
+    ${(()=>{
+      const m3Total=ROTA_MOTORISTA.lojas.reduce((s,l)=>s+calcM3(motorState.checkins[l.id]?.itens||{}),0);
+      const placa=motorState.placa||ROTA_MOTORISTA.placa||'';
+      const bau=CAPACIDADE_BAU[placa]||40;
+      const pctOcup=Math.min(100,Math.round(m3Total/bau*100));
+      const cor=pctOcup>=90?'var(--red)':pctOcup>=70?'var(--orange)':'var(--green)';
+      if(m3Total===0) return '';
+      return `<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:10px">
+        <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">📦 Volume acumulado</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-size:18px;font-weight:700;color:${cor}">${m3Total.toFixed(2)}m³</span>
+          <span style="font-size:12px;color:var(--text2)">${(bau-m3Total).toFixed(1)}m³ livre de ${bau}m³</span>
+        </div>
+        <div style="background:var(--border);border-radius:20px;height:8px;overflow:hidden">
+          <div style="height:8px;border-radius:20px;background:${cor};width:${pctOcup}%"></div>
+        </div>
+        <div style="font-size:10px;color:${cor};font-weight:600;text-align:right;margin-top:3px">${pctOcup}% do baú ocupado</div>
+      </div>`;
+    })()}
+    ${motorState.viagemIniciada&&done===total?`<button class="btn btn-primary btn-block" id="btn-finalizar-viagem"><i class="ti ti-flag-check"></i> Finalizar viagem</button>`:''}` ;
+  bindBack();
+  document.getElementById('btn-iniciar-viagem')?.addEventListener('click',()=>{motorState.viagemIniciada=true;renderMotoristaRota();});
+  document.getElementById('btn-finalizar-viagem')?.addEventListener('click',()=>{motorState.viagemIniciada=false;motorState.checkins={};renderMotoristaRota();});
+  ROTA_MOTORISTA.lojas.forEach(l=>{
+    document.getElementById(`btn-checkin-${l.id}`)?.addEventListener('click',()=>renderCheckinModal(l.id));
+  });
+}
+
+// ── MOTORISTA: Check-in modal ─────────────────────────────────────────────────
+let ciLoja=null,ciEtapa=1,ciFotos={},ciItens={},ciNF=null,ciResp='',ciSigned=false;
+const ITENS_CI=[{id:'pneus_passeio',nome:'Pneus passeio',un:'un'},{id:'pneus_estourado',nome:'Pneus estourado',un:'un'},{id:'amortecedor',nome:'Amortecedor',un:'un'},{id:'bandeja',nome:'Bandeja',un:'un'},{id:'disco',nome:'Disco',un:'un'},{id:'filtro_oleo',nome:'Filtro óleo',un:'kg'},{id:'frascos_oleo',nome:'Frascos óleo',un:'un'},{id:'mola',nome:'Mola',un:'un'},{id:'papelao',nome:'Papelão',un:'kg'},{id:'pastilha',nome:'Pastilha',un:'un'},{id:'plasticos',nome:'Plásticos',un:'kg'},{id:'roda',nome:'Roda',un:'un'},{id:'sucata',nome:'Sucata ferrosa',un:'kg'}];
+
+// ── Volumes m³ por item (editável em Cadastros) ───────────────────────────────
+let VOLUMES_M3 = {
+  pneus_passeio:  0.05,
+  pneus_estourado:0.05,
+  amortecedor:    0.02,
+  bandeja:        0.01,
+  disco:          0.01,
+  filtro_oleo:    0.00, // por kg — não computa volume
+  frascos_oleo:   0.00,
+  mola:           0.01,
+  papelao:        0.00, // por kg — não computa volume
+  pastilha:       0.00,
+  plasticos:      0.00, // por kg — não computa volume
+  roda:           0.04,
+  sucata:         0.00, // por kg — não computa volume
+};
+
+// ── Capacidade do baú por veículo m³ (editável em Cadastros) ─────────────────
+let CAPACIDADE_BAU = {
+  'FPW-9J58': 45,
+  'DEU-8A98': 40,
+  'GGA-0262': 50,
+  'EEK-1A92': 18,
+  'TJX-4G17': 55,
+  'FNY-0G23': 18,
+};
+
+// Calcula m³ ocupado de um objeto {id: quantidade}
+function calcM3(itens){
+  return Object.entries(itens||{}).reduce((s,[id,qtd])=>{
+    return s + (VOLUMES_M3[id]||0) * (parseFloat(qtd)||0);
+  }, 0);
+}
+
+// Calcula m³ acumulado de todas as lojas já coletadas numa rota
+function calcM3Rota(rota){
+  return (rota?.lojas||[]).reduce((s,l)=>s+calcM3(l.itens||{}),0);
+}
+
+function renderCheckinModal(lojaId){
+  ciLoja=ROTA_MOTORISTA.lojas.find(l=>l.id===lojaId);
+  ciEtapa=1;ciFotos={};ciItens={};ciNF=null;ciResp='';ciSigned=false;
+  renderCI();
+}
+
+function renderCI(){
+  const etapas=['Chegada','Fotos','Itens','Finalização'];
+  const dots=etapas.map((_,i)=>`<div class="step-dot ${i+1<ciEtapa?'done':i+1===ciEtapa?'active':''}"></div>`).join('');
+  let body='';
+  if(ciEtapa===1) body=`
+    <div class="card" style="margin-bottom:12px">
+      <div class="fin-row"><span class="fl">Data</span><span class="fv">${today()}</span></div>
+      <div class="fin-row"><span class="fl">Horário chegada</span><span class="fv">${now()}</span></div>
+      <div class="fin-row"><span class="fl">Loja</span><span class="fv">${ciLoja.nome}</span></div>
+    </div>
+    <button class="btn btn-primary btn-block" id="ci-next">Próximo: fotos <i class="ti ti-arrow-right"></i></button>
+    <button class="btn btn-danger btn-block" id="ci-ocorr" style="margin-top:6px"><i class="ti ti-alert-triangle"></i> Registrar ocorrência</button>`;
+  else if(ciEtapa===2){
+    const fotos=[{id:'pneus',l:'Foto dos pneus'},{id:'ferrosa1',l:'Tambor ferrosa 1'},{id:'ferrosa2',l:'Tambor ferrosa 2'},{id:'embals',l:'Embalagens'},{id:'filtro',l:'Tambor filtro óleo'}];
+    body=`<div>${fotos.map(f=>`<div class="foto-slot${ciFotos[f.id]?' done':''}" data-foto="${f.id}"><input type="file" accept="image/*"><i class="ti ti-${ciFotos[f.id]?'circle-check':'camera'}"></i><p>${ciFotos[f.id]?'✓ '+f.l:f.l}</p></div>`).join('')}</div>
+    <div style="display:flex;gap:8px;margin-top:8px"><button class="btn btn-secondary btn-sm" id="ci-prev"><i class="ti ti-arrow-left"></i></button><button class="btn btn-primary" style="flex:1;justify-content:center" id="ci-next">Itens <i class="ti ti-arrow-right"></i></button></div>`;
+  }
+  else if(ciEtapa===3) body=`
+    <div style="max-height:360px;overflow-y:auto">
+    ${ITENS_CI.map(it=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border-light)">
+      <span style="flex:1;font-size:13px">${it.nome}</span>
+      <input class="ci-item-inp" type="number" inputmode="numeric" min="0" style="width:64px;padding:6px 8px;text-align:right;border:1.5px solid var(--border);border-radius:6px;font-size:14px;font-weight:500" placeholder="0" value="${ciItens[it.id]||''}" data-item="${it.id}">
+      <span style="font-size:11px;color:var(--text2);width:20px">${it.un}</span>
+    </div>`).join('')}
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px"><button class="btn btn-secondary btn-sm" id="ci-prev"><i class="ti ti-arrow-left"></i></button><button class="btn btn-primary" style="flex:1;justify-content:center" id="ci-next">Finalização <i class="ti ti-arrow-right"></i></button></div>`;
+  else {
+    // Calcular m³ acumulado de todas as lojas já feitas + esta
+    const m3Loja=calcM3(ciItens);
+    const m3Anteriores=ROTA_MOTORISTA.lojas.reduce((s,l)=>{
+      if(l.id===ciLoja.id) return s;
+      return s+calcM3(motorState.checkins[l.id]?.itens||{});
+    },0);
+    const m3Total=m3Anteriores+m3Loja;
+    const placa=motorState.placa||ROTA_MOTORISTA.placa||'';
+    const bau=CAPACIDADE_BAU[placa]||40;
+    const pctOcup=Math.min(100,Math.round(m3Total/bau*100));
+    const corBarra=pctOcup>=90?'var(--red)':pctOcup>=70?'var(--orange)':'var(--green)';
+    body=`
+    <!-- Resumo m³ -->
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:14px">
+      <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">📦 Volume acumulado no caminhão</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">
+        <div style="text-align:center;background:var(--surface);border-radius:6px;padding:7px">
+          <div style="font-size:15px;font-weight:700;color:var(--blue)">${m3Loja.toFixed(2)}m³</div>
+          <div style="font-size:9px;color:var(--text2);margin-top:1px">Esta loja</div>
+        </div>
+        <div style="text-align:center;background:var(--surface);border-radius:6px;padding:7px">
+          <div style="font-size:15px;font-weight:700;color:var(--text)">${m3Total.toFixed(2)}m³</div>
+          <div style="font-size:9px;color:var(--text2);margin-top:1px">Total rota</div>
+        </div>
+        <div style="text-align:center;background:var(--surface);border-radius:6px;padding:7px">
+          <div style="font-size:15px;font-weight:700;color:${pctOcup>=90?'var(--red)':'var(--text2)'}">${bau-m3Total>0?(bau-m3Total).toFixed(1):0}m³</div>
+          <div style="font-size:9px;color:var(--text2);margin-top:1px">Livre (baú ${bau}m³)</div>
+        </div>
+      </div>
+      <div style="background:var(--border);border-radius:20px;height:8px;overflow:hidden">
+        <div style="height:8px;border-radius:20px;background:${corBarra};width:${pctOcup}%;transition:width .3s"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text2);margin-top:4px">
+        <span>0m³</span>
+        <span style="font-weight:700;color:${corBarra}">${pctOcup}% ocupado</span>
+        <span>${bau}m³</span>
+      </div>
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:5px">Nota fiscal</label>
+      <div style="display:flex;gap:8px">
+        <div class="pag-opt${ciNF===true?' sel':''}" style="flex:1" id="nf-sim"><i class="ti ti-file-invoice"></i><span>Tem NF</span></div>
+        <div class="pag-opt${ciNF===false?' sel':''}" style="flex:1" id="nf-nao"><i class="ti ti-file-off"></i><span>Sem NF</span></div>
+      </div>
+    </div>
+    <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:5px">Responsável</label>
+    <input id="ci-resp" type="text" placeholder="Nome do responsável" value="${ciResp}" style="margin-bottom:12px">
+    <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:5px">Assinatura digital</label>
+    <canvas id="sig-canvas" class="sig-pad" width="360" height="100"></canvas>
+    <div style="display:flex;gap:8px;margin-top:5px;margin-bottom:12px">
+      <button class="btn btn-secondary btn-sm" id="sig-limpar"><i class="ti ti-eraser"></i> Limpar</button>
+      ${ciSigned?'<span style="font-size:12px;color:var(--green);font-weight:500;padding:6px 0">✓ Assinatura capturada</span>':''}
+    </div>
+    <div style="display:flex;gap:8px"><button class="btn btn-secondary btn-sm" id="ci-prev"><i class="ti ti-arrow-left"></i></button><button class="btn btn-primary" style="flex:1;justify-content:center" id="ci-confirmar"><i class="ti ti-flag-check"></i> Confirmar saída</button></div>`;
+  }
+
+  document.getElementById('content-area').innerHTML=`
+    ${btnBack('Cancelar check-in')}
+    <div class="mod-header"><div class="mod-header-icon azul"><i class="ti ti-clipboard-check"></i></div><div><h2>Check-in</h2><span>${ciLoja.nome}</span></div></div>
+    <div class="steps-bar">${dots}</div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:14px">Etapa ${ciEtapa} de 4 — ${etapas[ciEtapa-1]}</p>
+    ${body}`;
+  bindBack();
+  document.getElementById('ci-next')?.addEventListener('click',()=>{ciEtapa++;renderCI();});
+  document.getElementById('ci-prev')?.addEventListener('click',()=>{ciEtapa--;renderCI();});
+  document.getElementById('ci-ocorr')?.addEventListener('click',()=>alert('Ocorrência registrada.'));
+  document.querySelectorAll('.ci-item-inp').forEach(inp=>{inp.addEventListener('input',()=>{ciItens[inp.dataset.item]=inp.value;});});
+  document.querySelectorAll('[data-foto]').forEach(el=>{el.addEventListener('click',()=>{ciFotos[el.dataset.foto]=true;renderCI();});});
+  document.getElementById('nf-sim')?.addEventListener('click',()=>{ciNF=true;renderCI();});
+  document.getElementById('nf-nao')?.addEventListener('click',()=>{ciNF=false;renderCI();});
+  document.getElementById('ci-resp')?.addEventListener('input',e=>{ciResp=e.target.value;});
+  document.getElementById('ci-confirmar')?.addEventListener('click',()=>{
+    const resp=document.getElementById('ci-resp')?.value||ciResp;
+    motorState.checkins[ciLoja.id]={done:true,hora:now(),itens:{...ciItens},nf:ciNF,responsavel:resp};
+    renderMotoristaRota();
+  });
+  document.getElementById('sig-limpar')?.addEventListener('click',()=>{sigCtx?.clearRect(0,0,360,100);ciSigned=false;});
+  attachSig();
+}
+
+function attachSig(){
+  const c=document.getElementById('sig-canvas');if(!c||sigCtx)return;
+  sigCtx=c.getContext('2d');sigCtx.strokeStyle='#1A5FA8';sigCtx.lineWidth=2.5;sigCtx.lineCap='round';
+  const pos=(e)=>{const r=c.getBoundingClientRect();const s=e.touches?e.touches[0]:e;return{x:(s.clientX-r.left)*(c.width/r.width),y:(s.clientY-r.top)*(c.height/r.height)};};
+  c.addEventListener('mousedown',e=>{drawing=true;const p=pos(e);lx=p.x;ly=p.y;});
+  c.addEventListener('mousemove',e=>{if(!drawing)return;const p=pos(e);sigCtx.beginPath();sigCtx.moveTo(lx,ly);sigCtx.lineTo(p.x,p.y);sigCtx.stroke();lx=p.x;ly=p.y;ciSigned=true;});
+  c.addEventListener('mouseup',()=>drawing=false);
+  c.addEventListener('touchstart',e=>{e.preventDefault();drawing=true;const p=pos(e);lx=p.x;ly=p.y;},{passive:false});
+  c.addEventListener('touchmove',e=>{e.preventDefault();if(!drawing)return;const p=pos(e);sigCtx.beginPath();sigCtx.moveTo(lx,ly);sigCtx.lineTo(p.x,p.y);sigCtx.stroke();lx=p.x;ly=p.y;ciSigned=true;},{passive:false});
+  c.addEventListener('touchend',()=>drawing=false);
+}
+
+// ── MOTORISTA: Check-in list & Histórico ─────────────────────────────────────
+function renderMotoristaCheckin(){
+  document.getElementById('content-area').innerHTML=`
+    ${btnBack()}
+    <div class="mod-header"><div class="mod-header-icon verde"><i class="ti ti-clipboard-check"></i></div><div><h2>Check-in</h2><span>Lojas da rota de hoje</span></div></div>
+    ${!motorState.viagemIniciada?`<div class="alert laranja"><i class="ti ti-lock"></i><p>Inicie a viagem na aba "Rota do dia" para liberar o check-in.</p></div>`:''}
+    ${ROTA_MOTORISTA.lojas.map((l,i)=>{
+      const ci=motorState.checkins[l.id];
+      const done=ci?.done;
+      const isProx=motorState.viagemIniciada&&!done&&ROTA_MOTORISTA.lojas.slice(0,i).every(ll=>motorState.checkins[ll.id]?.done);
+      return `<div style="display:flex;align-items:center;gap:10px;padding:12px;border:1.5px solid ${done?'var(--green)':isProx?'var(--blue)':'var(--border)'};border-radius:var(--radius);margin-bottom:8px;background:${done?'var(--green-bg)':isProx?'var(--blue-bg)':'var(--surface)'};cursor:${isProx||done?'pointer':'not-allowed'}" ${isProx||done?`id="ci-open-${l.id}"`:''}">
+        <div style="width:36px;height:36px;border-radius:50%;background:${done?'var(--green)':isProx?'var(--blue)':'var(--bg)'};display:flex;align-items:center;justify-content:center;font-size:${done?'16':'14'}px;color:${done?'#fff':isProx?'var(--blue)':'var(--text2)'}">
+          ${done?'<i class="ti ti-check"></i>':isProx?'<i class="ti ti-map-pin"></i>':'<i class="ti ti-lock"></i>'}
+        </div>
+        <div style="flex:1;min-width:0">
+          <strong style="font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l.nome}</strong>
+          <span style="font-size:11px;color:var(--text2)">${l.cidade}</span>
+          ${done?`<div style="font-size:11px;color:var(--green);margin-top:2px">✓ Registrado às ${ci.hora}</div>`:''}
+        </div>
+        <i class="ti ti-chevron-right" style="color:${done?'var(--green)':isProx?'var(--blue)':'var(--border)'};font-size:16px;flex-shrink:0"></i>
+      </div>`;
+    }).join('')}`;
+  bindBack();
+  ROTA_MOTORISTA.lojas.forEach(l=>{
+    document.getElementById(`ci-open-${l.id}`)?.addEventListener('click',()=>renderCheckinModal(l.id));
+  });
+}
+
+function renderMotoristaHist(){
+  document.getElementById('content-area').innerHTML=`
+    ${btnBack()}
+    <div class="mod-header"><div class="mod-header-icon laranja"><i class="ti ti-history"></i></div><div><h2>Histórico</h2><span>Viagens anteriores</span></div></div>
+    <div class="stat-grid">
+      <div class="stat-box azul"><div class="sv">48</div><div class="sl">Viagens (mês)</div></div>
+      <div class="stat-box verde"><div class="sv">2.847</div><div class="sl">Pneus coletados</div></div>
+    </div>
+    ${[{nome:'Rota Campinas',data:'09/06',pneus:177,km:187},{nome:'Rota Osasco/Carap.',data:'06/06',pneus:150,km:89},{nome:'Rota Mogi/Limeira',data:'03/06',pneus:140,km:156}].map(h=>`<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <strong style="font-size:14px">${h.nome}</strong>
+        <span class="badge verde">Concluída</span>
+      </div>
+      <div style="font-size:13px;color:var(--text2)">${h.data} · ${h.pneus} pneus · ~${h.km} km</div>
+    </div>`).join('')}`;
+  bindBack();
+}
+
+// ── CONFERENTE OPERACIONAL ────────────────────────────────────────────────────
+function renderConferenteLista(){
+  document.getElementById('content-area').innerHTML=`
+    ${btnBack()}
+    <div class="mod-header"><div class="mod-header-icon laranja"><i class="ti ti-truck"></i></div><div><h2>Conferência de descarga</h2><span>Selecione o caminhão</span></div></div>
+    <div class="section-title">Aguardando conferência (${CAMINHOES_CONF.filter(c=>c.status==='aguardando').length})</div>
+    ${CAMINHOES_CONF.filter(c=>c.status==='aguardando').map(c=>`<div class="card" style="display:flex;align-items:center;gap:12px;cursor:pointer" id="cam-conf-${c.id}">
+      <div class="mod-icon laranja"><i class="ti ti-truck"></i></div>
+      <div style="flex:1">
+        <strong style="font-size:15px;letter-spacing:.04em;display:block">${c.placa}</strong>
+        <span style="font-size:12px;color:var(--text2)">${c.motorista} · ${c.rota}</span>
+        <div style="font-size:12px;color:var(--text2);margin-top:3px">${c.lojas.length} lojas · ${c.totalPneus} pneus · ${c.chegada}</div>
+      </div>
+      <span class="badge laranja">Aguardando</span>
+    </div>`).join('')}
+    ${CAMINHOES_CONF.filter(c=>c.status==='conferido').length>0?`
+    <div class="section-title">Já conferidos</div>
+    ${CAMINHOES_CONF.filter(c=>c.status==='conferido').map(c=>`<div class="card" style="display:flex;align-items:center;gap:12px;opacity:.65">
+      <div class="mod-icon verde"><i class="ti ti-circle-check"></i></div>
+      <div style="flex:1"><strong style="font-size:15px;display:block">${c.placa}</strong><span style="font-size:12px;color:var(--text2)">${c.motorista}</span></div>
+      <span class="badge verde">Conferido</span>
+    </div>`).join('')}`:''}`;
+  bindBack();
+  CAMINHOES_CONF.filter(c=>c.status==='aguardando').forEach(c=>{
+    document.getElementById(`cam-conf-${c.id}`)?.addEventListener('click',()=>renderConferenciaNotas(c.id));
+  });
+}
+
+function renderConferenciaNotas(camId){
+  const cam=CAMINHOES_CONF.find(c=>c.id===camId);
+  if(!confState.conferencias[camId]){
+    confState.conferencias[camId]={};
+    cam.lojas.forEach(l=>{confState.conferencias[camId][l.nome]={fechada:false,itens:{},aberta:false};});
+  }
+  const conf=confState.conferencias[camId];
+  const fechadas=Object.values(conf).filter(c=>c.fechada).length;
+  const todas=fechadas===cam.lojas.length;
+  document.getElementById('content-area').innerHTML=`
+    <button class="btn btn-secondary btn-sm" id="btn-back-conf" style="margin-bottom:1rem"><i class="ti ti-arrow-left"></i> Caminhões</button>
+    <div class="mod-header"><div class="mod-header-icon laranja"><i class="ti ti-clipboard-list"></i></div><div><h2>${cam.placa}</h2><span>${cam.motorista} · ${cam.rota}</span></div></div>
+    <div class="prog-wrap"><div class="prog-bar" style="width:${Math.round(fechadas/cam.lojas.length*100)}%"></div></div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:12px">${fechadas} de ${cam.lojas.length} notas conferidas</p>
+    ${todas?`<div class="alert verde"><i class="ti ti-circle-check"></i><p>Todas as notas conferidas! Caminhão liberado para triagem.</p></div>`:''}
+    ${cam.lojas.map(l=>{
+      const lConf=conf[l.nome];
+      const pneusMot=l.pneus;
+      const isOpen=lConf.aberta;
+      return `<div style="border:1.5px solid ${lConf.fechada?'var(--green)':'var(--border)'};border-radius:var(--radius);overflow:hidden;margin-bottom:8px">
+        <div style="padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;background:${lConf.fechada?'var(--green-bg)':'var(--bg)'}" id="nota-toggle-${l.nome.replace(/\s/g,'_')}">
+          <div style="flex:1;min-width:0">
+            <strong style="font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l.nome}</strong>
+            <span style="font-size:11px;color:var(--text2)">${l.marca} · Motorista lançou: ${pneusMot} pneus</span>
+            ${lConf.fechada?`<div style="font-size:11px;color:var(--green);margin-top:2px">✓ Conferido</div>`:''}
+          </div>
+          ${!lConf.fechada?`<button class="btn btn-primary btn-sm" id="btn-conferir-${l.nome.replace(/\s/g,'_')}">Conferir</button>`:''}
+          <i class="ti ti-chevron-${isOpen?'up':'down'}" style="font-size:14px;color:var(--text2)"></i>
+        </div>
+        ${isOpen?`<div style="padding:14px;border-top:1px solid var(--border-light)">
+          <table class="conf-table" style="width:100%">
+            <thead><tr><th style="text-align:left">Item</th><th>Motorista</th><th>Conferido</th></tr></thead>
+            <tbody>
+              ${ITENS_CI.slice(0,5).map(it=>{
+                const qMot=Math.floor(Math.random()*20)+1;
+                const qConf=lConf.itens[it.id]||'';
+                const diverge=qConf!==''&&parseInt(qConf)!==qMot;
+                const ok=qConf!==''&&!diverge;
+                return `<tr class="${diverge?'div-row':''}">
+                  <td>${it.nome}</td>
+                  <td style="text-align:right;font-weight:600">${qMot}</td>
+                  <td style="text-align:right"><input class="conf-inp${diverge?' diverge':ok?' ok':''}" type="number" min="0" placeholder="${qMot}" value="${qConf}" data-loja="${l.nome}" data-item="${it.id}" style="width:60px"></td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button class="btn btn-secondary btn-sm" id="btn-igual-${l.nome.replace(/\s/g,'_')}">Tudo igual</button>
+            <button class="btn btn-primary" style="flex:1;justify-content:center" id="btn-salvar-${l.nome.replace(/\s/g,'_')}"><i class="ti ti-device-floppy"></i> Salvar nota</button>
+          </div>
+        </div>`:``}
+      </div>`;
+    }).join('')}
+    ${todas?`<button class="btn btn-primary btn-block" id="btn-finalizar-conf"><i class="ti ti-flag-check"></i> Finalizar conferência</button>`:''}`;
+
+  document.getElementById('btn-back-conf')?.addEventListener('click',renderConferenteLista);
+  cam.lojas.forEach(l=>{
+    const key=l.nome.replace(/\s/g,'_');
+    document.getElementById(`nota-toggle-${key}`)?.addEventListener('click',()=>{conf[l.nome].aberta=!conf[l.nome].aberta;renderConferenciaNotas(camId);});
+    document.getElementById(`btn-conferir-${key}`)?.addEventListener('click',e=>{e.stopPropagation();conf[l.nome].aberta=true;renderConferenciaNotas(camId);});
+    document.getElementById(`btn-igual-${key}`)?.addEventListener('click',()=>{conf[l.nome].fechada=true;conf[l.nome].aberta=false;renderConferenciaNotas(camId);});
+    document.getElementById(`btn-salvar-${key}`)?.addEventListener('click',()=>{conf[l.nome].fechada=true;conf[l.nome].aberta=false;renderConferenciaNotas(camId);});
+  });
+  document.querySelectorAll('.conf-inp').forEach(inp=>{
+    inp.addEventListener('input',()=>{
+      const loja=inp.dataset.loja;
+      if(!confState.conferencias[camId][loja]) confState.conferencias[camId][loja]={fechada:false,itens:{},aberta:true};
+      confState.conferencias[camId][loja].itens[inp.dataset.item]=inp.value;
+      const qMot=parseInt(inp.placeholder)||0;
+      const qConf=parseInt(inp.value)||0;
+      inp.className='conf-inp'+(qConf&&qConf!==qMot?' diverge':qConf?'ok':'');
+    });
+  });
+  document.getElementById('btn-finalizar-conf')?.addEventListener('click',()=>{
+    const idx=CAMINHOES_CONF.findIndex(c=>c.id===camId);
+    if(idx>=0) CAMINHOES_CONF[idx].status='conferido';
+    alert('✅ Conferência finalizada! Caminhão liberado para triagem.');
+    renderConferenteLista();
+  });
+}
+
+// ── CONFERENTE FISCAL ─────────────────────────────────────────────────────────
+function renderFiscal(tipo){
+  fiscalState.tab=tipo;
+  document.getElementById('content-area').innerHTML=`
+    ${btnBack()}
+    <div class="mod-header"><div class="mod-header-icon roxo"><i class="ti ti-robot"></i></div><div><h2>Conferente Fiscal IA</h2><span>Análise de NF-e</span></div></div>
+    <div style="display:flex;gap:6px;margin-bottom:1rem;background:var(--bg);border-radius:var(--radius-sm);padding:4px">
+      <button class="btn ${tipo==='entrada'?'btn-primary':'btn-secondary'} btn-sm" style="flex:1;justify-content:center" id="tab-entrada"><i class="ti ti-arrow-bar-to-down"></i> NF Entrada</button>
+      <button class="btn ${tipo==='saida'?'btn-primary':'btn-secondary'} btn-sm" style="flex:1;justify-content:center" id="tab-saida"><i class="ti ti-arrow-bar-up"></i> NF Saída</button>
+    </div>
+    ${tipo==='entrada'?`
+    <div class="alert azul"><i class="ti ti-info-circle"></i><p>NFs recebidas das lojas (Campneus/DPaschoal). A IA identifica a loja pelo CNPJ e cruza com o check-in.</p></div>
+    <div style="border:2px dashed var(--border);border-radius:var(--radius);padding:2rem;text-align:center;margin-bottom:12px;cursor:pointer;position:relative">
+      <input type="file" accept=".xml" multiple style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%">
+      <i class="ti ti-file-code" style="font-size:32px;color:var(--text3);display:block;margin-bottom:8px"></i>
+      <p style="font-size:14px;font-weight:600;color:var(--text2)">Arraste os XMLs aqui</p>
+      <p style="font-size:12px;color:var(--text3)">Aceita múltiplos arquivos · NF-e 4.00</p>
+    </div>
+    <button class="btn btn-primary btn-block" id="btn-demo-fiscal"><i class="ti ti-sparkles"></i> Demonstrar com NFs reais</button>
+    `:`
+    <div class="alert verde"><i class="ti ti-info-circle"></i><p>NFs emitidas pela Tyre Eco para o destino final. A IA converte pneus em toneladas e confere o peso declarado.</p></div>
+    <div class="card">
+      <div class="fin-row"><span class="fl">NF nº 11381</span><span class="fv">TYRE ECO → SAG AMBIENTAL</span></div>
+      <div class="fin-row"><span class="fl">Item</span><span class="fv">Sucata de pneus inservível</span></div>
+      <div class="fin-row"><span class="fl">Quantidade NF</span><span class="fv" style="color:var(--purple)">5,000 TON</span></div>
+      <div class="fin-row"><span class="fl">Pneus coletados (check-in)</span><span class="fv">459 un</span></div>
+      <div class="fin-row"><span class="fl">Peso estimado (6,5kg×passeio)</span><span class="fv">≈ 2,109 TON</span></div>
+      <div class="fin-row"><span class="fl">Diferença</span><span class="fv neg">+2,891 TON</span></div>
+    </div>
+    <div class="alert laranja"><i class="ti ti-alert-triangle"></i><p>Divergência detectada. Ajuste os pesos médios ou verifique se a NF inclui estoque anterior.</p></div>
+    <div class="card">
+      <p style="font-size:12px;color:var(--text2);margin-bottom:8px">Ajustar peso médio por pneu:</p>
+      <div style="display:flex;gap:10px">
+        <div style="flex:1"><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px">Passeio (kg)</label><input type="number" value="6.5" style="text-align:center;font-size:15px;font-weight:600;color:var(--purple)"></div>
+        <div style="flex:1"><label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px">Estourado (kg)</label><input type="number" value="3.0" style="text-align:center;font-size:15px;font-weight:600;color:var(--purple)"></div>
+      </div>
+    </div>`}`;
+  bindBack();
+  document.getElementById('tab-entrada')?.addEventListener('click',()=>renderFiscal('entrada'));
+  document.getElementById('tab-saida')?.addEventListener('click',()=>renderFiscal('saida'));
+  document.getElementById('btn-demo-fiscal')?.addEventListener('click',()=>{
+    document.getElementById('content-area').innerHTML+=`
+    <div class="alert verde" style="margin-top:10px"><i class="ti ti-circle-check"></i><p>6 NFs processadas · R$2.198,02 · 1 divergência encontrada (NF 719286: papelão 25kg vs 0kg lançado).</p></div>`;
+  });
+}
+
+// ── TRIAGEM ───────────────────────────────────────────────────────────────────
+function renderTriagemLista(){
+  const conf=CAMINHOES_CONF.filter(c=>c.status==='conferido');
+  document.getElementById('content-area').innerHTML=`
+    ${btnBack()}
+    <div class="mod-header"><div class="mod-header-icon teal"><i class="ti ti-filter"></i></div><div><h2>Triagem de pneus</h2><span>Por categoria e aro</span></div></div>
+    ${conf.length===0?`<div class="empty"><i class="ti ti-truck-off"></i><p>Nenhum caminhão conferido disponível.</p></div>`:''}
+    ${conf.map(c=>`<div class="card" style="display:flex;align-items:center;gap:12px;cursor:pointer" id="triagem-cam-${c.id}">
+      <div class="mod-icon teal"><i class="ti ti-filter"></i></div>
+      <div style="flex:1">
+        <strong style="font-size:15px;letter-spacing:.04em;display:block">${c.placa}</strong>
+        <span style="font-size:12px;color:var(--text2)">${c.motorista} · ${c.rota}</span>
+        <div style="font-size:13px;font-weight:600;color:var(--teal);margin-top:4px">${c.totalPneus} pneus para triar</div>
+      </div>
+      <i class="ti ti-chevron-right" style="color:var(--text3);font-size:16px"></i>
+    </div>`).join('')}`;
+  bindBack();
+  conf.forEach(c=>{
+    document.getElementById(`triagem-cam-${c.id}`)?.addEventListener('click',()=>renderTriagemGrade(c.id));
+  });
+}
+
+function renderTriagemGrade(camId){
+  const cam=CAMINHOES_CONF.find(c=>c.id===camId);
+  if(!triagemGrade[camId]) triagemGrade[camId]={};
+  CATS_TRIAGEM.forEach(cat=>{
+    if(!triagemGrade[camId][cat.id]) triagemGrade[camId][cat.id]={};
+    AROS_FULL.forEach(a=>{if(!triagemGrade[camId][cat.id][a]) triagemGrade[camId][cat.id][a]=0;});
+  });
+  const tot=CATS_TRIAGEM.reduce((s,c)=>s+AROS_FULL.reduce((ss,a)=>ss+(parseInt(triagemGrade[camId][c.id][a])||0),0),0);
+  const valido=tot===cam.totalPneus;
+  const pct=Math.min(100,Math.round(tot/cam.totalPneus*100));
+
+  document.getElementById('content-area').innerHTML=`
+    <button class="btn btn-secondary btn-sm" id="btn-back-triagem" style="margin-bottom:1rem"><i class="ti ti-arrow-left"></i> Caminhões</button>
+    <div class="mod-header"><div class="mod-header-icon teal"><i class="ti ti-filter"></i></div><div><h2>${cam.placa}</h2><span>${cam.totalPneus} pneus para triar</span></div></div>
+    <div class="prog-wrap"><div class="prog-bar${tot>cam.totalPneus?' err':valido?'':' warn'}" style="width:${pct}%"></div></div>
+    <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:12px">
+      <span>Lançado: <strong style="color:var(--text)">${tot}</strong> de <strong>${cam.totalPneus}</strong></span>
+      <span style="font-weight:600;color:${tot>cam.totalPneus?'var(--red)':valido?'var(--green)':'var(--orange)'}">${tot>cam.totalPneus?`${tot-cam.totalPneus} a mais — corrija`:valido?'✓ Completo':`Faltam ${cam.totalPneus-tot}`}</span>
+    </div>
+    ${valido?`<div class="alert verde"><i class="ti ti-circle-check"></i><p>Total confere! Pronto para confirmar.</p></div>`:''}
+    <div class="grade-scroll">
+      <table class="grade" id="triagem-grade">
+        <thead><tr>
+          <th class="lbl">Categoria</th>
+          ${AROS.map(a=>`<th>${a}</th>`).join('')}
+          <th style="text-align:right;padding-right:6px">Total</th>
+        </tr></thead>
+        <tbody>
+          ${CATS_TRIAGEM.map(cat=>{
+            const catTot=AROS_FULL.reduce((s,a)=>s+(parseInt(triagemGrade[camId][cat.id][a])||0),0);
+            return `<tr>
+              <td class="cat-label" style="color:${cat.cor}">${cat.nome}</td>
+              ${AROS_FULL.map(a=>{
+                const v=parseInt(triagemGrade[camId][cat.id][a])||0;
+                return `<td style="text-align:center;padding:2px"><input class="cell-inp${v>0?' tem':''}" type="number" inputmode="numeric" min="0" max="999" value="${v||''}" placeholder="·" data-cam="${camId}" data-cat="${cat.id}" data-aro="${a}"></td>`;
+              }).join('')}
+              <td class="tot-col${catTot>0?' tem':''}" id="tcat-${cat.id}">${catTot||'—'}</td>
+            </tr>`;
+          }).join('')}
+          <tr class="total-row">
+            <td style="text-align:left;padding-left:6px;font-size:10px;text-transform:uppercase;letter-spacing:.04em">Total aro</td>
+            ${AROS_FULL.map(a=>{
+              const t=CATS_TRIAGEM.reduce((s,c)=>s+(parseInt(triagemGrade[camId][c.id][a])||0),0);
+              return `<td id="taro-${a}">${t||'—'}</td>`;
+            }).join('')}
+            <td class="geral${valido?' ok':''}" id="tgeral">${tot||'—'}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <button class="btn btn-primary btn-block${valido?'':' btn-dis'}" id="btn-confirmar-triagem" style="margin-top:12px;font-size:15px;padding:13px">
+      <i class="ti ti-${valido?'device-floppy':'lock'}"></i> ${valido?'Confirmar triagem':`Preencha a grade — faltam ${cam.totalPneus-tot}`}
+    </button>`;
+
+  document.getElementById('btn-back-triagem')?.addEventListener('click',renderTriagemLista);
+  document.querySelectorAll('.cell-inp[data-cam]').forEach(inp=>{
+    inp.addEventListener('focus',()=>inp.select());
+    inp.addEventListener('input',()=>{
+      const {cam:cId,cat,aro}=inp.dataset;
+      const val=Math.max(0,parseInt(inp.value)||0);
+      triagemGrade[cId][cat][aro]=val;
+      inp.value=val||'';
+      inp.className='cell-inp'+(val>0?' tem':'');
+      // Atualiza totais DOM
+      const catTot=AROS_FULL.reduce((s,a)=>s+(parseInt(triagemGrade[cId][cat][a])||0),0);
+      const aroTot=CATS_TRIAGEM.reduce((s,c)=>s+(parseInt(triagemGrade[cId][c.id][aro])||0),0);
+      const geral=CATS_TRIAGEM.reduce((s,c)=>s+AROS_FULL.reduce((ss,a)=>ss+(parseInt(triagemGrade[cId][c.id][a])||0),0),0);
+      const camTot=CAMINHOES_CONF.find(c=>c.id===cId)?.totalPneus||0;
+      const ok=geral===camTot;
+      // linha duplicada removida (bug: == em vez de =, já corrigido abaixo)
+      const elC=document.getElementById(`tcat-${cat}`);if(elC){elC.textContent=catTot||'—';elC.className='tot-col'+(catTot>0?' tem':'');}
+      const elA=document.getElementById(`taro-${aro}`);if(elA)elA.textContent=aroTot||'—';
+      const elG=document.getElementById('tgeral');if(elG){elG.textContent=geral||'—';elG.className='geral'+(ok?' ok':'');}
+      const btn=document.getElementById('btn-confirmar-triagem');
+      if(btn){if(ok){btn.innerHTML=`<i class="ti ti-device-floppy"></i> Confirmar triagem`;btn.classList.remove('btn-dis');}else{btn.innerHTML=`<i class="ti ti-lock"></i> Preencha a grade — faltam ${Math.max(0,camTot-geral)}`;btn.classList.add('btn-dis');}}
+    });
+  });
+  document.getElementById('btn-confirmar-triagem')?.addEventListener('click',()=>{
+    const totLixo=CATS_TRIAGEM.find(c=>c.id==='lixo')?CATS_TRIAGEM.reduce((s,c)=>s+(parseInt(triagemGrade[camId]?.['lixo']?.[AROS_FULL[0]]||0)),0):0;const pctLixo=cam.totalPneus>0?Math.round(AROS_FULL.reduce((s,a)=>s+(parseInt(triagemGrade[camId]?.['lixo']?.[a]||0)),0)/cam.totalPneus*100):0;window.wppDispararTriagem?.({placa:cam.placa,motorista:cam.motorista,total:cam.totalPneus,lixo:AROS_FULL.reduce((s,a)=>s+(parseInt(triagemGrade[camId]?.['lixo']?.[a]||0)),0),pct:pctLixo});alert('✅ Triagem confirmada!'+( pctLixo>=( window.wppCfg?.limiteTriagem||30)?' ⚠️ Alerta WhatsApp enviado ('+pctLixo+'% lixo).':' Dados enviados ao gestor.'));
+    renderTriagemLista();
+  });
+}
+
+// ── VENDAS ────────────────────────────────────────────────────────────────────
+const CLIENTES_VND=[{"id":"1","nome":"BORRACHARIA PEREIRA LTDA"},{"id":"6","nome":"JATOBA PNEUS"},{"id":"7","nome":"WS DA SILVA COMERCIO DE PNEUS"},{"id":"8","nome":"RECAP PNEUS MARINGA"},{"id":"14","nome":"PRIME PNEUS COMERCIO E SERVICOS"},{"id":"17","nome":"SOSUKE CENTRO AUTOMOTIVO"},{"id":"23","nome":"ALEXANDRE DOS SANTOS"},{"id":"24","nome":"DANIEL PNEUS EIRELI ME"},{"id":"33","nome":"ATALAIA PNEUS E SERVICOS"},{"id":"43","nome":"PLATAFORMA CAR CENTER"},{"id":"63","nome":"MESQUITAO COMERCIO DE PNEUS"},{"id":"73","nome":"ROQUE WHEELS RODAS E PNEUS"},{"id":"82","nome":"TRUCKERS PNEUS"},{"id":"96","nome":"BORRACHARIA BR"},{"id":"99","nome":"CELIO CARRION"},{"id":"150","nome":"THINASS PNEUS ME"},{"id":"162","nome":"MULT COMERCIO DE PNEUS"},{"id":"263","nome":"GI PNEUS E RODAS"},{"id":"267","nome":"FR COMERCIO DE PNEUS"},{"id":"357","nome":"TCP ECOLOGY TYRE"},{"id":"363","nome":"SARADAO COMERCIO DE PNEUS"},{"id":"370","nome":"BENGEZEN COMERCIO DE PNEUS"},{"id":"371","nome":"JCM COMERCIO DE PNEUS"},{"id":"385","nome":"PNEUMAT COMERCIO DE PNEUS"},{"id":"399","nome":"AGILI DISTRIBUIDORA DE PNEUS"},{"id":"1000","nome":"KAUE PNEUS"},{"id":"1001","nome":"DANIEL JACOB LIMA"},{"id":"1009","nome":"EVANDRO DA SILVA ANDRADE"}];
+
+const TCP_TAB={'13':[{m:'165/70R13',p:45},{m:'175/70R13',p:50},{m:'175/75R13',p:40}],'14':[{m:'175/65R14',p:45},{m:'175/70R14',p:55},{m:'185/65R14',p:50},{m:'185/70R14',p:50}],'15':[{m:'185/60R15',p:22},{m:'185/65R15',p:25},{m:'195/55R15',p:20},{m:'195/65R15',p:25},{m:'205/60R15',p:20},{m:'205/65R15',p:40}],'16':[{m:'205/55R16',p:10},{m:'205/60R16',p:15},{m:'215/65R16',p:30}],'17':[{m:'215/45R17',p:20},{m:'225/45R17',p:15},{m:'225/50R17',p:15}]};
+
+let vndCad={'357':{categoria:'Carcaça',tipo:'medidas',tabela:TCP_TAB}};
+let vndQtds={},vndFoto=false,vndPag=null,vndValor='',vndObs='';
+
+function totalVnd(){return Object.values(vndQtds).reduce((s,v)=>s+(parseInt(v)||0),0);}
+function valorVnd(){
+  const cad=vndCad[vendasState.cliSel?.id];if(!cad)return 0;
+  if(cad.tipo==='medidas'){
+    let t=0;
+    Object.entries(cad.tabela).forEach(([aro,meds])=>{meds.forEach((m,i)=>{t+=(parseInt(vndQtds[`${aro}|${i}`])||0)*m.p;});});
+    return t;
+  }
+  return AROS_PADRAO.reduce((s,a)=>s+(parseInt(vndQtds[a])||0)*(parseFloat(cad.precos?.[a])||0),0);
+}
+const AROS_PADRAO=['13','14','15','16','17','SUV','Camionete','Caminhão'];
+
+function renderVendas(){
+  if(vendasState.tela==='cliente') renderVendasCliente();
+  else if(vendasState.tela==='grade') renderVendasGrade();
+  else if(vendasState.tela==='pagamento') renderVendasPagamento();
+  else if(vendasState.tela==='confirmado') renderVendasConfirmado();
+}
+
+function renderVendasCliente(){
+  const b=vendasState.busca.toLowerCase();
+  const lista=CLIENTES_VND.filter(c=>!b||c.nome.toLowerCase().includes(b)||c.id.includes(b)).slice(0,40);
+  document.getElementById('content-area').innerHTML=`
+    ${btnBack()}
+    <div class="mod-header"><div class="mod-header-icon amarelo"><i class="ti ti-shopping-cart"></i></div><div><h2>Nova venda</h2><span>${CLIENTES_VND.length} clientes cadastrados</span></div></div>
+    <div class="search-wrap"><i class="ti ti-search"></i><input id="busca-vnd" type="text" placeholder="Nome ou código..." value="${vendasState.busca}" autocomplete="off" autocorrect="off"></div>
+    <div class="cli-list">
+      ${lista.map(c=>{
+        const sel=vendasState.cliSel?.id===c.id;
+        const temC=!!vndCad[c.id];
+        return `<div class="cli-row${sel?' sel':''}" data-vnd-cli="${c.id}">
+          <div class="avatar ${sel?'verde':temC?'teal':'cinza'}">${temC?'<i class="ti ti-check" style="font-size:13px"></i>':ini(c.nome)}</div>
+          <div style="flex:1;min-width:0">
+            <strong style="font-size:14px;font-weight:500;display:block">${c.nome}</strong>
+            <span style="font-size:11px;color:var(--text2)">Cód. ${c.id}${temC?` · <strong style="color:var(--teal)">${vndCad[c.id].categoria}</strong>`:' · 1ª venda'}</span>
+          </div>
+          ${sel?'<i class="ti ti-chevron-right" style="color:var(--green);font-size:16px;flex-shrink:0"></i>':''}
+        </div>`;
+      }).join('')}
+    </div>
+    <button class="btn btn-primary btn-block${vendasState.cliSel?'':' btn-dis'}" id="btn-vnd-avancar" style="margin-top:12px;font-size:15px;padding:13px">
+      ${vendasState.cliSel?'Continuar ›':'Selecione um cliente'}
+    </button>`;
+  bindBack();
+  document.getElementById('busca-vnd')?.addEventListener('input',e=>{vendasState.busca=e.target.value;renderVendasCliente();});
+  document.querySelectorAll('[data-vnd-cli]').forEach(el=>{
+    el.addEventListener('click',()=>{vendasState.cliSel=CLIENTES_VND.find(c=>c.id===el.dataset.vndCli);renderVendasCliente();});
+  });
+  document.getElementById('btn-vnd-avancar')?.addEventListener('click',()=>{
+    if(!vendasState.cliSel)return;
+    vndQtds={};vndFoto=false;vndPag=null;vndValor='';vndObs='';
+    vendasState.tela='grade';renderVendasGrade();
+  });
+}
+
+function renderVendasGrade(){
+  const cli=vendasState.cliSel;
+  const cad=vndCad[cli.id];
+  const tot=totalVnd(),vt=valorVnd();
+  if(!cad){
+    document.getElementById('content-area').innerHTML=`
+      ${btnBack()}
+      <div class="mod-header"><div class="mod-header-icon amarelo"><i class="ti ti-user-check"></i></div><div><h2>${cli.nome.split(' ')[0]}</h2><span>Primeira venda — configurar</span></div></div>
+      <div class="alert laranja"><i class="ti ti-sparkles"></i><p>Primeira venda para este cliente. No sistema completo, você configura a categoria e os preços por aro/medida aqui.</p></div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Para o teste, vamos usar a tabela de demonstração.</p>
+      <button class="btn btn-primary btn-block" id="btn-usar-demo"><i class="ti ti-arrow-right"></i> Usar tabela de demonstração</button>`;
+    bindBack();
+    document.getElementById('btn-usar-demo')?.addEventListener('click',()=>{
+      vndCad[cli.id]={categoria:'Risco',tipo:'aros',precos:{'13':35,'14':35,'15':35,'16':35,'17':35,'SUV':35,'Camionete':35,'Caminhão':35}};
+      renderVendasGrade();
+    });
+    return;
+  }
+
+  document.getElementById('content-area').innerHTML=`
+    <button class="btn btn-secondary btn-sm" id="btn-back-grade" style="margin-bottom:1rem"><i class="ti ti-arrow-left"></i> Clientes</button>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border-light)">
+      <div class="avatar verde">${ini(cli.nome)}</div>
+      <div style="flex:1;min-width:0"><strong style="font-size:14px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cli.nome}</strong><span style="font-size:12px;font-weight:600;color:var(--teal)">${cad.categoria}</span></div>
+    </div>
+    ${cad.tipo==='medidas'?renderGradeVndMedidas(cad,cli.id):renderGradeVndAros(cad)}
+    <div class="foto-slot${vndFoto?' done':''}" id="foto-vnd"><input type="file" accept="image/*" capture="environment" id="inp-foto-vnd"><i class="ti ti-${vndFoto?'circle-check':'camera'}"></i><p>${vndFoto?'Foto registrada':'Fotografar (opcional)'}</p></div>
+    <div style="background:var(--bg);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:13px;color:var(--text2)">Total: <strong style="color:var(--text)">${tot} pneu${tot!==1?'s':''}</strong></span>
+      <span style="font-size:15px;font-weight:700;color:${tot>0?'var(--teal)':'var(--text2)'}">${vt>0?fmtM(vt):'—'}</span>
+    </div>
+    <button class="btn btn-primary btn-block${tot>0?'':' btn-dis'}" id="btn-vnd-pag" style="font-size:15px;padding:13px">
+      ${tot>0?`Pagamento — ${tot} pneu${tot!==1?'s':''}${vt>0?' · '+fmtM(vt):''} ›`:'Preencha ao menos 1 pneu'}
+    </button>`;
+
+  document.getElementById('btn-back-grade')?.addEventListener('click',()=>{vendasState.tela='cliente';renderVendasCliente();});
+  document.getElementById('inp-foto-vnd')?.addEventListener('change',e=>{if(e.target.files.length>0){vndFoto=true;renderVendasGrade();}});
+  document.querySelectorAll('.cell-inp[data-vnd]').forEach(inp=>{
+    inp.addEventListener('focus',()=>inp.select());
+    inp.addEventListener('input',()=>{
+      const val=Math.max(0,parseInt(inp.value)||0);
+      vndQtds[inp.dataset.vnd]=val;
+      inp.value=val||'';
+      inp.className='cell-inp'+(val>0?' tem':'');
+      atualizarTotaisVnd();
+    });
+  });
+  document.getElementById('btn-vnd-pag')?.addEventListener('click',()=>{
+    if(totalVnd()===0)return;
+    const vt2=valorVnd();vndValor=vt2>0?vt2.toFixed(2):'';
+    vendasState.tela='pagamento';renderVendasPagamento();
+  });
+}
+
+function renderGradeVndMedidas(cad,cliId){
+  return Object.keys(cad.tabela).map(aro=>{
+    const meds=cad.tabela[aro];
+    const subAro=meds.reduce((s,m,i)=>s+(parseInt(vndQtds[`${aro}|${i}`])||0)*m.p,0);
+    const qtdAro=meds.reduce((s,m,i)=>s+(parseInt(vndQtds[`${aro}|${i}`])||0),0);
+    return `<div style="margin-bottom:10px">
+      <div style="background:var(--bg);border-radius:var(--radius-sm) var(--radius-sm) 0 0;border:1px solid var(--border);border-bottom:none;padding:8px 10px;display:flex;justify-content:space-between;align-items:center">
+        <strong style="font-size:13px">Aro ${aro}</strong>
+        ${qtdAro>0?`<span style="font-size:12px;font-weight:600;color:var(--teal)">${qtdAro}un · ${fmtM(subAro)}</span>`:''}
+      </div>
+      <table style="width:100%;border-collapse:collapse;border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius-sm) var(--radius-sm);overflow:hidden">
+        <thead><tr style="background:var(--bg)"><th style="font-size:10px;font-weight:600;color:var(--text2);padding:5px 8px;border-bottom:1px solid var(--border);text-align:left">Medida</th><th style="font-size:10px;padding:5px 4px;border-bottom:1px solid var(--border);text-align:center">R$/un</th><th style="font-size:10px;padding:5px 4px;border-bottom:1px solid var(--border);text-align:center">Qtd</th><th style="font-size:10px;padding:5px 8px;border-bottom:1px solid var(--border);text-align:right">Sub</th></tr></thead>
+        <tbody>${meds.map((m,i)=>{const k=`${aro}|${i}`;const q=parseInt(vndQtds[k])||0;const sub=q*m.p;return `<tr><td style="font-size:13px;font-weight:500;padding:6px 8px">${m.m}</td><td style="text-align:center;font-size:12px;color:var(--teal);padding:4px">${fmtM(m.p)}</td><td style="text-align:center;padding:3px"><input class="cell-inp${q>0?' tem':''}" type="number" inputmode="numeric" min="0" value="${q||''}" placeholder="·" data-vnd="${k}" style="width:48px;height:44px"></td><td style="text-align:right;font-size:12px;font-weight:500;padding:4px 8px;color:${sub>0?'var(--teal)':'var(--text3)'}">${sub>0?fmtM(sub):'—'}</td></tr>`;}).join('')}</tbody>
+      </table>
+    </div>`;
+  }).join('');
+}
+
+function renderGradeVndAros(cad){
+  const precos=cad.precos||{};
+  return `<table style="width:100%;border-collapse:collapse;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:10px">
+    <thead><tr style="background:var(--bg)"><th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--text2);border-bottom:1px solid var(--border)">Aro</th><th style="padding:8px;text-align:center;font-size:11px;font-weight:600;color:var(--text2);border-bottom:1px solid var(--border)">Preço</th><th style="padding:8px;text-align:center;font-size:11px;font-weight:600;color:var(--text2);border-bottom:1px solid var(--border)">Qtd</th><th style="padding:8px 12px;text-align:right;font-size:11px;font-weight:600;color:var(--text2);border-bottom:1px solid var(--border)">Sub</th></tr></thead>
+    <tbody>${AROS_PADRAO.map(a=>{const p=parseFloat(precos[a])||0;const q=parseInt(vndQtds[a])||0;const sub=q*p;return `<tr><td style="font-size:14px;font-weight:500;padding:8px 12px">Aro ${a}</td><td style="text-align:center;font-size:13px;color:${p>0?'var(--teal)':'var(--text3)'};">${p>0?fmtM(p):'—'}</td><td style="text-align:center;padding:4px"><input class="cell-inp${q>0?' tem':''}" type="number" inputmode="numeric" min="0" value="${q||''}" placeholder="${p>0?'·':'—'}" ${p===0?'style="opacity:.3;pointer-events:none"':''} data-vnd="${a}" style="width:48px;height:44px"></td><td style="text-align:right;padding:8px 12px;font-size:13px;font-weight:500;color:${sub>0?'var(--teal)':'var(--text3)'}">${sub>0?fmtM(sub):'—'}</td></tr>`;}).join('')}</tbody>
+  </table>`;
+}
+
+function atualizarTotaisVnd(){
+  const tot=totalVnd(),vt=valorVnd();
+  const btn=document.getElementById('btn-vnd-pag');
+  if(btn){if(tot>0){btn.innerHTML=`Pagamento — ${tot} pneu${tot!==1?'s':''}${vt>0?' · '+fmtM(vt):''} ›`;btn.classList.remove('btn-dis');}else{btn.textContent='Preencha ao menos 1 pneu';btn.classList.add('btn-dis');}}
+  const resumo=document.querySelector('.vnd-resumo');
+  if(resumo){resumo.querySelector('.vr-tot').textContent=`${tot} pneus`;resumo.querySelector('.vr-val').textContent=vt>0?fmtM(vt):'—';}
+}
+
+function renderVendasPagamento(){
+  const cli=vendasState.cliSel,tot=totalVnd(),vt=valorVnd();
+  if(!vndValor&&vt>0)vndValor=vt.toFixed(2);
+  document.getElementById('content-area').innerHTML=`
+    <button class="btn btn-secondary btn-sm" id="btn-back-pag" style="margin-bottom:1rem"><i class="ti ti-arrow-left"></i> Editar pedido</button>
+    <div style="background:var(--teal-bg);border:1px solid var(--teal-light);border-radius:var(--radius);padding:12px 14px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center">
+      <div><strong style="font-size:14px;color:var(--teal)">${cli.nome.split(' ')[0]}</strong><div style="font-size:12px;color:var(--teal);margin-top:2px">${tot} pneu${tot!==1?'s':''} · ${fmtM(vt)}</div></div>
+    </div>
+    <p class="section-title">Forma de pagamento</p>
+    <div class="pag-grid">
+      ${PAGS.map(p=>`<div class="pag-opt${vndPag===p.id?' sel':''}" data-pag="${p.id}"><i class="ti ${p.icon}"></i><span>${p.nome}</span></div>`).join('')}
+    </div>
+    <p class="section-title">Valor total</p>
+    <input id="inp-vnd-valor" type="number" inputmode="decimal" step="0.01" min="0" value="${vndValor}" placeholder="0,00" style="font-size:22px;font-weight:700;color:var(--teal);border-color:var(--teal);text-align:center;padding:12px;margin-bottom:6px">
+    ${vt>0?`<p style="font-size:11px;color:var(--text2);text-align:center;margin-bottom:10px">Tabelado: ${fmtM(vt)}</p>`:''}
+    <div class="form-group"><label>Observação (opcional)</label><input id="inp-vnd-obs" type="text" placeholder="Entrega, desconto, parcelado..." value="${vndObs}"></div>
+    <button class="btn btn-primary btn-block${vndPag?'':' btn-dis'}" id="btn-confirmar-venda" style="font-size:15px;padding:13px"><i class="ti ti-check"></i> Confirmar venda</button>`;
+
+  document.getElementById('btn-back-pag')?.addEventListener('click',()=>{vendasState.tela='grade';renderVendasGrade();});
+  document.querySelectorAll('.pag-opt[data-pag]').forEach(el=>{
+    el.addEventListener('click',()=>{vndPag=el.dataset.pag;document.querySelectorAll('.pag-opt').forEach(e=>e.classList.remove('sel'));el.classList.add('sel');document.getElementById('btn-confirmar-venda')?.classList.remove('btn-dis');});
+  });
+  document.getElementById('inp-vnd-valor')?.addEventListener('input',e=>{vndValor=e.target.value;});
+  document.getElementById('inp-vnd-obs')?.addEventListener('input',e=>{vndObs=e.target.value;});
+  document.getElementById('btn-confirmar-venda')?.addEventListener('click',()=>{
+    const v=document.getElementById('inp-vnd-valor')?.value||vndValor;
+    const o=document.getElementById('inp-vnd-obs')?.value||vndObs;
+    if(!vndPag||!v)return;
+    const vid='v'+Date.now();
+    vendasState.historico.push({id:vid,cliente:vendasState.cliSel.nome,cliId:vendasState.cliSel.id,pneus:tot,pagamento:PAGS.find(p=>p.id===vndPag)?.nome,valor:parseFloat(v),obs:o,hora:now(),qtds:{...vndQtds},dev:null});
+    vendasState.tela='confirmado';renderVendasConfirmado();
+  });
+}
+
+function renderVendasConfirmado(){
+  const v=vendasState.historico[vendasState.historico.length-1];if(!v)return;
+  document.getElementById('content-area').innerHTML=`
+    ${btnBack()}
+    <div style="text-align:center;padding:.5rem 0 1.25rem">
+      <div style="width:72px;height:72px;border-radius:50%;background:var(--teal-bg);display:flex;align-items:center;justify-content:center;margin:0 auto 12px"><i class="ti ti-circle-check" style="font-size:36px;color:var(--teal)"></i></div>
+      <p style="font-size:20px;font-weight:700;color:var(--teal)">Venda registrada!</p>
+      <p style="font-size:13px;color:var(--text2);margin-top:4px">${v.hora}</p>
+    </div>
+    <div class="card">
+      <div class="fin-row"><span class="fl">Cliente</span><span class="fv">${v.cliente}</span></div>
+      <div class="fin-row"><span class="fl">Pneus</span><span class="fv">${v.pneus} un</span></div>
+      <div class="fin-row"><span class="fl">Pagamento</span><span class="fv">${v.pagamento}</span></div>
+      <div class="fin-row" style="font-size:16px"><span class="fl">Valor</span><span class="fv" style="color:var(--teal)">${fmtM(v.valor)}</span></div>
+      ${v.obs?`<div class="fin-row"><span class="fl">Obs.</span><span class="fv">${v.obs}</span></div>`:''}
+    </div>
+    <div style="background:var(--teal-bg);border:1px solid var(--teal-light);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:10px;font-size:13px;color:var(--teal)">
+      <i class="ti ti-info-circle" style="margin-right:5px"></i>Se houver devolução no futuro, acesse o <strong>Histórico</strong> e toque nesta venda.
+    </div>
+    <button class="btn btn-primary btn-block" id="btn-nova-vnd" style="font-size:15px;padding:13px"><i class="ti ti-plus"></i> Nova venda</button>`;
+  document.getElementById('btn-back-mod')?.addEventListener('click',renderDashboard);
+  document.getElementById('btn-nova-vnd')?.addEventListener('click',()=>{vendasState.cliSel=null;vendasState.busca='';vndQtds={};vndFoto=false;vndPag=null;vndValor='';vndObs='';vendasState.tela='cliente';renderVendas();});
+}
+
+// ── Mix helpers ───────────────────────────────────────────────────────────────
+function calcMixVnd(qtds){
+  const porAro={};
+  Object.entries(qtds||{}).forEach(([k,v])=>{
+    const aro=k.includes('|')?k.split('|')[0]:k;
+    porAro[aro]=(porAro[aro]||0)+(parseInt(v)||0);
+  });
+  const total=Object.values(porAro).reduce((s,v)=>s+v,0);
+  return Object.entries(porAro).filter(([,q])=>q>0)
+    .map(([aro,qtd])=>({aro,qtd,pct:total?Math.round(qtd/total*100):0}))
+    .sort((a,b)=>b.qtd-a.qtd);
+}
+
+function calcValorDevVnd(v,qtdsDev){
+  if(!qtdsDev)return 0;
+  const cad=vndCad[v.cliId];if(!cad)return 0;
+  let tot=0;
+  if(cad.tipo==='medidas'){
+    Object.entries(qtdsDev).forEach(([k,qtd])=>{
+      const[aro,idx]=k.split('|');
+      const preco=cad.tabela?.[aro]?.[parseInt(idx)]?.p||0;
+      tot+=qtd*preco;
+    });
+  } else {
+    Object.entries(qtdsDev).forEach(([aro,qtd])=>{
+      tot+=qtd*(parseFloat(cad.precos?.[aro])||0);
+    });
+  }
+  return tot;
+}
+
+// ── Devolução de venda ────────────────────────────────────────────────────────
+let devState={vendaId:null,tela:'lista'};
+
+function abrirVenda(vid){devState={vendaId:vid,tela:'detalhe'};renderDetalheVenda();}
+function getVendaHist(vid){return vendasState.historico.find(v=>v.id===vid);}
+
+function renderDetalheVenda(){
+  const v=getVendaHist(devState.vendaId);if(!v)return;
+  const mix=calcMixVnd(v.qtds||{});
+  const devConf=v.dev?.conferido;
+  const devDecl=v.dev?.declarado;
+  const temDev=!!(devDecl||devConf);
+  const vDev=calcValorDevVnd(v,devConf||devDecl||{});
+  const saldo=parseFloat(v.valor)-(v.dev?.adiantamento||0)-vDev;
+  const credito=saldo<0?Math.abs(saldo):0;
+
+  document.getElementById('content-area').innerHTML=`
+    <button class="btn btn-secondary btn-sm" id="btn-back-det" style="margin-bottom:1rem"><i class="ti ti-arrow-left"></i> Histórico</button>
+    <div class="mod-header">
+      <div class="mod-header-icon teal"><i class="ti ti-shopping-cart"></i></div>
+      <div><h2>${v.cliente.split(' ').slice(0,2).join(' ')}</h2><span>${v.hora} · ${v.pneus} un · ${fmtM(v.valor)}</span></div>
+    </div>
+    <div class="card">
+      <div class="fin-row"><span class="fl">Horário</span><span class="fv">${v.hora}</span></div>
+      <div class="fin-row"><span class="fl">Pagamento</span><span class="fv">${v.pagamento}</span></div>
+      <div class="fin-row"><span class="fl">Valor da venda</span><span class="fv pos">${fmtM(v.valor)}</span></div>
+      ${v.obs?`<div class="fin-row"><span class="fl">Obs.</span><span class="fv">${v.obs}</span></div>`:''}
+    </div>
+
+    ${mix.length?`
+    <div class="section-title">Mix enviado ao cliente</div>
+    <div class="card">
+      ${mix.map(m=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border-light)">
+        <span style="font-size:13px;font-weight:500">Aro ${m.aro}</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="background:var(--bg);border-radius:20px;height:6px;width:80px;overflow:hidden"><div style="height:6px;border-radius:20px;background:var(--teal);width:${m.pct}%"></div></div>
+          <span style="font-size:12px;font-weight:600;color:var(--teal);min-width:70px;text-align:right">${m.qtd} un · ${m.pct}%</span>
+        </div>
+      </div>`).join('')}
+    </div>`:''}
+
+    ${temDev?`
+    <div class="section-title">Devolução</div>
+    <div class="card">
+      ${devDecl?`<div class="fin-row"><span class="fl">Declarado pelo cliente</span><span class="fv warn">${Object.values(devDecl).reduce((s,v)=>s+(parseInt(v)||0),0)} pneus · -${fmtM(calcValorDevVnd(v,devDecl))}</span></div>`:''}
+      ${devConf?`<div class="fin-row"><span class="fl">Conferido fisicamente</span><span class="fv neg">${Object.values(devConf).reduce((s,v)=>s+(parseInt(v)||0),0)} pneus · -${fmtM(vDev)}</span></div>`:''}
+      ${v.dev?.adiantamento?`<div class="fin-row"><span class="fl">Adiantamento</span><span class="fv neg">-${fmtM(v.dev.adiantamento)}</span></div>`:''}
+      <div class="fin-row" style="font-size:15px;font-weight:700;border-top:2px solid var(--border);margin-top:4px;padding-top:10px">
+        <span>${credito>0?'Crédito p/ cliente':'Saldo a receber'}</span>
+        <span class="${credito>0?'neg':'pos'}">${fmtM(credito>0?credito:Math.max(0,saldo))}</span>
+      </div>
+    </div>
+    ${devConf||devDecl?`
+    <div class="section-title">Mix — Enviado vs Ficou com cliente</div>
+    <div class="card">
+      ${mix.map(m=>{
+        const dv=(devConf||devDecl)[m.aro]||0;
+        const ficou=m.qtd-dv;
+        const pctFicou=m.qtd>0?Math.round(ficou/m.qtd*100):0;
+        return `<div style="padding:6px 0;border-bottom:1px solid var(--border-light)">
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px">
+            <span style="font-weight:600">Aro ${m.aro}</span>
+            <span>${dv>0?`devolveu ${dv} · `:''}ficou <strong style="color:var(--green)">${ficou}</strong></span>
+          </div>
+          <div style="height:5px;background:var(--blue-bg);border-radius:3px;overflow:hidden;margin-bottom:2px"><div style="height:5px;background:var(--blue);width:${m.pct}%;border-radius:3px"></div></div>
+          <div style="height:5px;background:var(--green-bg);border-radius:3px;overflow:hidden"><div style="height:5px;background:var(--green);width:${pctFicou}%;border-radius:3px"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text2);margin-top:2px"><span style="color:var(--blue)">■ enviado ${m.pct}%</span><span style="color:var(--green)">■ ficou ${pctFicou}%</span></div>
+        </div>`;
+      }).join('')}
+    </div>`:''}
+    ${v.dev?.obs?`<div class="alert warn"><i class="ti ti-alert-triangle"></i><p>${v.dev.obs}</p></div>`:''}`:''}
+
+    <div class="section-title">Ações</div>
+    ${!temDev?`
+    <button class="btn btn-block" id="btn-iniciar-dev" style="background:var(--orange-bg);color:var(--orange);border:1px solid var(--orange-light);font-size:14px;padding:12px">
+      <i class="ti ti-arrow-back-up"></i> Registrar devolução desta venda
+    </button>`:''}
+    ${temDev&&!devConf?`
+    <button class="btn btn-success btn-block" id="btn-conferir-dev" style="font-size:14px;padding:12px">
+      <i class="ti ti-clipboard-check"></i> Conferir devolução física
+    </button>
+    <button class="btn btn-secondary btn-block btn-sm" id="btn-editar-dev"><i class="ti ti-edit"></i> Editar declaração</button>`:''}
+    ${devConf?`<div class="alert verde"><i class="ti ti-circle-check"></i><p>Devolução conferida.${credito>0?' Crédito de '+fmtM(credito)+' registrado.':''}</p></div>`:''}
+    <button class="btn btn-secondary btn-block btn-sm" id="btn-wpp-mix" style="margin-top:4px"><i class="ti ti-brand-whatsapp"></i> Enviar mix ao cliente</button>`;
+
+  document.getElementById('btn-back-det')?.addEventListener('click',()=>{devState.tela='lista';renderVendasHist();});
+  document.getElementById('btn-iniciar-dev')?.addEventListener('click',()=>{devState.tela='declarar';renderFormDev();});
+  document.getElementById('btn-conferir-dev')?.addEventListener('click',()=>{devState.tela='conferir';renderFormDev();});
+  document.getElementById('btn-editar-dev')?.addEventListener('click',()=>{devState.tela='declarar';renderFormDev();});
+  document.getElementById('btn-wpp-mix')?.addEventListener('click',()=>{
+    const mix2=calcMixVnd(v.qtds||{});
+    const msg=`📦 *Mix de venda — ${v.cliente}*\n\nTotal: *${v.pneus} pneus*\nValor: *${fmtM(v.valor)}*\nPagamento: ${v.pagamento}\n\n*Mix por aro:*\n${mix2.map(m=>`Aro ${m.aro}: ${m.qtd} un — ${m.pct}%`).join('\n')}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
+  });
+}
+
+function renderFormDev(){
+  const v=getVendaHist(devState.vendaId);if(!v)return;
+  const mix=calcMixVnd(v.qtds||{});
+  const isConferir=devState.tela==='conferir';
+  const fonte=isConferir?'conferido':'declarado';
+  const atual=isConferir?(v.dev?.declarado||{}):v.dev?.[fonte]||{};
+  const titulo=isConferir?'Conferência física':'Declaração do cliente';
+
+  document.getElementById('content-area').innerHTML=`
+    <button class="btn btn-secondary btn-sm" id="btn-back-form" style="margin-bottom:1rem"><i class="ti ti-arrow-left"></i> Voltar</button>
+    <div class="mod-header">
+      <div class="mod-header-icon laranja"><i class="ti ti-arrow-back-up"></i></div>
+      <div><h2>${titulo}</h2><span>${v.cliente.split(' ').slice(0,2).join(' ')}</span></div>
+    </div>
+    ${isConferir
+      ?`<div class="alert verde"><i class="ti ti-info-circle"></i><p>Valide o que chegou fisicamente. Se diferir do declarado, registre a observação.</p></div>`
+      :`<div class="alert laranja"><i class="ti ti-info-circle"></i><p>Informe o adiantamento recebido (se houver) e quantos pneus o cliente declarou que vai devolver.</p></div>
+      <label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px;text-transform:uppercase;margin-top:4px">Adiantamento recebido (R$)</label>
+      <input id="dev-adiant" type="number" step="0.01" min="0" placeholder="0,00" value="${v.dev?.adiantamento||''}" style="margin-bottom:14px">`}
+    <div class="card" style="padding:.75rem 1rem">
+      <div style="display:grid;grid-template-columns:60px 60px 1fr 60px;gap:4px;padding:5px 0;border-bottom:1px solid var(--border);margin-bottom:4px">
+        <span style="font-size:10px;font-weight:700;color:var(--text2)">ARO</span>
+        <span style="font-size:10px;font-weight:700;color:var(--blue);text-align:center">ENV.</span>
+        <span style="font-size:10px;font-weight:700;color:var(--red);text-align:center">${isConferir?'CHEGOU':'DEV.'}</span>
+        <span style="font-size:10px;font-weight:700;color:var(--green);text-align:right">FICA</span>
+      </div>
+      ${mix.map(m=>{
+        const val=atual[m.aro]||'';
+        const ficou=m.qtd-(parseInt(val)||0);
+        return `<div style="display:grid;grid-template-columns:60px 60px 1fr 60px;gap:4px;align-items:center;padding:5px 0;border-bottom:1px solid var(--border-light)">
+          <span style="font-size:13px;font-weight:700">Aro ${m.aro}</span>
+          <span style="text-align:center;font-size:13px;font-weight:600;color:var(--blue)">${m.qtd}</span>
+          <div style="text-align:center"><input class="cell-inp dev-inp${parseInt(val)>0?' dev':''}\" type="number" inputmode="numeric" min="0" max="${m.qtd}" style="width:52px;height:42px;font-size:15px;border-color:${parseInt(val)>0?'var(--red)':'var(--border)'};background:${parseInt(val)>0?'var(--red-bg)':'var(--surface)'};color:${parseInt(val)>0?'var(--red)':'var(--text)'}" value="${val}" placeholder="0" data-aro="${m.aro}" data-env="${m.qtd}"></div>
+          <span class="dev-fica" data-aro="${m.aro}" style="text-align:right;font-size:13px;font-weight:700;color:${ficou>0?'var(--green)':'var(--text2)'}">${ficou}</span>
+        </div>`;
+      }).join('')}
+    </div>
+    ${isConferir?`
+    <label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px;text-transform:uppercase">Observações / Divergências</label>
+    <input id="dev-obs" type="text" placeholder="Ex: Aro 14 chegou 18 em vez de 20..." value="${v.dev?.obs||''}" style="margin-bottom:14px">`:''}
+    <button class="btn btn-success btn-block" id="btn-salvar-dev-form" style="font-size:14px;padding:12px">
+      <i class="ti ti-device-floppy"></i> Salvar ${titulo}
+    </button>`;
+
+  document.getElementById('btn-back-form')?.addEventListener('click',()=>renderDetalheVenda());
+  document.querySelectorAll('.dev-inp').forEach(inp=>{
+    inp.addEventListener('focus',()=>inp.select());
+    inp.addEventListener('input',()=>{
+      const env=parseInt(inp.dataset.env)||0;
+      const dev=Math.min(Math.max(0,parseInt(inp.value)||0),env);
+      inp.value=dev||'';
+      const ficou=env-dev;
+      inp.style.borderColor=dev>0?'var(--red)':'var(--border)';
+      inp.style.background=dev>0?'var(--red-bg)':'var(--surface)';
+      inp.style.color=dev>0?'var(--red)':'var(--text)';
+      const elF=document.querySelector(`.dev-fica[data-aro="${inp.dataset.aro}"]`);
+      if(elF){elF.textContent=ficou;elF.style.color=ficou>0?'var(--green)':'var(--text2)';}
+    });
+  });
+  document.getElementById('btn-salvar-dev-form')?.addEventListener('click',()=>{
+    const qtdsDev={};
+    document.querySelectorAll('.dev-inp').forEach(inp=>{if(parseInt(inp.value)>0)qtdsDev[inp.dataset.aro]=parseInt(inp.value);});
+    const adiant=parseFloat(document.getElementById('dev-adiant')?.value)||v.dev?.adiantamento||0;
+    const obs=document.getElementById('dev-obs')?.value||v.dev?.obs||'';
+    if(!v.dev)v.dev={adiantamento:0,declarado:null,conferido:null,obs:''};
+    v.dev.adiantamento=adiant;v.dev.obs=obs;
+    v.dev[fonte]=Object.keys(qtdsDev).length?qtdsDev:null;
+    devState.tela='detalhe';
+    renderDetalheVenda();
+    setTimeout(()=>alert(`✅ ${titulo} salva!`),50);
+  });
+}
+
+function renderVendasHist(){
+  devState.vendaId=null;devState.tela='lista';
+  const hist=vendasState.historico;
+  document.getElementById('content-area').innerHTML=`
+    ${btnBack()}
+    <div class="mod-header"><div class="mod-header-icon verde"><i class="ti ti-history"></i></div><div><h2>Histórico de vendas</h2><span>Toque em uma venda para detalhes ou devolução</span></div></div>
+    ${hist.length===0?`<div class="empty"><i class="ti ti-shopping-cart-off"></i><p>Nenhuma venda registrada ainda.</p></div>`:`
+    <div class="stat-grid">
+      <div class="stat-box teal"><div class="sv">${hist.length}</div><div class="sl">Vendas</div></div>
+      <div class="stat-box verde"><div class="sv" style="font-size:15px">${fmtM(hist.reduce((s,v)=>s+parseFloat(v.valor||0),0))}</div><div class="sl">Total</div></div>
+    </div>
+    ${[...hist].reverse().map(v=>{
+      const temDev=!!v.dev;const devConf=!!v.dev?.conferido;
+      const mix=calcMixVnd(v.qtds||{});
+      return `<div class="card" style="cursor:pointer;border-left:3px solid ${devConf?'var(--green)':temDev?'var(--orange)':'var(--teal)'}" id="vhist-${v.id}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+          <strong style="font-size:14px">${v.cliente.split(' ').slice(0,2).join(' ')}</strong>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
+            <span style="font-size:15px;font-weight:700;color:var(--teal)">${fmtM(v.valor)}</span>
+            ${temDev?`<span style="font-size:10px;padding:2px 6px;border-radius:20px;font-weight:600;background:${devConf?'var(--green-bg)':'var(--orange-bg)'};color:${devConf?'var(--green)':'var(--orange)'}">${devConf?'Dev. conferida':'Dev. pendente'}</span>`:''}
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--text2)">${v.hora} · ${v.pneus} un · ${v.pagamento}</div>
+        ${mix.length?`<div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap">${mix.map(m=>`<span style="font-size:10px;padding:2px 7px;border-radius:20px;background:var(--teal-bg);color:var(--teal);font-weight:600">Aro ${m.aro}: ${m.qtd}</span>`).join('')}</div>`:''}
+      </div>`;
+    }).join('')}`}`;
+  bindBack();
+  document.querySelectorAll('[id^="vhist-"]').forEach(el=>{
+    el.addEventListener('click',()=>{abrirVenda(el.id.replace('vhist-',''));});
+  });
+}
+</script>
+</body>
+</html>
+
+<!-- ── MÓDULO ALERTAS WHATSAPP (injetado após carregamento) ── -->
+<script>
+// ── Z-API Config ──────────────────────────────────────────────────────────────
+window.wppCfg = {
+  instanceId:'', instanceToken:'', clientToken:'', grupoId:'',
+  ativoCheckin:true, ativoTriagem:true,
+  limiteCheckin:30, limiteTriagem:30,
+  msgCheckin:'📉 *ALERTA — BAIXO ÍNDICE DE ESTOURADOS*\n\nRota: {rota}\nMotorista: {motorista}\nPlaca: {placa}\nLoja: {loja}\n\nTotal coletado: {total} pneus\nEstourados: {estourados} ({pct}%)\n⚠️ Esperado mínimo de {limite}%\n_Horário: {hora}_',
+  msgTriagem:'🔴 *ALERTA — ALTO ÍNDICE DE LIXO NA TRIAGEM*\n\nCaminhão: {placa}\nMotorista: {motorista}\n\nTotal triado: {total} pneus\nLixo: {lixo} ({pct}%)\n_Limite: {limite}% · {hora}_',
+};
+window.wppLog = [];
+
+// Carregar config salva
+(async()=>{
+  try{const r=await window.storage?.get('wpp_cfg2');if(r)window.wppCfg={...window.wppCfg,...JSON.parse(r.value)};}catch(e){}
+  try{const r=await window.storage?.get('wpp_log2');if(r)window.wppLog=JSON.parse(r.value);}catch(e){}
+})();
+
+async function wppSalvarCfg(){try{await window.storage?.set('wpp_cfg2',JSON.stringify(window.wppCfg));}catch(e){}}
+async function wppSalvarLog(){try{await window.storage?.set('wpp_log2',JSON.stringify(window.wppLog.slice(-50)));}catch(e){}}
+
+async function wppEnviar(msg){
+  const c=window.wppCfg;
+  if(!c.instanceId||!c.instanceToken||!c.clientToken||!c.grupoId) throw new Error('Credenciais não configuradas');
+  const url=`https://api.z-api.io/instances/${c.instanceId}/token/${c.instanceToken}/send-text`;
+  const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','Client-Token':c.clientToken},body:JSON.stringify({phone:c.grupoId,message:msg})});
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.message||`HTTP ${r.status}`);}
+  return await r.json();
+}
+
+function wppAddLog(tipo,titulo,msg){
+  window.wppLog.push({tipo,titulo,msg,hora:new Date().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})});
+}
+
+window.wppDispararCheckin=async function({rota,motorista,placa,loja,total,estourados,pct}){
+  if(!window.wppCfg.ativoCheckin||pct>=window.wppCfg.limiteCheckin)return;
+  const msg=window.wppCfg.msgCheckin
+    .replace('{rota}',rota).replace('{motorista}',motorista).replace('{placa}',placa)
+    .replace('{loja}',loja).replace('{total}',total).replace('{estourados}',estourados)
+    .replace('{pct}',pct).replace('{limite}',window.wppCfg.limiteCheckin)
+    .replace('{hora}',new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}));
+  try{await wppEnviar(msg);wppAddLog('warn',`Alerta check-in: ${loja}`,`${pct}% estourados (abaixo do limite)`);}
+  catch(e){wppAddLog('err','Erro check-in',e.message);}
+  wppSalvarLog();
+};
+
+window.wppDispararTriagem=async function({placa,motorista,total,lixo,pct}){
+  if(!window.wppCfg.ativoTriagem||pct<window.wppCfg.limiteTriagem)return;
+  const msg=window.wppCfg.msgTriagem
+    .replace('{placa}',placa).replace('{motorista}',motorista)
+    .replace('{total}',total).replace('{lixo}',lixo)
+    .replace('{pct}',pct).replace('{limite}',window.wppCfg.limiteTriagem)
+    .replace('{hora}',new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}));
+  try{await wppEnviar(msg);wppAddLog('err',`Alerta triagem: ${placa}`,`${pct}% lixo`);}
+  catch(e){wppAddLog('err','Erro triagem',e.message);}
+  wppSalvarLog();
+};
+</script>

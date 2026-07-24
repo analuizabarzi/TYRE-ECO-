@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Vendas — Melhorias</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#F7F7F5;--surface:#FFF;--border:#E5E4E0;--border-light:#EFEFED;--text:#1A1A18;--text2:#6B6B65;--text3:#A8A8A2;--green:#1D7A4F;--green-bg:#EBF5EF;--blue:#1A5FA8;--blue-bg:#EBF2FB;--orange:#B85C00;--orange-bg:#FDF0E5;--red:#B02020;--red-bg:#FDECEC;--purple:#5040A8;--purple-bg:#F0EEFB;--radius:12px;--radius-sm:8px}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-tap-highlight-color:transparent}
+.app{max-width:480px;margin:0 auto;padding:1rem}
+.header{display:flex;align-items:center;gap:10px;margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid var(--border)}
+.header-icon{width:42px;height:42px;border-radius:50%;background:var(--purple-bg);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--purple);flex-shrink:0}
+.header h1{font-size:16px;font-weight:600}
+.header p{font-size:11px;color:var(--text2)}
+.tabs{display:flex;gap:3px;margin-bottom:1rem;background:#EBEBEA;border-radius:10px;padding:3px;overflow-x:auto}
+.tab{flex:1;padding:7px 6px;font-size:11px;border:none;background:none;cursor:pointer;border-radius:8px;color:var(--text2);font-family:inherit;text-align:center;white-space:nowrap;min-width:56px}
+.tab.active{background:var(--surface);color:var(--text);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;margin-bottom:10px}
+.btn{padding:11px 16px;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:7px;touch-action:manipulation}
+.btn-primary{background:var(--purple);color:#fff}
+.btn-success{background:var(--green);color:#fff}
+.btn-wpp{background:#25D366;color:#fff}
+.btn-pdf{background:#E24B4A;color:#fff}
+.btn-secondary{background:var(--surface);color:var(--text);border:1px solid var(--border)}
+.btn-block{width:100%;justify-content:center;margin-top:8px}
+.btn-sm{padding:6px 10px;font-size:12px;font-weight:500}
+.section-title{font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;margin-top:4px}
+label{display:block;font-size:12px;color:var(--text2);margin-bottom:4px;margin-top:10px}
+input,select{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;background:var(--bg);color:var(--text)}
+input:focus,select:focus{outline:none;border-color:var(--purple)}
+.fin-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border-light);font-size:13px}
+.fin-row:last-child{border-bottom:none}
+.fl{color:var(--text2)}.fv{font-weight:600}
+.pos{color:var(--green)}.neg{color:var(--red)}
+.alert{border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:12px;display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.5}
+.alert.ok{background:var(--green-bg);color:var(--green)}
+.alert.blue{background:var(--blue-bg);color:var(--blue)}
+.alert.warn{background:var(--orange-bg);color:var(--orange)}
+.alert i{font-size:16px;flex-shrink:0;margin-top:1px}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.stat-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+.stat-box{background:var(--bg);border-radius:var(--radius-sm);padding:10px;text-align:center}
+.stat-box .sv{font-size:18px;font-weight:700}
+.stat-box .sl{font-size:10px;color:var(--text2);margin-top:2px;text-transform:uppercase;letter-spacing:.03em}
+/* Mix bars */
+.mix-bar-wrap{margin-bottom:8px}
+.mix-bar-label{display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px}
+.mix-bar-bg{background:var(--bg);border-radius:20px;height:8px;overflow:hidden}
+.mix-bar-fill{height:8px;border-radius:20px;background:var(--purple);transition:width .4s}
+/* Recibo */
+.recibo{background:#fff;border:1px solid #ddd;border-radius:8px;padding:1.25rem;font-family:monospace;font-size:12px;color:#111;line-height:1.7;margin-bottom:12px;max-height:340px;overflow-y:auto}
+.recibo h3{font-size:15px;font-weight:700;text-align:center;margin-bottom:4px}
+.recibo .sub{text-align:center;color:#555;font-size:11px;margin-bottom:8px}
+.recibo hr{border:none;border-top:1px dashed #bbb;margin:8px 0}
+.recibo table{width:100%;font-size:11px;border-collapse:collapse}
+.recibo table th{font-weight:700;border-bottom:1px solid #ddd;padding:2px 4px}
+.recibo table td{padding:2px 4px}
+.recibo table td:not(:first-child){text-align:right}
+.recibo .r-total{font-weight:700;font-size:13px;display:flex;justify-content:space-between;margin-top:6px;border-top:1px solid #bbb;padding-top:6px}
+.recibo .r-footer{text-align:center;color:#999;font-size:10px;margin-top:10px}
+/* Fiado */
+.fiado-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border-light)}
+.fiado-row:last-child{border-bottom:none}
+.credit-bar-bg{background:var(--bg);border-radius:20px;height:4px;overflow:hidden;margin-top:3px;width:80px}
+.credit-bar-fill{height:4px;border-radius:20px;background:var(--red)}
+/* Preview WPP */
+.wpp-bubble{background:#E7F8DC;border-radius:12px 12px 2px 12px;padding:12px 14px;font-size:13px;line-height:1.7;color:#111;border:0.5px solid #C5E8A3;margin-bottom:12px;position:relative}
+.wpp-bubble .wpp-time{font-size:10px;color:#999;text-align:right;margin-top:4px}
+/* Período */
+.period-bar{display:flex;gap:3px;margin-bottom:12px;background:#EBEBEA;border-radius:10px;padding:3px}
+.period-pill{flex:1;padding:6px 4px;font-size:12px;border:none;background:none;cursor:pointer;border-radius:8px;color:var(--text2);font-family:inherit;text-align:center}
+.period-pill.active{background:var(--surface);color:var(--text);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<script>
+const {jsPDF}=window.jspdf||{};
+
+// ── Dados demo ────────────────────────────────────────────────────────────────
+const VENDA={id:'v001',num:'000001',data:'11/06/2026',hora:'14:32',
+  cliente:{id:'357',nome:'TCP ECOLOGY TYRE'},
+  categoria:'Carcaça',pagamento:'PIX',total:4000,
+  itens:[{aro:'13',medida:'185/65R13',qtd:50,preco:45,sub:2250},{aro:'14',medida:'185/65R14',qtd:20,preco:50,sub:1000},{aro:'15',medida:'195/65R15',qtd:30,preco:25,sub:750}]};
+
+const HIST=[
+  {data:'11/06/2026',hora:'14:32',cliente:'TCP ECOLOGY TYRE',pneus:100,valor:4000,pag:'PIX',itens:[{aro:'13',qtd:50,preco:45},{aro:'14',qtd:20,preco:50},{aro:'15',qtd:30,preco:25}]},
+  {data:'10/06/2026',hora:'10:15',cliente:'JATOBA PNEUS',pneus:80,valor:2800,pag:'Dinheiro',itens:[{aro:'13',qtd:40,preco:35},{aro:'15',qtd:40,preco:35}]},
+  {data:'09/06/2026',hora:'09:50',cliente:'TCP ECOLOGY TYRE',pneus:120,valor:4800,pag:'PIX',itens:[{aro:'13',qtd:60,preco:45},{aro:'14',qtd:30,preco:50},{aro:'15',qtd:30,preco:25}]},
+  {data:'08/06/2026',hora:'15:20',cliente:'BORRACHARIA PEREIRA',pneus:50,valor:1750,pag:'Fiado',itens:[{aro:'14',qtd:20,preco:35},{aro:'15',qtd:30,preco:35}]},
+  {data:'07/06/2026',hora:'11:00',cliente:'JATOBA PNEUS',pneus:60,valor:2100,pag:'PIX',itens:[{aro:'13',qtd:30,preco:35},{aro:'15',qtd:30,preco:35}]},
+];
+
+const FIADO=[
+  {id:'f1',cliente:'BORRACHARIA PEREIRA LTDA',limite:3000,saldo:1750,ultima:'08/06/2026',venc:'22/06/2026'},
+  {id:'f2',cliente:'CELIO CARRION',limite:2000,saldo:800,ultima:'05/06/2026',venc:'19/06/2026'},
+  {id:'f3',cliente:'MESQUITAO PNEUS',limite:5000,saldo:0,ultima:'01/06/2026',venc:'—'},
+];
+
+let tab='mix', periodo='semana';
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const fmtM=v=>'R$'+(+v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+function calcMix(itens){
+  const m={};itens.forEach(it=>{m[it.aro]=(m[it.aro]||0)+it.qtd;});
+  const tot=Object.values(m).reduce((s,v)=>s+v,0);
+  return Object.entries(m).map(([aro,qtd])=>({aro,qtd,pct:tot?Math.round(qtd/tot*100):0})).sort((a,b)=>b.qtd-a.qtd);
+}
+function buildMsgMix(v){
+  const mix=calcMix(v.itens);
+  const tot=v.itens.reduce((s,i)=>s+i.qtd,0);
+  return `📦 *Mix de venda — ${v.cliente.nome}*\n\nCategoria: *${v.categoria}*\nTotal: *${tot} pneus*\nValor: *${fmtM(v.total)}*\nPagamento: ${v.pagamento}\nData: ${v.data} ${v.hora}\n\n*Mix por aro:*\n${mix.map(m=>`Aro ${m.aro}: ${m.qtd} un — ${m.pct}%`).join('\n')}`;
+}
+
+// ── PDF Recibo ────────────────────────────────────────────────────────────────
+function gerarPDF(v){
+  if(!jsPDF){alert('Carregando biblioteca PDF, aguarde...');return;}
+  const doc=new jsPDF({format:'a5',unit:'mm'});
+  const W=148,px=12;let y=14;
+  const c=(txt,sz,bold)=>{doc.setFont('helvetica',bold?'bold':'normal');doc.setFontSize(sz);return txt;};
+  doc.setFont('helvetica','bold');doc.setFontSize(15);doc.text('TYRE ECO',W/2,y,{align:'center'});y+=6;
+  doc.setFont('helvetica','normal');doc.setFontSize(8);
+  doc.text('Comércio de Pneus Ltda — Osasco/SP  |  CNPJ: 13.754.329/0001-90',W/2,y,{align:'center'});y+=7;
+  doc.setLineWidth(.3);doc.line(px,y,W-px,y);y+=5;
+  doc.setFont('helvetica','bold');doc.setFontSize(11);doc.text(`RECIBO DE VENDA Nº ${v.num}`,W/2,y,{align:'center'});y+=5;
+  doc.setFont('helvetica','normal');doc.setFontSize(8);
+  doc.text(`Data: ${v.data} ${v.hora}     Pagamento: ${v.pagamento}`,W/2,y,{align:'center'});y+=7;
+  doc.setFont('helvetica','bold');doc.setFontSize(9);doc.text('CLIENTE',px,y);y+=4;
+  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.text(v.cliente.nome,px,y);y+=7;
+  doc.line(px,y,W-px,y);y+=5;
+  doc.setFont('helvetica','bold');doc.setFontSize(9);doc.text('Categoria: '+v.categoria,px,y);y+=5;
+  // Cabeçalho itens
+  const cols=[px,px+60,px+75,px+90];
+  doc.setFont('helvetica','bold');doc.setFontSize(8);
+  ['Aro / Medida','Qtd','R$/un','Total'].forEach((h,i)=>{i===0?doc.text(h,cols[i],y):doc.text(h,cols[i],y,{align:'right'});});y+=3;
+  doc.line(px,y,W-px,y);y+=3;
+  doc.setFont('helvetica','normal');
+  v.itens.forEach(it=>{
+    doc.text(`Aro ${it.aro} — ${it.medida||''}`,cols[0],y);
+    doc.text(String(it.qtd),cols[1],y,{align:'right'});
+    doc.text(fmtM(it.preco),cols[2],y,{align:'right'});
+    doc.text(fmtM(it.sub),W-px,y,{align:'right'});
+    y+=5;
+  });
+  doc.line(px,y,W-px,y);y+=5;
+  doc.setFont('helvetica','bold');doc.setFontSize(11);
+  doc.text('TOTAL',px,y);doc.text(fmtM(v.total),W-px,y,{align:'right'});y+=9;
+  // Mix
+  const mix=calcMix(v.itens);
+  doc.setFont('helvetica','bold');doc.setFontSize(8);doc.text('MIX POR ARO:',px,y);y+=4;
+  doc.setFont('helvetica','normal');
+  mix.forEach(m=>{doc.text(`Aro ${m.aro}: ${m.qtd} un (${m.pct}%)`,px+4,y);y+=4;});
+  y+=3;
+  doc.line(px,y,W-px,y);y+=4;
+  doc.setFontSize(7);doc.setTextColor(150);
+  doc.text('Documento sem valor fiscal. Comprovante interno apenas.',W/2,y,{align:'center'});
+  doc.save(`recibo_${v.num}.pdf`);
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function render(){
+  document.getElementById('app').innerHTML=`
+    <div class="header">
+      <div class="header-icon"><i class="ti ti-shopping-cart"></i></div>
+      <div><h1>Vendas — Melhorias</h1><p>Mix WhatsApp · Recibo PDF · Histórico · Fiado · Relatório</p></div>
+    </div>
+    <div class="tabs">
+      ${[['mix','📦 Mix WPP'],['recibo','🧾 Recibo'],['hist','📋 Histórico'],['fiado','💳 Fiado'],['rel','📊 Relatório']].map(([t,l])=>
+        `<button class="tab${tab===t?' active':''}" data-tab="${t}">${l}</button>`).join('')}
+    </div>
+    <div id="content">${renderTab()}</div>`;
+  bindAll();
+}
+
+function renderTab(){
+  if(tab==='mix')    return renderMix();
+  if(tab==='recibo') return renderRecibo();
+  if(tab==='hist')   return renderHist();
+  if(tab==='fiado')  return renderFiado();
+  return renderRel();
+}
+
+// ── MIX ───────────────────────────────────────────────────────────────────────
+function renderMix(){
+  const mix=calcMix(VENDA.itens);
+  const msg=buildMsgMix(VENDA);
+  const msgHtml=msg.replace(/\*(.*?)\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+  return `
+  <div class="alert ok"><i class="ti ti-circle-check"></i><span>Ao confirmar a venda, o mix é calculado e enviado automaticamente via WhatsApp.</span></div>
+
+  <div class="section-title">Venda — TCP ECOLOGY TYRE</div>
+  <div class="card">
+    <div class="fin-row"><span class="fl">Total pneus</span><span class="fv">${VENDA.itens.reduce((s,i)=>s+i.qtd,0)} un</span></div>
+    <div class="fin-row"><span class="fl">Valor</span><span class="fv pos">${fmtM(VENDA.total)}</span></div>
+    <div class="fin-row"><span class="fl">Pagamento</span><span class="fv">${VENDA.pagamento}</span></div>
+  </div>
+
+  <div class="section-title">Mix por aro</div>
+  <div class="card">
+    ${mix.map(m=>`<div class="mix-bar-wrap">
+      <div class="mix-bar-label"><span style="font-weight:600">Aro ${m.aro}</span><span style="color:var(--purple);font-weight:600">${m.qtd} un — ${m.pct}%</span></div>
+      <div class="mix-bar-bg"><div class="mix-bar-fill" style="width:${m.pct}%"></div></div>
+    </div>`).join('')}
+  </div>
+
+  <div class="section-title">Preview da mensagem</div>
+  <div class="wpp-bubble">${msgHtml}<div class="wpp-time">14:32 ✓✓</div></div>
+
+  <div style="display:flex;gap:8px">
+    <button class="btn btn-wpp" style="flex:1;justify-content:center" id="btn-enviar-mix"><i class="ti ti-brand-whatsapp"></i> Enviar</button>
+    <button class="btn btn-secondary" style="flex:1;justify-content:center" id="btn-copiar"><i class="ti ti-copy"></i> Copiar</button>
+  </div>
+  <div class="alert blue" style="margin-top:10px"><i class="ti ti-info-circle"></i><span>Com Z-API configurada, o envio é automático. Sem Z-API, abre o WhatsApp com a mensagem pronta.</span></div>`;
+}
+
+// ── RECIBO ────────────────────────────────────────────────────────────────────
+function renderRecibo(){
+  const v=VENDA;const mix=calcMix(v.itens);
+  return `
+  <div class="section-title">Recibo — TCP ECOLOGY TYRE</div>
+  <div class="recibo">
+    <h3>TYRE ECO</h3>
+    <div class="sub">Comércio de Pneus Ltda — Osasco/SP<br>CNPJ: 13.754.329/0001-90</div>
+    <hr>
+    <div style="text-align:center;font-weight:700;font-size:13px">RECIBO Nº ${v.num}</div>
+    <div style="text-align:center;font-size:10px;color:#666">${v.data} ${v.hora} &nbsp;|&nbsp; ${v.pagamento}</div>
+    <hr>
+    <div style="font-weight:700">CLIENTE: ${v.cliente.nome}</div>
+    <div>Categoria: ${v.categoria}</div>
+    <hr>
+    <table>
+      <tr><th style="text-align:left">Aro/Medida</th><th>Qtd</th><th>Unit.</th><th>Total</th></tr>
+      ${v.itens.map(it=>`<tr><td>Aro ${it.aro} ${it.medida||''}</td><td>${it.qtd}</td><td>${fmtM(it.preco)}</td><td>${fmtM(it.sub)}</td></tr>`).join('')}
+    </table>
+    <div class="r-total"><span>TOTAL</span><span>${fmtM(v.total)}</span></div>
+    <hr>
+    <div style="font-weight:700;font-size:11px">MIX POR ARO:</div>
+    ${mix.map(m=>`<div style="font-size:11px">Aro ${m.aro}: ${m.qtd} un (${m.pct}%)</div>`).join('')}
+    <div class="r-footer">Documento sem valor fiscal · Tyre Eco — Osasco/SP<br>Para NF-e real: Focus NFe / eNotas</div>
+  </div>
+  <div style="display:flex;gap:8px">
+    <button class="btn btn-pdf" style="flex:1;justify-content:center" id="btn-pdf"><i class="ti ti-file-type-pdf"></i> Baixar PDF</button>
+    <button class="btn btn-wpp" style="flex:1;justify-content:center" id="btn-wpp-mix"><i class="ti ti-brand-whatsapp"></i> Enviar mix</button>
+  </div>
+  <div class="alert blue" style="margin-top:10px"><i class="ti ti-info-circle"></i><span>Para emitir NF-e real, integrar com <strong>Focus NFe</strong> (focusnfe.com.br) — ~R$0,10/nota, certificado digital A1/A3 necessário.</span></div>`;
+}
+
+// ── HISTÓRICO ─────────────────────────────────────────────────────────────────
+function renderHist(){
+  const porCli={};
+  HIST.forEach(v=>{
+    if(!porCli[v.cliente])porCli[v.cliente]={nome:v.cliente,compras:0,pneus:0,valor:0,ultima:v.data,pags:{}};
+    const c=porCli[v.cliente];
+    c.compras++;c.pneus+=v.pneus;c.valor+=v.valor;c.pags[v.pag]=(c.pags[v.pag]||0)+1;
+  });
+  const clientes=Object.values(porCli).sort((a,b)=>b.valor-a.valor);
+  return `
+  <div class="stat-grid">
+    <div class="stat-box"><div class="sv" style="color:var(--purple)">${HIST.length}</div><div class="sl">Vendas</div></div>
+    <div class="stat-box"><div class="sv" style="color:var(--green);font-size:15px">${fmtM(HIST.reduce((s,v)=>s+v.valor,0))}</div><div class="sl">Total</div></div>
+  </div>
+  ${clientes.map(c=>{
+    const itensC=HIST.filter(v=>v.cliente===c.nome).flatMap(v=>v.itens);
+    const mix=calcMix(itensC);
+    return `<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <strong style="font-size:14px">${c.nome}</strong>
+        <span style="font-size:15px;font-weight:700;color:var(--purple)">${fmtM(c.valor)}</span>
+      </div>
+      <div class="stat-grid-3" style="margin-bottom:8px">
+        <div class="stat-box"><div class="sv" style="font-size:15px">${c.compras}</div><div class="sl">Compras</div></div>
+        <div class="stat-box"><div class="sv" style="font-size:15px">${c.pneus}</div><div class="sl">Pneus</div></div>
+        <div class="stat-box"><div class="sv" style="font-size:13px">${fmtM(c.valor/c.compras)}</div><div class="sl">Ticket</div></div>
+      </div>
+      <div class="fin-row"><span class="fl">Última compra</span><span class="fv">${c.ultima}</span></div>
+      <div class="fin-row"><span class="fl">Forma preferida</span><span class="fv">${Object.entries(c.pags).sort((a,b)=>b[1]-a[1])[0][0]}</span></div>
+      ${mix.length?`<div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border-light)">
+        <div class="section-title">Mix acumulado</div>
+        ${mix.map(m=>`<div class="mix-bar-wrap">
+          <div class="mix-bar-label"><span style="font-size:12px">Aro ${m.aro}</span><span style="font-size:12px;color:var(--purple);font-weight:600">${m.qtd} un · ${m.pct}%</span></div>
+          <div class="mix-bar-bg"><div class="mix-bar-fill" style="width:${m.pct}%"></div></div>
+        </div>`).join('')}
+      </div>`:''}
+    </div>`;
+  }).join('')}`;
+}
+
+// ── FIADO ─────────────────────────────────────────────────────────────────────
+function renderFiado(){
+  const totalSaldo=FIADO.reduce((s,f)=>s+f.saldo,0);
+  const totalLim=FIADO.reduce((s,f)=>s+f.limite,0);
+  return `
+  <div class="stat-grid">
+    <div class="stat-box"><div class="sv neg">${fmtM(totalSaldo)}</div><div class="sl">Em aberto</div></div>
+    <div class="stat-box"><div class="sv">${fmtM(totalLim)}</div><div class="sl">Limite total</div></div>
+  </div>
+  <div class="section-title">Clientes com fiado</div>
+  <div class="card" style="padding:.75rem 1rem">
+    ${FIADO.map(f=>{
+      const pct=Math.round(f.saldo/f.limite*100);
+      return `<div class="fiado-row">
+        <div style="width:36px;height:36px;border-radius:50%;background:${f.saldo>0?'var(--red-bg)':'var(--green-bg)'};display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0;color:${f.saldo>0?'var(--red)':'var(--green)'}">${f.saldo>0?'$':'✓'}</div>
+        <div style="flex:1;min-width:0">
+          <strong style="font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${f.cliente}</strong>
+          <span style="font-size:11px;color:var(--text2)">Última compra: ${f.ultima}</span>
+          ${f.saldo>0?`<div class="credit-bar-bg"><div class="credit-bar-fill" style="width:${pct}%"></div></div>`:''}
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:14px;font-weight:700;color:${f.saldo>0?'var(--red)':'var(--green)'}">${f.saldo>0?fmtM(f.saldo):'Quitado'}</div>
+          <div style="font-size:10px;color:var(--text2)">Lim: ${fmtM(f.limite)}</div>
+          ${f.venc!=='—'?`<div style="font-size:10px;color:var(--red)">Vence: ${f.venc}</div>`:''}
+        </div>
+      </div>`;
+    }).join('')}
+  </div>
+  <div class="section-title">Registrar pagamento</div>
+  <div class="card">
+    <label>Cliente com saldo em aberto</label>
+    <select id="fiado-cli">
+      <option value="">Selecionar...</option>
+      ${FIADO.filter(f=>f.saldo>0).map(f=>`<option value="${f.id}">${f.cliente} — ${fmtM(f.saldo)}</option>`).join('')}
+    </select>
+    <label>Valor recebido (R$)</label>
+    <input id="fiado-val" type="number" step="0.01" min="0" placeholder="0,00">
+    <label>Forma de pagamento</label>
+    <select id="fiado-pag"><option>Dinheiro</option><option>PIX</option><option>Cheque</option><option>Transferência</option></select>
+    <button class="btn btn-success btn-block" id="btn-fiado"><i class="ti ti-check"></i> Registrar pagamento</button>
+  </div>`;
+}
+
+// ── RELATÓRIO ─────────────────────────────────────────────────────────────────
+function renderRel(){
+  const hj=new Date();
+  const filtrar=v=>{
+    const [d,m,a]=v.data.split('/').map(Number);
+    const diff=Math.floor((hj-new Date(a,m-1,d))/(864e5));
+    if(periodo==='hoje')  return diff===0;
+    if(periodo==='semana')return diff<=7;
+    if(periodo==='mes')   return diff<=30;
+    return true;
+  };
+  const vendas=HIST.filter(filtrar);
+  const total=vendas.reduce((s,v)=>s+v.valor,0);
+  const pneus=vendas.reduce((s,v)=>s+v.pneus,0);
+  const ticket=vendas.length?total/vendas.length:0;
+  const mix=calcMix(vendas.flatMap(v=>v.itens));
+  const porPag={};vendas.forEach(v=>{porPag[v.pag]=(porPag[v.pag]||0)+v.valor;});
+  const porCli={};vendas.forEach(v=>{porCli[v.cliente]=(porCli[v.cliente]||0)+v.valor;});
+  const top=Object.entries(porCli).sort((a,b)=>b[1]-a[1]).slice(0,3);
+
+  return `
+  <div class="period-bar">
+    ${[['hoje','Hoje'],['semana','7 dias'],['mes','30 dias'],['tudo','Tudo']].map(([k,l])=>
+      `<button class="period-pill${periodo===k?' active':''}" data-period="${k}">${l}</button>`).join('')}
+  </div>
+  <div class="stat-grid-3">
+    <div class="stat-box"><div class="sv" style="color:var(--purple)">${vendas.length}</div><div class="sl">Vendas</div></div>
+    <div class="stat-box"><div class="sv">${pneus}</div><div class="sl">Pneus</div></div>
+    <div class="stat-box"><div class="sv" style="font-size:14px;color:var(--green)">${fmtM(total)}</div><div class="sl">Total</div></div>
+  </div>
+  <div class="stat-grid">
+    <div class="stat-box"><div class="sv" style="font-size:16px">${fmtM(ticket)}</div><div class="sl">Ticket médio</div></div>
+    <div class="stat-box"><div class="sv" style="font-size:16px">${pneus?fmtM(total/pneus):'—'}</div><div class="sl">R$/pneu</div></div>
+  </div>
+  ${mix.length?`
+  <div class="section-title">Mix do período</div>
+  <div class="card">
+    ${mix.map(m=>`<div class="mix-bar-wrap">
+      <div class="mix-bar-label"><span style="font-weight:600">Aro ${m.aro}</span><span style="color:var(--purple);font-weight:600">${m.qtd} un — ${m.pct}%</span></div>
+      <div class="mix-bar-bg"><div class="mix-bar-fill" style="width:${m.pct}%"></div></div>
+    </div>`).join('')}
+  </div>`:''}
+  <div class="section-title">Por pagamento</div>
+  <div class="card" style="padding:.75rem 1rem">
+    ${Object.entries(porPag).sort((a,b)=>b[1]-a[1]).map(([p,v])=>`<div class="fin-row"><span class="fl">${p}</span><span class="fv">${fmtM(v)}</span></div>`).join('')}
+  </div>
+  ${top.length?`
+  <div class="section-title">Top clientes</div>
+  <div class="card" style="padding:.75rem 1rem">
+    ${top.map(([nome,val],i)=>`<div class="fin-row"><span class="fl">${['🥇','🥈','🥉'][i]} ${nome.split(' ').slice(0,2).join(' ')}</span><span class="fv">${fmtM(val)}</span></div>`).join('')}
+  </div>`:''}`;
+}
+
+// ── Bind ──────────────────────────────────────────────────────────────────────
+function bindAll(){
+  document.querySelectorAll('[data-tab]').forEach(btn=>btn.addEventListener('click',()=>{tab=btn.dataset.tab;render();}));
+  document.querySelectorAll('[data-period]').forEach(btn=>btn.addEventListener('click',()=>{periodo=btn.dataset.period;render();}));
+
+  document.getElementById('btn-enviar-mix')?.addEventListener('click',()=>{
+    const msg=buildMsgMix(VENDA);
+    const url=`https://wa.me/?text=${encodeURIComponent(msg)}`;
+    window.open(url,'_blank');
+  });
+  document.getElementById('btn-copiar')?.addEventListener('click',()=>{
+    const msg=buildMsgMix(VENDA);
+    navigator.clipboard?.writeText(msg).then(()=>alert('✅ Mensagem copiada!')).catch(()=>prompt('Copie manualmente:',msg));
+  });
+  document.getElementById('btn-pdf')?.addEventListener('click',()=>gerarPDF(VENDA));
+  document.getElementById('btn-wpp-mix')?.addEventListener('click',()=>{
+    const msg=buildMsgMix(VENDA);
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
+  });
+  document.getElementById('btn-fiado')?.addEventListener('click',()=>{
+    const id=document.getElementById('fiado-cli')?.value;
+    const val=parseFloat(document.getElementById('fiado-val')?.value)||0;
+    if(!id||!val){alert('Selecione o cliente e informe o valor.');return;}
+    const f=FIADO.find(x=>x.id===id);
+    if(f){f.saldo=Math.max(0,f.saldo-val);if(f.saldo===0)f.venc='—';}
+    render();
+    setTimeout(()=>alert(`✅ Pagamento de ${fmtM(val)} registrado!`),50);
+  });
+}
+render();
+</script>
+</body>
+</html>
