@@ -1609,11 +1609,75 @@ function _bindWpp(tabA){
   });
 }
 
+let cadastrosState={tab:'pessoas'};
+const CADASTROS_ABAS=[
+  {id:'pessoas',nome:'Pessoas',icon:'ti-users'},
+  {id:'fornecedores',nome:'Fornecedores',icon:'ti-building-store'},
+  {id:'itens',nome:'Itens',icon:'ti-package'},
+  {id:'veiculos',nome:'Veículos',icon:'ti-truck'},
+  {id:'clientes',nome:'Clientes',icon:'ti-users-group'},
+];
 function renderCadastros(){
+  const tab=cadastrosState.tab;
   document.getElementById('content-area').innerHTML=`
     ${btnBack()}
-    <div class="mod-header"><div class="mod-header-icon roxo"><i class="ti ti-settings"></i></div><div><h2>Cadastros</h2><span>Volumes m³ e capacidades</span></div></div>
+    <div class="mod-header"><div class="mod-header-icon roxo"><i class="ti ti-settings"></i></div><div><h2>Cadastros</h2><span>Pessoas, fornecedores, itens, veículos e clientes</span></div></div>
 
+    <div class="cad-tabs" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:1rem">
+      ${CADASTROS_ABAS.map(a=>`<button class="cad-tab-btn${tab===a.id?' active':''}" data-cad-tab="${a.id}"
+        style="flex-shrink:0;display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:20px;border:1.5px solid ${tab===a.id?'var(--green)':'var(--border)'};background:${tab===a.id?'var(--green)':'var(--bg)'};color:${tab===a.id?'#fff':'var(--text)'};font-size:13px;font-weight:600">
+        <i class="ti ${a.icon}"></i> ${a.nome}
+      </button>`).join('')}
+    </div>
+
+    ${tab==='pessoas'?`
+    <div class="section-title">Funcionários e ajudantes</div>
+    <div class="card" style="padding:.75rem 1rem">
+      ${FUNCIONARIOS_CAD.length?FUNCIONARIOS_CAD.map((f,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border-light)">
+        <span style="flex:1;font-size:13px;font-weight:600">${f.nome}</span>
+        <span class="badge-cargo" style="font-size:11px;color:var(--text2);background:var(--bg);padding:2px 8px;border-radius:20px">${f.cargo}</span>
+        <button class="btn-icon-sm" data-remover-func="${i}" style="border:none;background:transparent;color:var(--red);padding:4px" title="Remover"><i class="ti ti-trash"></i></button>
+      </div>`).join(''):'<p class="dash-date">Nenhum funcionário cadastrado ainda.</p>'}
+    </div>
+    <div class="card" style="padding:.75rem 1rem;margin-top:.5rem">
+      <div class="form-group"><label class="login-label">Nome</label><input class="login-input" id="func-nome" placeholder="Nome completo"></div>
+      <div class="form-group"><label class="login-label">Função</label>
+        <select class="login-input" id="func-cargo">
+          <option value="Motorista">Motorista</option>
+          <option value="Ajudante">Ajudante</option>
+          <option value="Outro">Outro</option>
+        </select>
+      </div>
+      <div class="login-erro" id="func-erro"></div>
+      <button class="btn btn-primary btn-block" id="btn-add-func"><i class="ti ti-plus"></i> Adicionar funcionário</button>
+    </div>
+    `:''}
+
+    ${tab==='fornecedores'?`
+    <div class="section-title">Lojas disponíveis para coleta</div>
+    <div class="card" style="padding:.75rem 1rem;max-height:340px;overflow-y:auto">
+      ${FORNS_ROT.length?FORNS_ROT.map((l,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border-light)">
+        <span style="flex:1;font-size:12px;font-weight:600">${l.nome}<br><span style="font-weight:400;color:var(--text2)">${l.cidade}/${l.uf}</span></span>
+        <button class="btn-icon-sm" data-remover-loja="${i}" style="border:none;background:transparent;color:var(--red);padding:4px" title="Remover"><i class="ti ti-trash"></i></button>
+      </div>`).join(''):'<p class="dash-date">Nenhuma loja cadastrada ainda.</p>'}
+    </div>
+    <div class="card" style="padding:.75rem 1rem;margin-top:.5rem">
+      <div class="form-group"><label class="login-label">Nome da loja</label><input class="login-input" id="loja-nome" placeholder="Ex: CAMPNEUS OSASCO CENTRO CP222"></div>
+      <div style="display:flex;gap:10px">
+        <div class="form-group" style="flex:1"><label class="login-label">Cidade</label><input class="login-input" id="loja-cidade" placeholder="Osasco"></div>
+        <div class="form-group" style="width:70px"><label class="login-label">UF</label><input class="login-input" id="loja-uf" placeholder="SP" maxlength="2" style="text-transform:uppercase"></div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <div class="form-group" style="flex:1"><label class="login-label">Marca</label><input class="login-input" id="loja-marca" placeholder="CP / DP"></div>
+        <div class="form-group" style="flex:1"><label class="login-label">CEP</label><input class="login-input" id="loja-cep" placeholder="06090020"></div>
+      </div>
+      <div class="form-group"><label class="login-label">Endereço</label><input class="login-input" id="loja-endereco" placeholder="Rua, número, cidade, UF"></div>
+      <div class="login-erro" id="loja-erro"></div>
+      <button class="btn btn-primary btn-block" id="btn-add-loja"><i class="ti ti-plus"></i> Adicionar loja</button>
+    </div>
+    `:''}
+
+    ${tab==='itens'?`
     <div class="section-title">Volume por item (m³/unidade)</div>
     <div class="alert azul"><i class="ti ti-info-circle"></i><p>Itens em kg (filtro, papelão, plásticos, sucata) usam 0 — não computam volume.</p></div>
     <div class="card" style="padding:.75rem 1rem">
@@ -1627,8 +1691,10 @@ function renderCadastros(){
       </div>`).join('')}
     </div>
     <button class="btn btn-primary btn-block" id="btn-salvar-vol"><i class="ti ti-device-floppy"></i> Salvar volumes</button>
+    `:''}
 
-    <div class="section-title" style="margin-top:1rem">Capacidade do baú por veículo</div>
+    ${tab==='veiculos'?`
+    <div class="section-title">Capacidade do baú por veículo</div>
     <div class="card" style="padding:.75rem 1rem">
       ${Object.entries(CAPACIDADE_BAU).map(([placa,bau])=>{
         const v=VEICULOS_ROT.find(x=>x.placa===placa);
@@ -1654,52 +1720,11 @@ function renderCadastros(){
       <div class="login-erro" id="veic-erro"></div>
       <button class="btn btn-primary btn-block" id="btn-add-veiculo"><i class="ti ti-plus"></i> Adicionar veículo</button>
     </div>
+    `:''}
 
-    <div class="section-title" style="margin-top:1.5rem">Funcionários e ajudantes</div>
-    <div class="card" style="padding:.75rem 1rem">
-      ${FUNCIONARIOS_CAD.length?FUNCIONARIOS_CAD.map((f,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border-light)">
-        <span style="flex:1;font-size:13px;font-weight:600">${f.nome}</span>
-        <span class="badge-cargo" style="font-size:11px;color:var(--text2);background:var(--bg);padding:2px 8px;border-radius:20px">${f.cargo}</span>
-        <button class="btn-icon-sm" data-remover-func="${i}" style="border:none;background:transparent;color:var(--red);padding:4px" title="Remover"><i class="ti ti-trash"></i></button>
-      </div>`).join(''):'<p class="dash-date">Nenhum funcionário cadastrado ainda.</p>'}
-    </div>
-    <div class="card" style="padding:.75rem 1rem;margin-top:.5rem">
-      <div class="form-group"><label class="login-label">Nome</label><input class="login-input" id="func-nome" placeholder="Nome completo"></div>
-      <div class="form-group"><label class="login-label">Função</label>
-        <select class="login-input" id="func-cargo">
-          <option value="Motorista">Motorista</option>
-          <option value="Ajudante">Ajudante</option>
-          <option value="Outro">Outro</option>
-        </select>
-      </div>
-      <div class="login-erro" id="func-erro"></div>
-      <button class="btn btn-primary btn-block" id="btn-add-func"><i class="ti ti-plus"></i> Adicionar funcionário</button>
-    </div>
-
-    <div class="section-title" style="margin-top:1.5rem">Lojas disponíveis para coleta</div>
-    <div class="card" style="padding:.75rem 1rem;max-height:280px;overflow-y:auto">
-      ${FORNS_ROT.length?FORNS_ROT.map((l,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border-light)">
-        <span style="flex:1;font-size:12px;font-weight:600">${l.nome}<br><span style="font-weight:400;color:var(--text2)">${l.cidade}/${l.uf}</span></span>
-        <button class="btn-icon-sm" data-remover-loja="${i}" style="border:none;background:transparent;color:var(--red);padding:4px" title="Remover"><i class="ti ti-trash"></i></button>
-      </div>`).join(''):'<p class="dash-date">Nenhuma loja cadastrada ainda.</p>'}
-    </div>
-    <div class="card" style="padding:.75rem 1rem;margin-top:.5rem">
-      <div class="form-group"><label class="login-label">Nome da loja</label><input class="login-input" id="loja-nome" placeholder="Ex: CAMPNEUS OSASCO CENTRO CP222"></div>
-      <div style="display:flex;gap:10px">
-        <div class="form-group" style="flex:1"><label class="login-label">Cidade</label><input class="login-input" id="loja-cidade" placeholder="Osasco"></div>
-        <div class="form-group" style="width:70px"><label class="login-label">UF</label><input class="login-input" id="loja-uf" placeholder="SP" maxlength="2" style="text-transform:uppercase"></div>
-      </div>
-      <div style="display:flex;gap:10px">
-        <div class="form-group" style="flex:1"><label class="login-label">Marca</label><input class="login-input" id="loja-marca" placeholder="CP / DP"></div>
-        <div class="form-group" style="flex:1"><label class="login-label">CEP</label><input class="login-input" id="loja-cep" placeholder="06090020"></div>
-      </div>
-      <div class="form-group"><label class="login-label">Endereço</label><input class="login-input" id="loja-endereco" placeholder="Rua, número, cidade, UF"></div>
-      <div class="login-erro" id="loja-erro"></div>
-      <button class="btn btn-primary btn-block" id="btn-add-loja"><i class="ti ti-plus"></i> Adicionar loja</button>
-    </div>
-
-    <div class="section-title" style="margin-top:1.5rem">Clientes disponíveis para venda</div>
-    <div class="card" style="padding:.75rem 1rem;max-height:280px;overflow-y:auto">
+    ${tab==='clientes'?`
+    <div class="section-title">Clientes disponíveis para venda</div>
+    <div class="card" style="padding:.75rem 1rem;max-height:340px;overflow-y:auto">
       ${CLIENTES_VND.length?CLIENTES_VND.map((c,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border-light)">
         <span style="flex:1;font-size:12px;font-weight:600">${c.nome}</span>
         <button class="btn-icon-sm" data-remover-cliente="${i}" style="border:none;background:transparent;color:var(--red);padding:4px" title="Remover"><i class="ti ti-trash"></i></button>
@@ -1710,8 +1735,12 @@ function renderCadastros(){
       <div class="login-erro" id="cliente-erro"></div>
       <button class="btn btn-primary btn-block" id="btn-add-cliente"><i class="ti ti-plus"></i> Adicionar cliente</button>
     </div>
+    `:''}
   `;
   bindBack();
+  document.querySelectorAll('[data-cad-tab]').forEach(btn=>{
+    btn.addEventListener('click',()=>{ cadastrosState.tab=btn.dataset.cadTab; renderCadastros(); });
+  });
   document.getElementById('btn-salvar-vol')?.addEventListener('click',()=>{
     document.querySelectorAll('.vol-inp').forEach(inp=>{VOLUMES_M3[inp.dataset.item]=parseFloat(inp.value)||0;});
     alert('Volumes salvos!');
