@@ -673,7 +673,7 @@ auth.onAuthStateChanged(async (user)=>{
       await auth.signOut();
       return;
     }
-    usuarioAtual={uid:user.uid, login:p.login, nome:p.nome, perfil:p.perfil, cor:p.cor};
+    usuarioAtual={uid:user.uid, login:p.login, nome:p.nome, perfil:p.perfil, cor:p.cor, permissoes:p.permissoes||null};
     document.getElementById('tela-login').style.display='none';
     document.getElementById('app').style.display='flex';
     document.getElementById('topbar-titulo').textContent='Tyre Eco';
@@ -693,14 +693,14 @@ auth.onAuthStateChanged(async (user)=>{
 // ── Gestão de colaboradores (só para o perfil "gestor") ─────────────────────
 // Cria um login novo sem derrubar a sessão de quem está criando: abre um app
 // Firebase secundário só para o createUser, depois descarta.
-async function criarColaborador({login, senha, nome, perfil, cor}){
+async function criarColaborador({login, senha, nome, perfil, cor, permissoes}){
   const email=emailDoLogin(login);
   const nomeApp='secundario-'+Date.now();
   const appSecundario=firebase.initializeApp(firebaseConfig, nomeApp);
   try{
     const cred=await appSecundario.auth().createUserWithEmailAndPassword(email, senha);
     await db.collection('usuarios').doc(cred.user.uid).set({
-      login: login.toLowerCase(), nome, perfil, cor, email, ativo:true,
+      login: login.toLowerCase(), nome, perfil, cor, email, ativo:true, permissoes: permissoes||null,
       criadoEm: firebase.firestore.FieldValue.serverTimestamp(),
       criadoPor: usuarioAtual?.nome || null
     });
@@ -712,6 +712,10 @@ async function criarColaborador({login, senha, nome, perfil, cor}){
 
 async function desativarColaborador(uid, ativo){
   await db.collection('usuarios').doc(uid).update({ativo});
+}
+
+async function atualizarPermissoesColaborador(uid, permissoes){
+  await db.collection('usuarios').doc(uid).update({permissoes});
 }
 
 async function listarColaboradores(){
@@ -764,9 +768,22 @@ function renderDashboard(){
     emissao_nf:[
       {id:'nf_emitir',icon:'ti-file-invoice',cor:'roxo',nome:'Emitir NF',desc:'Gerar ficha da NFS-e'},
     ],
+    logistica:[
+      {id:'rota',icon:'ti-route-2',cor:'verde',nome:'Roterizador',desc:'Criar e gerenciar rotas'},
+      {id:'logistica_painel',icon:'ti-layout-dashboard',cor:'azul',nome:'Painel de Motoristas',desc:'Acompanhar rotas e check-ins'},
+    ],
   };
 
-  const items=mods[perfil]||[];
+  const items = usuarioAtual.permissoes
+    ? (()=>{
+        const flat={};
+        Object.values(mods).forEach(arr=>arr.forEach(m=>{ if(!flat[m.id]) flat[m.id]=m; }));
+        return Object.keys(usuarioAtual.permissoes)
+          .filter(id=>usuarioAtual.permissoes[id])
+          .map(id=>flat[id])
+          .filter(Boolean);
+      })()
+    : (mods[perfil]||[]);
   const hora=new Date().getHours();
   const saudacao=hora<12?'Bom dia':hora<18?'Boa tarde':'Boa noite';
 
@@ -802,6 +819,7 @@ function abrirModulo(id){
     'importar_dados':()=>{resetImportState();renderImportarDados();},
     'vendas_nova':()=>{vendasState.tela='cliente';renderVendas();},'vendas_hist':renderVendasHist,
     'usuarios':renderUsuarios,
+    'logistica_painel':renderPainelMotoristas,
   };
   mapa[id]?.();
 }
@@ -809,6 +827,7 @@ function abrirModulo(id){
 // ── GESTOR: Usuários (Firebase Auth + Firestore) ────────────────────────────
 const PERFIS_DISPONIVEIS=[
   {id:'gestor',nome:'Gestor',cor:'verde'},
+  {id:'logistica',nome:'Logística',cor:'azul'},
   {id:'motorista',nome:'Motorista',cor:'azul'},
   {id:'conferente',nome:'Conferente Operacional',cor:'laranja'},
   {id:'fiscal',nome:'Conferente Fiscal',cor:'roxo'},
@@ -818,6 +837,48 @@ const PERFIS_DISPONIVEIS=[
   {id:'emissao_nf',nome:'Emissão de NF',cor:'roxo'},
 ];
 
+// Lista mestra de todos os módulos existentes no sistema (usada na tela de permissões)
+const MODULOS_TODOS=[
+  {id:'rota',nome:'Roterizador'},
+  {id:'cadastros',nome:'Cadastros'},
+  {id:'financeiro',nome:'Financeiro'},
+  {id:'financeiro_relatorios',nome:'Relatórios'},
+  {id:'nf_emitir',nome:'Emitir NF'},
+  {id:'dashboard_gestor',nome:'Dashboard (visão geral)'},
+  {id:'alertas',nome:'Alertas WhatsApp'},
+  {id:'importar_dados',nome:'Importar dados'},
+  {id:'usuarios',nome:'Usuários'},
+  {id:'motorista_rota',nome:'Rota do dia (motorista)'},
+  {id:'motorista_checkin',nome:'Check-in (motorista)'},
+  {id:'motorista_hist',nome:'Histórico (motorista)'},
+  {id:'conf_lista',nome:'Caminhões (conferência operacional)'},
+  {id:'fiscal_entrada',nome:'NF Entrada (fiscal)'},
+  {id:'fiscal_saida',nome:'NF Saída (fiscal)'},
+  {id:'triagem_lista',nome:'Triagem'},
+  {id:'vendas_nova',nome:'Nova venda'},
+  {id:'vendas_hist',nome:'Histórico de vendas'},
+  {id:'logistica_painel',nome:'Painel de Motoristas'},
+];
+// Permissões padrão sugeridas ao escolher cada perfil (o gestor pode ajustar antes de criar)
+const PERFIL_MODULOS_PADRAO={
+  gestor:['rota','cadastros','financeiro','financeiro_relatorios','nf_emitir','dashboard_gestor','alertas','importar_dados','usuarios'],
+  motorista:['motorista_rota','motorista_checkin','motorista_hist'],
+  conferente:['conf_lista'],
+  fiscal:['fiscal_entrada','fiscal_saida'],
+  triagem:['triagem_lista'],
+  vendas:['vendas_nova','vendas_hist'],
+  financeiro:['financeiro','financeiro_relatorios','importar_dados'],
+  emissao_nf:['nf_emitir'],
+  logistica:['rota','logistica_painel'],
+};
+function htmlChecklistPermissoes(groupId, permissoesAtivas){
+  return `<div data-permgroup="${groupId}">${MODULOS_TODOS.map(m=>`<label style="display:flex;align-items:center;gap:8px;font-size:13px;padding:5px 0;border-bottom:1px solid var(--border-light)">
+    <input type="checkbox" class="perm-chk" data-mod="${m.id}" ${permissoesAtivas.includes(m.id)?'checked':''}>
+    ${m.nome}
+  </label>`).join('')}</div>`;
+}
+
+let usrPermState={editandoUid:null};
 async function renderUsuarios(){
   telaAtual='usuarios';
   if(usuarioAtual.perfil!=='gestor'){ renderDashboard(); return; }
@@ -833,6 +894,12 @@ async function renderUsuarios(){
           ${PERFIS_DISPONIVEIS.map(p=>`<option value="${p.id}">${p.nome}</option>`).join('')}
         </select>
       </div>
+      <div class="form-group">
+        <label class="login-label">Permissões de acesso (marque o que este usuário pode ver)</label>
+        <div id="usr-permissoes-lista" style="max-height:280px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:8px 10px">
+          ${htmlChecklistPermissoes('novo',PERFIL_MODULOS_PADRAO['gestor']||[])}
+        </div>
+      </div>
       <div class="login-erro" id="usr-erro"></div>
       <button class="btn-login" id="usr-criar"><i class="ti ti-user-plus"></i> Criar acesso</button>
     </div>
@@ -840,12 +907,18 @@ async function renderUsuarios(){
     <div id="usr-lista"><p class="dash-date">Carregando...</p></div>
   `;
   bindBack();
+  document.getElementById('usr-perfil').addEventListener('change',e=>{
+    const padrao=PERFIL_MODULOS_PADRAO[e.target.value]||[];
+    document.getElementById('usr-permissoes-lista').innerHTML=htmlChecklistPermissoes('novo',padrao);
+  });
   document.getElementById('usr-criar').addEventListener('click', async ()=>{
     const nome=document.getElementById('usr-nome').value.trim();
     const login=document.getElementById('usr-login').value.trim().toLowerCase();
     const senha=document.getElementById('usr-senha').value;
     const perfilSel=document.getElementById('usr-perfil').value;
     const cor=PERFIS_DISPONIVEIS.find(p=>p.id===perfilSel)?.cor||'verde';
+    const permissoes={};
+    document.querySelectorAll('#usr-permissoes-lista .perm-chk').forEach(chk=>{ permissoes[chk.dataset.mod]=chk.checked; });
     const erroEl=document.getElementById('usr-erro');
     erroEl.style.display='none';
     if(!nome||!login||senha.length<6){
@@ -855,7 +928,7 @@ async function renderUsuarios(){
     const btn=document.getElementById('usr-criar');
     btn.disabled=true; btn.innerHTML='<i class="ti ti-loader-2"></i> Criando...';
     try{
-      await criarColaborador({login, senha, nome, perfil:perfilSel, cor});
+      await criarColaborador({login, senha, nome, perfil:perfilSel, cor, permissoes});
       renderUsuarios();
     }catch(err){
       erroEl.textContent = err.code==='auth/email-already-in-use' ? 'Já existe um usuário com esse login.' : ('Erro ao criar: '+(err.message||err));
@@ -865,19 +938,64 @@ async function renderUsuarios(){
     }
   });
   const colaboradores=await listarColaboradores();
-  document.getElementById('usr-lista').innerHTML = colaboradores.map(c=>`
-    <div class="card" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-      <div>
-        <div style="font-weight:600">${c.nome} ${c.ativo===false?'<span style=\"color:var(--red);font-size:11px\">(desativado)</span>':''}</div>
-        <div class="dash-date" style="margin:0">@${c.login} · ${PERFIS_DISPONIVEIS.find(p=>p.id===c.perfil)?.nome||c.perfil}</div>
+  document.getElementById('usr-lista').innerHTML = colaboradores.map(c=>{
+    const permissoesAtivas=c.permissoes?Object.keys(c.permissoes).filter(k=>c.permissoes[k]):(PERFIL_MODULOS_PADRAO[c.perfil]||[]);
+    return `
+    <div class="card" style="margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-weight:600">${c.nome} ${c.ativo===false?'<span style=\"color:var(--red);font-size:11px\">(desativado)</span>':''}</div>
+          <div class="dash-date" style="margin:0">@${c.login} · ${PERFIS_DISPONIVEIS.find(p=>p.id===c.perfil)?.nome||c.perfil}</div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-secondary btn-sm" data-perm-uid="${c.uid}"><i class="ti ti-key"></i></button>
+          <button class="btn btn-secondary btn-sm" data-uid="${c.uid}" data-ativo="${c.ativo!==false}">${c.ativo===false?'Reativar':'Desativar'}</button>
+        </div>
       </div>
-      <button class="btn btn-secondary btn-sm" data-uid="${c.uid}" data-ativo="${c.ativo!==false}">${c.ativo===false?'Reativar':'Desativar'}</button>
-    </div>`).join('') || '<p class="dash-date">Nenhum colaborador cadastrado ainda.</p>';
+      ${usrPermState.editandoUid===c.uid?`
+        <div style="margin-top:10px;border-top:1px solid var(--border-light);padding-top:10px">
+          <div style="max-height:280px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:8px">
+            ${htmlChecklistPermissoes(c.uid,permissoesAtivas)}
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-secondary" style="flex:1;justify-content:center" data-perm-cancelar="${c.uid}">Cancelar</button>
+            <button class="btn btn-primary" style="flex:2;justify-content:center" data-perm-salvar="${c.uid}"><i class="ti ti-device-floppy"></i> Salvar permissões</button>
+          </div>
+        </div>
+      `:''}
+    </div>`;
+  }).join('') || '<p class="dash-date">Nenhum colaborador cadastrado ainda.</p>';
   document.querySelectorAll('#usr-lista [data-uid]').forEach(btn=>{
     btn.addEventListener('click', async ()=>{
       await desativarColaborador(btn.dataset.uid, btn.dataset.ativo!=='true');
       renderUsuarios();
     });
+  });
+  document.querySelectorAll('[data-perm-uid]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      usrPermState.editandoUid = usrPermState.editandoUid===btn.dataset.permUid ? null : btn.dataset.permUid;
+      renderUsuarios();
+    });
+  });
+  document.querySelectorAll('[data-perm-cancelar]').forEach(btn=>{
+    btn.addEventListener('click',()=>{ usrPermState.editandoUid=null; renderUsuarios(); });
+  });
+  document.querySelectorAll('[data-perm-salvar]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const uid=btn.dataset.permSalvar;
+      const permissoes={};
+      document.querySelectorAll(`[data-permgroup="${uid}"] .perm-chk`).forEach(chk=>{ permissoes[chk.dataset.mod]=chk.checked; });
+      btn.disabled=true; btn.innerHTML='<i class="ti ti-loader-2"></i> Salvando...';
+      try{
+        await atualizarPermissoesColaborador(uid,permissoes);
+        usrPermState.editandoUid=null;
+        renderUsuarios();
+      }catch(e){
+        alert('Erro ao salvar permissões: '+(e.message||e));
+        btn.disabled=false; btn.innerHTML='<i class="ti ti-device-floppy"></i> Salvar permissões';
+      }
+    });
+
   });
 }
 
@@ -1368,12 +1486,57 @@ function salvarTodasRotas(){
       nLojas:rota.lojas.length, kmIda:rota.kmIda, kmVolta:rota.kmVolta, kmTotal:rota.kmTotal,
       custoLog:rota.kmTotal*ckm, frete:parseFloat(a.frete)||0,
       placa:a.veiculo||'', motoristaNome:mot?.nome||'', mapsUrl:rota.mapsUrl,
+      criadaEm:new Date().toISOString(),
     });
   });
   salvarRotasSalvas();
   rotState.sel.clear(); rotState.rotasSugeridas=[];
   rotState.tela='salvas'; _renderRoteizador();
   setTimeout(()=>alert(`✅ ${rotState.rotasSalvas.length} rota(s) criada(s)!\nMotoristas notificados.`),100);
+}
+
+// ── LOGÍSTICA: Painel de acompanhamento dos motoristas ──────────────────────
+function renderPainelMotoristas(){
+  telaAtual='logistica_painel';
+  const totalLojasViagem=ROTA_MOTORISTA?.lojas?.length||0;
+  const doneViagem=ROTA_MOTORISTA?.lojas?.filter(l=>motorState.checkins[l.id]?.done).length||0;
+  const proxima=ROTA_MOTORISTA?.lojas?.find(l=>!motorState.checkins[l.id]?.done);
+  const rotas=[...(rotState.rotasSalvas||[])].reverse();
+
+  document.getElementById('content-area').innerHTML=`
+    ${btnBack('Dashboard')}
+    <div class="mod-header"><div class="mod-header-icon azul"><i class="ti ti-layout-dashboard"></i></div><div><h2>Painel de Motoristas</h2><span>Acompanhamento de rotas e check-ins</span></div></div>
+
+    <div class="section-title">Viagem em andamento</div>
+    <div class="card" style="padding:.9rem 1rem">
+      ${motorState.viagemIniciada?`
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <strong style="font-size:14px">${motorState.placa||ROTA_MOTORISTA?.placa||'Veículo não informado'}</strong>
+          <span class="badge verde">Em rota</span>
+        </div>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:6px">Paradas concluídas: <strong style="color:var(--text)">${doneViagem}/${totalLojasViagem}</strong></div>
+        <div style="background:var(--bg);border-radius:20px;height:8px;overflow:hidden;margin-bottom:8px">
+          <div style="background:var(--green);height:100%;width:${totalLojasViagem?Math.round(doneViagem/totalLojasViagem*100):0}%"></div>
+        </div>
+        ${proxima?`<div style="font-size:12px;color:var(--text2)">Próxima parada: <strong style="color:var(--text)">${proxima.nome}</strong></div>`:'<div style="font-size:12px;color:var(--green)">Todas as paradas concluídas — pronto para finalizar.</div>'}
+      `:`<p class="dash-date">Nenhuma viagem em andamento no momento.</p>`}
+    </div>
+
+    <div class="section-title" style="margin-top:1rem">Rotas criadas (${rotas.length})</div>
+    ${rotas.length===0?'<p class="dash-date">Nenhuma rota criada ainda.</p>':''}
+    ${rotas.map(r=>`<div class="card" style="padding:.75rem 1rem;margin-bottom:8px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <strong style="font-size:14px">${r.nome}</strong>
+        <span style="font-size:11px;color:var(--text2)">${r.criadaEm?new Date(r.criadaEm).toLocaleDateString('pt-BR'):''}</span>
+      </div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:6px">${r.nLojas} loja${r.nLojas!==1?'s':''} · ~${Math.round(r.kmTotal)} km</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${r.placa?`<span class="badge azul"><i class="ti ti-truck" style="font-size:10px"></i> ${r.placa}</span>`:''}
+        ${r.motoristaNome?`<span class="badge verde"><i class="ti ti-user" style="font-size:10px"></i> ${r.motoristaNome}</span>`:''}
+      </div>
+    </div>`).join('')}
+  `;
+  document.getElementById('btn-back-mod')?.addEventListener('click',renderDashboard);
 }
 
 function _renderSalvas(){
