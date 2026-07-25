@@ -426,7 +426,7 @@ async function carregarRotasSalvas(){
 // Carrega tudo que é compartilhado assim que o usuário autentica.
 async function carregarDadosColaborativos(){
   await Promise.all([
-    carregarDespesas(), carregarContasReceber(), carregarVendasHistorico(),
+    carregarDespesas(), carregarContasReceber(), carregarContasPagar(), carregarVendasHistorico(),
     carregarMotoristaCheckins(), carregarConferencias(), carregarTriagemSalvas(),
     carregarFichasNF(), carregarRotasSalvas()
   ]);
@@ -547,6 +547,54 @@ async function carregarContasReceber(){
   }catch(e){/* usa lista padrão acima */}
 }
 // carregarContasReceber() movido para depois do login
+
+// ── Contas a pagar geradas automaticamente pela coleta (rede + itens + custo vigente) ──
+let CONTAS_PAGAR=[];
+async function salvarContasPagar(){
+  try{ await window.storage?.set('contas_pagar', JSON.stringify(CONTAS_PAGAR)); }catch(e){console.warn('salvarContasPagar',e);}
+}
+async function carregarContasPagar(){
+  try{
+    const r=await window.storage?.get('contas_pagar');
+    if(r) CONTAS_PAGAR=JSON.parse(r.value);
+  }catch(e){/* mantém lista vazia */}
+}
+// Encontra a vigência de custo válida de uma rede numa data (prioriza a de início mais recente em caso de sobreposição)
+function custoVigenteRede(rede,dataISO){
+  const lista=CUSTOS_REDE[rede]||[];
+  const validas=lista.filter(v=>v.vigenciaInicio&&dataISO>=v.vigenciaInicio&&(!v.vigenciaFim||dataISO<=v.vigenciaFim));
+  if(!validas.length)return null;
+  return validas.sort((a,b)=>b.vigenciaInicio.localeCompare(a.vigenciaInicio))[0];
+}
+// Gera automaticamente uma conta a pagar a partir dos itens coletados num check-in
+async function gerarContaPagarCheckin(loja,itens){
+  if(!loja)return;
+  const rede=loja.rede||loja.marca||'';
+  const agora=new Date();
+  const dataISO=agora.toISOString().slice(0,10);
+  const vig=rede?custoVigenteRede(rede,dataISO):null;
+  let valor=0;
+  if(vig){
+    Object.keys(itens||{}).forEach(itemId=>{
+      const qtd=parseFloat(itens[itemId])||0;
+      const custoUnit=vig.custos?.[itemId]||0;
+      valor+=qtd*custoUnit;
+    });
+  }
+  const vencDate=new Date(agora); vencDate.setDate(vencDate.getDate()+30);
+  const vencISO=vencDate.toISOString().slice(0,10);
+  CONTAS_PAGAR.push({
+    id:'pag'+Date.now(),
+    rede,loja:loja.nome,lojaId:loja.id,
+    data:fmtDataBr(dataISO),dataISO,
+    itens:{...itens},
+    valor:Math.round(valor*100)/100,
+    vencimento:fmtDataBr(vencISO),vencimentoISO:vencISO,
+    status:'pendente',
+    semTabela:!vig||!rede,
+  });
+  await salvarContasPagar();
+}
 
 async function salvarVendasHistorico(){
   try{ await window.storage?.set('vendas_historico', JSON.stringify(vendasState.historico)); }catch(e){console.warn('salvarVendasHistorico',e);}
@@ -1081,6 +1129,8 @@ async function sincronizarCadastros(){
     if(md) MEDIDAS=JSON.parse(md.value);
     const pc=await window.storage?.get('cad_precos_clientes');
     if(pc) vndCad=JSON.parse(pc.value);
+    const cr=await window.storage?.get('cad_custos_rede');
+    if(cr) CUSTOS_REDE=JSON.parse(cr.value);
   }catch(e){console.warn('Sync cadastros:',e);}
 }
 async function salvarFuncionarios(){
@@ -1776,7 +1826,7 @@ function _bindWpp(tabA){
   });
 }
 
-let cadastrosState={tab:'pessoas',precoCliId:null,precoTipoTemp:null};
+let cadastrosState={tab:'pessoas',precoCliId:null,precoTipoTemp:null,custoRede:null,custoVigenciaId:null};
 const CADASTROS_ABAS=[
   {id:'pessoas',nome:'Pessoas',icon:'ti-users'},
   {id:'fornecedores',nome:'Fornecedores',icon:'ti-building-store'},
@@ -1784,7 +1834,14 @@ const CADASTROS_ABAS=[
   {id:'veiculos',nome:'Veículos',icon:'ti-truck'},
   {id:'clientes',nome:'Clientes',icon:'ti-users-group'},
   {id:'medidas',nome:'Medidas',icon:'ti-ruler-2'},
+  {id:'custos',nome:'Custos por rede',icon:'ti-report-money'},
 ];
+function inferMarcaCode(rede){
+  const r=(rede||'').toUpperCase();
+  if(r.includes('CAMPNEUS')) return 'CP';
+  if(r.includes('PASCHOAL')) return 'DP';
+  return rede;
+}
 function htmlEditorPrecoCliente(cli){
   if(!cli) return '<p class="dash-date">Cliente não encontrado.</p>';
   const cad=vndCad[cli.id];
@@ -1841,6 +1898,149 @@ function htmlEditorPrecoCliente(cli){
     </div>
   `;
 }
+function htmlEditorVigenciaCusto(rede, vigencia){
+  const inicio=vigencia?.vigenciaInicio||'';
+  const fim=vigencia?.vigenciaFim||'';
+  const custos=vigencia?.custos||{};
+  return `
+    <button class="btn btn-secondary btn-sm" id="btn-vigencia-cancelar" style="margin-bottom:1rem"><i class="ti ti-arrow-left"></i> Voltar</button>
+    <div class="section-title">${vigencia?'Editar vigência':'Nova vigência'} — ${rede}</div>
+    <div class="card" style="padding:.75rem 1rem">
+      <div style="display:flex;gap:10px">
+        <div class="form-group" style="flex:1"><label class="login-label">Vigência início</label><input class="login-input" id="vig-inicio" type="date" value="${inicio}"></div>
+        <div class="form-group" style="flex:1"><label class="login-label">Vigência fim (opcional)</label><input class="login-input" id="vig-fim" type="date" value="${fim}"></div>
+      </div>
+      <div style="font-size:11px;color:var(--text2)">Deixe "fim" em branco se o contrato não tem data de término definida.</div>
+      <div class="login-erro" id="vig-erro"></div>
+    </div>
+    <div class="section-title" style="margin-top:1rem">Custo por item coletado</div>
+    <div class="card" style="padding:.75rem 1rem;max-height:380px;overflow-y:auto">
+      ${ITENS_CI.map(it=>`<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border-light)">
+        <span style="flex:1;font-size:13px;font-weight:500">${it.nome}</span>
+        <span style="font-size:10px;color:var(--text2);width:22px;flex-shrink:0">${it.un}</span>
+        <input class="custo-item-inp" type="number" inputmode="decimal" step="0.01" min="0"
+          style="width:80px;padding:6px 8px;text-align:right;border:1.5px solid var(--border);border-radius:6px;font-size:13px;font-weight:600;background:var(--bg)"
+          value="${custos[it.id]||0}" data-item="${it.id}">
+        <span style="font-size:10px;color:var(--text2)">R$</span>
+      </div>`).join('')}
+    </div>
+    <button class="btn btn-primary btn-block" id="btn-salvar-vigencia" style="margin-top:.75rem"><i class="ti ti-device-floppy"></i> Salvar vigência</button>
+  `;
+}
+function htmlAbaCustosRede(){
+  const redesConhecidas=[...new Set([
+    ...FORNS_ROT.map(f=>f.rede||f.marca).filter(Boolean),
+    ...Object.keys(CUSTOS_REDE)
+  ])].sort();
+  const redeAtual=cadastrosState.custoRede||redesConhecidas[0]||null;
+  const vigencias=redeAtual?(CUSTOS_REDE[redeAtual]||[]):[];
+  const editando=cadastrosState.custoVigenciaId;
+  if(editando&&redeAtual){
+    const vigenciaEmEdicao=editando==='nova'?null:vigencias.find(v=>v.id===editando);
+    return htmlEditorVigenciaCusto(redeAtual,vigenciaEmEdicao);
+  }
+  return `
+    <div class="section-title">Custos de coleta por rede</div>
+    <div class="alert azul"><i class="ti ti-info-circle"></i><p>Cada rede pode ter um custo diferente por item coletado, com vigência de contrato. Essa tabela ainda não gera contas a pagar automaticamente — por enquanto só guarda os valores combinados.</p></div>
+    <div class="card" style="padding:.75rem 1rem">
+      <div class="form-group"><label class="login-label">Rede</label>
+        <select class="login-input" id="custo-rede-sel">
+          ${redesConhecidas.length?redesConhecidas.map(r=>`<option value="${r}" ${r===redeAtual?'selected':''}>${r}</option>`).join(''):'<option value="">Nenhuma rede cadastrada ainda</option>'}
+        </select>
+      </div>
+      <div style="display:flex;gap:6px">
+        <input class="login-input" id="custo-nova-rede" placeholder="Ou digite uma nova rede">
+        <button class="btn btn-secondary btn-sm" id="btn-usar-nova-rede"><i class="ti ti-check"></i></button>
+      </div>
+    </div>
+    ${redeAtual?`
+    <div class="section-title" style="margin-top:1rem">Vigências (contratos) — ${redeAtual}</div>
+    ${vigencias.length===0?'<p class="dash-date">Nenhuma vigência cadastrada para essa rede ainda.</p>':''}
+    ${[...vigencias].reverse().map(v=>{
+      const st=vigenciaStatus(v);
+      const cor=st.status==='vigente'?'verde':st.status==='futura'?'azul':'cinza';
+      const nItens=Object.keys(v.custos||{}).filter(k=>v.custos[k]>0).length;
+      return `<div class="card" style="padding:.75rem 1rem;margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <strong style="font-size:13px">${fmtDataBr(v.vigenciaInicio)} — ${v.vigenciaFim?fmtDataBr(v.vigenciaFim):'sem data de término'}</strong>
+          <span class="badge ${cor}">${st.label}</span>
+        </div>
+        <div style="font-size:11px;color:var(--text2);margin-bottom:8px">${nItens} ite${nItens!==1?'ns':'m'} com custo definido</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary btn-sm" style="flex:1;justify-content:center" data-editar-vigencia="${v.id}"><i class="ti ti-pencil"></i> Editar</button>
+          <button class="btn btn-secondary btn-sm" style="color:var(--red)" data-remover-vigencia="${v.id}"><i class="ti ti-trash"></i></button>
+        </div>
+      </div>`;
+    }).join('')}
+    <button class="btn btn-primary btn-block" id="btn-nova-vigencia" style="margin-top:.5rem"><i class="ti ti-plus"></i> Nova vigência de custo</button>
+    `:''}
+  `;
+}
+function bindAbaCustosRede(){
+  document.getElementById('custo-rede-sel')?.addEventListener('change',e=>{
+    cadastrosState.custoRede=e.target.value;
+    renderCadastros();
+  });
+  document.getElementById('btn-usar-nova-rede')?.addEventListener('click',()=>{
+    const nome=document.getElementById('custo-nova-rede').value.trim().toUpperCase();
+    if(!nome)return;
+    cadastrosState.custoRede=nome;
+    if(!CUSTOS_REDE[nome]) CUSTOS_REDE[nome]=[];
+    renderCadastros();
+  });
+  document.getElementById('btn-nova-vigencia')?.addEventListener('click',()=>{
+    cadastrosState.custoVigenciaId='nova';
+    renderCadastros();
+  });
+  document.getElementById('btn-vigencia-cancelar')?.addEventListener('click',()=>{
+    cadastrosState.custoVigenciaId=null;
+    renderCadastros();
+  });
+  document.querySelectorAll('[data-editar-vigencia]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      cadastrosState.custoVigenciaId=btn.dataset.editarVigencia;
+      renderCadastros();
+    });
+  });
+  document.querySelectorAll('[data-remover-vigencia]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const rede=cadastrosState.custoRede;
+      const id=btn.dataset.removerVigencia;
+      if(!confirm('Remover essa vigência de custo?'))return;
+      CUSTOS_REDE[rede]=(CUSTOS_REDE[rede]||[]).filter(v=>v.id!==id);
+      salvarCustosRede();
+      renderCadastros();
+    });
+  });
+  document.getElementById('btn-salvar-vigencia')?.addEventListener('click',()=>{
+    const rede=cadastrosState.custoRede;
+    const inicio=document.getElementById('vig-inicio').value;
+    const fim=document.getElementById('vig-fim').value;
+    const erroEl=document.getElementById('vig-erro');
+    erroEl.style.display='none';
+    if(!inicio){
+      erroEl.textContent='Informe a data de início da vigência.';
+      erroEl.style.display='block';return;
+    }
+    if(fim&&fim<inicio){
+      erroEl.textContent='A data de término não pode ser antes do início.';
+      erroEl.style.display='block';return;
+    }
+    const custos={};
+    document.querySelectorAll('.custo-item-inp').forEach(inp=>{ custos[inp.dataset.item]=parseFloat(inp.value)||0; });
+    if(!CUSTOS_REDE[rede]) CUSTOS_REDE[rede]=[];
+    const editandoId=cadastrosState.custoVigenciaId;
+    if(editandoId&&editandoId!=='nova'){
+      const v=CUSTOS_REDE[rede].find(x=>x.id===editandoId);
+      if(v){ v.vigenciaInicio=inicio; v.vigenciaFim=fim; v.custos=custos; }
+    } else {
+      CUSTOS_REDE[rede].push({id:'vig'+Date.now(),vigenciaInicio:inicio,vigenciaFim:fim,custos});
+    }
+    salvarCustosRede();
+    cadastrosState.custoVigenciaId=null;
+    renderCadastros();
+  });
+}
 function renderCadastros(){
   const tab=cadastrosState.tab;
   document.getElementById('content-area').innerHTML=`
@@ -1879,27 +2079,32 @@ function renderCadastros(){
 
     ${tab==='fornecedores'?`
     <div class="section-title">Lojas disponíveis para coleta</div>
+    <button class="btn btn-secondary btn-block" id="btn-importar-fornecedores" style="margin-bottom:.75rem"><i class="ti ti-file-spreadsheet"></i> Importar lista via Excel/CSV</button>
     <div class="card" style="padding:.75rem 1rem;max-height:340px;overflow-y:auto">
       ${FORNS_ROT.length?FORNS_ROT.map((l,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border-light)">
-        <span style="flex:1;font-size:12px;font-weight:600">${l.nome}<br><span style="font-weight:400;color:var(--text2)">${l.cidade}/${l.uf}</span></span>
+        <span style="flex:1;font-size:12px;font-weight:600">${l.nome}${l.codLoja?` <span style="font-weight:400;color:var(--text2)">· ${l.codLoja}</span>`:''}${l.observacao?' <i class="ti ti-alert-triangle" style="color:var(--orange);font-size:12px" title="'+l.observacao+'"></i>':''}<br><span style="font-weight:400;color:var(--text2)">${(l.rede||l.marca)?`${l.rede||l.marca} · `:''}${l.cidade}/${l.uf}</span></span>
         <button class="btn-icon-sm" data-remover-loja="${i}" style="border:none;background:transparent;color:var(--red);padding:4px" title="Remover"><i class="ti ti-trash"></i></button>
       </div>`).join(''):'<p class="dash-date">Nenhuma loja cadastrada ainda.</p>'}
     </div>
     <div class="card" style="padding:.75rem 1rem;margin-top:.5rem">
-      <div class="form-group"><label class="login-label">Nome da loja</label><input class="login-input" id="loja-nome" placeholder="Ex: CAMPNEUS OSASCO CENTRO CP222"></div>
+      <div style="display:flex;gap:10px">
+        <div class="form-group" style="flex:1"><label class="login-label">Rede</label><input class="login-input" id="loja-rede" placeholder="Ex: CAMPNEUS, DPASCHOAL"></div>
+        <div class="form-group" style="width:110px"><label class="login-label">Cód. loja</label><input class="login-input" id="loja-codloja" placeholder="Ex: CP222"></div>
+      </div>
+      <div class="form-group"><label class="login-label">Loja</label><input class="login-input" id="loja-nome" placeholder="Ex: CAMPNEUS OSASCO CENTRO"></div>
+      <div class="form-group"><label class="login-label">Endereço completo</label><input class="login-input" id="loja-endereco" placeholder="Rua, número"></div>
       <div style="display:flex;gap:10px">
         <div class="form-group" style="flex:1"><label class="login-label">Cidade</label><input class="login-input" id="loja-cidade" placeholder="Osasco"></div>
         <div class="form-group" style="width:70px"><label class="login-label">UF</label><input class="login-input" id="loja-uf" placeholder="SP" maxlength="2" style="text-transform:uppercase"></div>
-      </div>
-      <div style="display:flex;gap:10px">
-        <div class="form-group" style="flex:1"><label class="login-label">Marca</label><input class="login-input" id="loja-marca" placeholder="CP / DP"></div>
         <div class="form-group" style="flex:1"><label class="login-label">CEP</label><input class="login-input" id="loja-cep" placeholder="06090020"></div>
       </div>
-      <div class="form-group"><label class="login-label">Endereço</label><input class="login-input" id="loja-endereco" placeholder="Rua, número, cidade, UF"></div>
+      <div class="form-group"><label class="login-label">Periodicidade (dias úteis entre coletas)</label><input class="login-input" id="loja-periodicidade" type="number" min="1" placeholder="30"></div>
+      <div class="form-group"><label class="login-label">Observação</label><input class="login-input" id="loja-observacao" placeholder="Ex: local de difícil acesso"></div>
       <div class="login-erro" id="loja-erro"></div>
       <button class="btn btn-primary btn-block" id="btn-add-loja"><i class="ti ti-plus"></i> Adicionar loja</button>
     </div>
     `:''}
+
 
     ${tab==='itens'?`
     <div class="section-title">Volume por item (m³/unidade)</div>
@@ -1991,10 +2196,13 @@ function renderCadastros(){
       </div>
     </div>
     `:''}
+
+    ${tab==='custos'?htmlAbaCustosRede():''}
   `;
   bindBack();
+  bindAbaCustosRede();
   document.querySelectorAll('[data-cad-tab]').forEach(btn=>{
-    btn.addEventListener('click',()=>{ cadastrosState.tab=btn.dataset.cadTab; cadastrosState.precoCliId=null; cadastrosState.precoTipoTemp=null; renderCadastros(); });
+    btn.addEventListener('click',()=>{ cadastrosState.tab=btn.dataset.cadTab; cadastrosState.precoCliId=null; cadastrosState.precoTipoTemp=null; cadastrosState.custoVigenciaId=null; renderCadastros(); });
   });
   document.querySelectorAll('[data-preco-cliente]').forEach(btn=>{
     btn.addEventListener('click',()=>{ cadastrosState.precoCliId=btn.dataset.precoCliente; cadastrosState.precoTipoTemp=null; renderCadastros(); });
@@ -2120,20 +2328,29 @@ function renderCadastros(){
       renderCadastros();
     });
   });
+  document.getElementById('btn-importar-fornecedores')?.addEventListener('click',()=>{
+    resetImportState();
+    importState.tipo='fornecedores';
+    importState.etapa='upload';
+    renderImportarDados();
+  });
   document.getElementById('btn-add-loja')?.addEventListener('click',()=>{
     const nome=document.getElementById('loja-nome').value.trim();
     const cidade=document.getElementById('loja-cidade').value.trim().toUpperCase();
     const uf=document.getElementById('loja-uf').value.trim().toUpperCase();
-    const marca=document.getElementById('loja-marca').value.trim().toUpperCase();
+    const rede=document.getElementById('loja-rede').value.trim().toUpperCase();
+    const codLoja=document.getElementById('loja-codloja').value.trim().toUpperCase();
     const cep=document.getElementById('loja-cep').value.trim();
     const endereco=document.getElementById('loja-endereco').value.trim();
+    const periodicidade=parseInt(document.getElementById('loja-periodicidade').value)||30;
+    const observacao=document.getElementById('loja-observacao').value.trim();
     const erroEl=document.getElementById('loja-erro');
     erroEl.style.display='none';
     if(!nome||!cidade||!uf){
-      erroEl.textContent='Preencha nome, cidade e UF.';
+      erroEl.textContent='Preencha loja, cidade e UF.';
       erroEl.style.display='block'; return;
     }
-    FORNS_ROT.push({id:'loja'+Date.now(),nome,cidade,uf,marca,cep,endereco,uc:'',ciclo:30});
+    FORNS_ROT.push({id:'loja'+Date.now(),nome,cidade,uf,rede,marca:inferMarcaCode(rede),codLoja,cep,endereco,observacao,uc:'',ciclo:periodicidade});
     salvarLojas();
     renderCadastros();
   });
@@ -2253,6 +2470,24 @@ function linhaPagamentoFin(p,total){
       <span style="font-size:13px"><strong>${fmtM(p.valor)}</strong> <span style="color:var(--text2)">(${pct}%)</span></span>
     </div>
     <div class="prog-wrap" style="margin:0"><div class="prog-bar" style="width:${pct}%"></div></div>
+  </div>`;
+}
+
+function linhaContaPagar(c){
+  const hojeISO=new Date().toISOString().slice(0,10);
+  const vencida=c.status==='pendente'&&c.vencimentoISO<hojeISO;
+  return `<div class="row">
+    <div class="avatar cinza" style="width:32px;height:32px;font-size:11px">${ini(c.rede||c.loja)}</div>
+    <div style="flex:1;min-width:0">
+      <strong style="font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.loja}</strong>
+      <span style="font-size:11px;color:var(--text2)">${c.rede||'sem rede'} · coleta ${c.data}${c.semTabela?' · <span style="color:var(--orange)">sem tabela de custo</span>':''}</span>
+    </div>
+    <div style="text-align:right;flex-shrink:0">
+      <div style="font-size:13px;font-weight:700">${fmtM(c.valor)}</div>
+      <button class="btn-icon-sm" data-toggle-pagar="${c.id}" style="border:none;background:transparent;padding:2px" title="${c.status==='pago'?'Pago — tocar para reabrir':'Marcar como pago'}">
+        <span class="badge ${c.status==='pago'?'verde':(vencida?'vermelho':'laranja')}">${c.status==='pago'?'Pago':(vencida?'Vencida':'Pendente')}</span>
+      </button>
+    </div>
   </div>`;
 }
 
@@ -2381,6 +2616,8 @@ function renderFinanceiro(){
   const totalPedidosSaldo=pedidosOrdenados.reduce((s,p)=>s+Math.max(0,saldoPedido(p)),0);
   const totalOutras=CONTAS_RECEBER.reduce((s,c)=>s+c.valor,0);
   const alertaCount=CONTAS_RECEBER.filter(c=>c.status==='vencido'||c.status==='hoje').length;
+  const totalPagarPendente=CONTAS_PAGAR.filter(c=>c.status==='pendente').reduce((s,c)=>s+c.valor,0);
+  const semTabelaCount=CONTAS_PAGAR.filter(c=>c.semTabela&&c.status==='pendente').length;
   const periodos=[{id:'dia',nome:'Dia'},{id:'semana',nome:'Semana'},{id:'mes',nome:'Mês'}];
   const anterior=getAnteriorComparativo(financeiroState.periodo);
   const anteriorResultado=anterior?(anterior.receita-anterior.custoLog-anterior.custoItens-anterior.despesas):null;
@@ -2506,6 +2743,15 @@ function renderFinanceiro(){
       ${CONTAS_RECEBER.map(linhaContaReceber).join('')}
     </div>
 
+    <div class="section-title" style="display:flex;justify-content:space-between;align-items:center">
+      <span>Contas a pagar (coleta)</span>
+      <span style="font-weight:700;color:var(--text);text-transform:none;letter-spacing:0;font-size:12px">${fmtM(totalPagarPendente)}</span>
+    </div>
+    ${semTabelaCount>0?`<div class="alert laranja"><i class="ti ti-alert-triangle"></i><p><strong>${semTabelaCount}</strong> coleta${semTabelaCount>1?'s':''} sem tabela de custo configurada para a rede — configure em Cadastros → Custos por rede.</p></div>`:''}
+    <div class="card" style="padding:.25rem 1rem">
+      ${CONTAS_PAGAR.length===0?'<p style="font-size:13px;color:var(--text2);text-align:center;padding:.5rem 0">Nenhuma conta a pagar gerada ainda — elas aparecem automaticamente quando um motorista confirma um check-in de coleta.</p>':[...CONTAS_PAGAR].reverse().map(linhaContaPagar).join('')}
+    </div>
+
     <div class="section-title">Rotas — status financeiro (km real)</div>
     ${CAMINHOES_CONF.map(c=>{
       const custo=custoLogisticoRota(c);
@@ -2530,6 +2776,15 @@ function renderFinanceiro(){
   });
   document.getElementById('btn-imprimir-fin')?.addEventListener('click',imprimirResumoFinanceiro);
   document.getElementById('btn-imprimir-fin-2')?.addEventListener('click',imprimirResumoFinanceiro);
+  document.querySelectorAll('[data-toggle-pagar]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const c=CONTAS_PAGAR.find(x=>x.id===btn.dataset.togglePagar);
+      if(!c)return;
+      c.status=c.status==='pago'?'pendente':'pago';
+      salvarContasPagar();
+      renderFinanceiro();
+    });
+  });
 
   document.getElementById('btn-toggle-despesas')?.addEventListener('click',()=>{
     financeiroState.editandoDespesas=!financeiroState.editandoDespesas;renderFinanceiro();
@@ -3215,6 +3470,7 @@ function renderCI(){
     const resp=document.getElementById('ci-resp')?.value||ciResp;
     motorState.checkins[ciLoja.id]={done:true,hora:now(),itens:{...ciItens},nf:ciNF,responsavel:resp};
     salvarMotoristaCheckins();
+    gerarContaPagarCheckin(ciLoja,ciItens);
     renderMotoristaRota();
   });
   document.getElementById('sig-limpar')?.addEventListener('click',()=>{sigCtx?.clearRect(0,0,360,100);ciSigned=false;});
@@ -3563,6 +3819,17 @@ let MEDIDAS={
 };
 async function salvarMedidas(){ try{ await window.storage?.set('cad_medidas', JSON.stringify(MEDIDAS)); }catch(e){console.warn('salvarMedidas',e);} }
 async function salvarPrecosClientes(){ try{ await window.storage?.set('cad_precos_clientes', JSON.stringify(vndCad)); }catch(e){console.warn('salvarPrecosClientes',e);} }
+
+// ── Custos de coleta por rede (com vigência/contrato) ───────────────────────
+// Estrutura: { 'CAMPNEUS': [ {id, vigenciaInicio:'YYYY-MM-DD', vigenciaFim:'YYYY-MM-DD'|'', custos:{itemId:valor}} ], ... }
+let CUSTOS_REDE={};
+async function salvarCustosRede(){ try{ await window.storage?.set('cad_custos_rede', JSON.stringify(CUSTOS_REDE)); }catch(e){console.warn('salvarCustosRede',e);} }
+function vigenciaStatus(v){
+  const hoje=new Date().toISOString().slice(0,10);
+  if(v.vigenciaInicio&&hoje<v.vigenciaInicio) return {status:'futura',label:'Futura'};
+  if(v.vigenciaFim&&hoje>v.vigenciaFim) return {status:'expirada',label:'Expirada'};
+  return {status:'vigente',label:'Vigente agora'};
+}
 
 function totalVnd(){return Object.values(vndQtds).reduce((s,v)=>s+(parseInt(v)||0),0);}
 function valorVnd(){
@@ -4038,10 +4305,23 @@ const CAMPOS_IMPORT={
     {id:'tipo',label:'Tipo (Boleto/Fiado/etc)',obrigatorio:false},
     {id:'filial',label:'Filial/Loja',obrigatorio:false},
   ],
+  fornecedores:[
+    {id:'rede',label:'Rede',obrigatorio:false},
+    {id:'nome',label:'Loja',obrigatorio:true},
+    {id:'codLoja',label:'Cód. loja',obrigatorio:false},
+    {id:'endereco',label:'Endereço completo',obrigatorio:false},
+    {id:'cidade',label:'Cidade',obrigatorio:true},
+    {id:'uf',label:'UF',obrigatorio:true},
+    {id:'cep',label:'CEP',obrigatorio:false},
+    {id:'ciclo',label:'Periodicidade (dias úteis)',obrigatorio:false},
+    {id:'ultimaColeta',label:'Data da última coleta',obrigatorio:false},
+    {id:'observacao',label:'Observação',obrigatorio:false},
+  ],
 };
 const TIPOS_IMPORT=[
   {id:'contas',nome:'Contas a receber/pagar',icon:'ti-file-invoice',cor:'vermelho'},
   {id:'vendas',nome:'Histórico de vendas',icon:'ti-history',cor:'teal'},
+  {id:'fornecedores',nome:'Fornecedores (lojas)',icon:'ti-building-store',cor:'roxo'},
 ];
 
 let importState={
@@ -4114,6 +4394,17 @@ const IMPORT_ALIASES={
   filial:{inclui:['filial','loja','unidade'],exclui:[]},
   vencimento:{inclui:['vencimento'],exclui:[]},
   tipo:{inclui:['tipo'],exclui:[]},
+  nome:{inclui:['nomeloja','razaosocial','loja','fornecedor','nome'],exclui:[]},
+  cidade:{inclui:['cidade','municipio'],exclui:[]},
+  uf:{inclui:['uf','estado'],exclui:[]},
+  marca:{inclui:['marca','bandeira'],exclui:[]},
+  cep:{inclui:['cep'],exclui:[]},
+  endereco:{inclui:['endereco','logradouro','rua'],exclui:[]},
+  ciclo:{inclui:['ciclo','periodicidade','frequencia'],exclui:[]},
+  ultimaColeta:{inclui:['ultimacoleta','dataultimacoleta','ultimavisita'],exclui:[]},
+  rede:{inclui:['rede','bandeira','marca'],exclui:[]},
+  codLoja:{inclui:['codloja','codigoloja','coddaloja','codigo'],exclui:[]},
+  observacao:{inclui:['observacao','obs','notas'],exclui:[]},
 };
 function autoMapearColuna(headers,campoId){
   const aliases=IMPORT_ALIASES[campoId];
@@ -4300,6 +4591,9 @@ function processarLinhasImport(){
   const idsExistentes=new Set(
     vendasState.historico.map(v=>v.numeroNF||v.numeroBoleto).filter(Boolean)
   );
+  const idsExistentesFornecedor=new Set(
+    FORNS_ROT.map(f=>normalizarTexto(f.nome)+'|'+normalizarTexto(f.cidade))
+  );
   dados.forEach((linha,i)=>{
     const nLinha=i+2; // +2 porque linha 1 é cabeçalho e arrays são 0-indexed
     const get=campo=>{const idx=s.mapeamento[campo];return idx!==undefined?linha[idx]:undefined;};
@@ -4348,6 +4642,30 @@ function processarLinhasImport(){
         filial:String(get('filial')||'').trim(),
         status:statusVencimentoFin(vencObj.iso)
       });
+    } else if(s.tipo==='fornecedores'){
+      const nome=String(get('nome')||'').trim();
+      const cidade=String(get('cidade')||'').trim().toUpperCase();
+      const uf=String(get('uf')||'').trim().toUpperCase().slice(0,2);
+      if(!nome||!cidade||!uf){erros.push({linha:nLinha,motivo:'Nome, cidade ou UF inválidos/ausentes'});return;}
+      const chave=normalizarTexto(nome)+'|'+normalizarTexto(cidade);
+      if(idsExistentesFornecedor.has(chave)){
+        duplicados.push({linha:nLinha,identificador:nome});
+        return;
+      }
+      idsExistentesFornecedor.add(chave);
+      const ultimaColetaObj=parseDataBR(get('ultimaColeta'));
+      const rede=String(get('rede')||'').trim().toUpperCase();
+      registros.push({
+        id:'loja'+Date.now()+i,
+        nome,cidade,uf,
+        rede,marca:inferMarcaCode(rede),
+        codLoja:String(get('codLoja')||'').trim().toUpperCase(),
+        cep:String(get('cep')||'').trim(),
+        endereco:String(get('endereco')||'').trim(),
+        observacao:String(get('observacao')||'').trim(),
+        uc:ultimaColetaObj?.iso||'',
+        ciclo:parseInt(get('ciclo'))||30,
+      });
     }
   });
   return{registros,erros,duplicados};
@@ -4358,6 +4676,7 @@ function _renderImportPreview(){
   const{registros,erros,duplicados}=processarLinhasImport();
   const amostra=registros.slice(0,8);
   const somaTotal=registros.reduce((acc,r)=>acc+(parseFloat(r.valor)||0),0);
+  const temValores=s.tipo!=='fornecedores';
 
   document.getElementById('content-area').innerHTML=`
     <button class="btn btn-secondary btn-sm" id="imp-voltar-mapear" style="margin-bottom:1rem"><i class="ti ti-arrow-left"></i> Ajustar mapeamento</button>
@@ -4365,15 +4684,15 @@ function _renderImportPreview(){
     <div class="stat-grid-3">
       <div class="stat-box verde"><div class="sv">${registros.length}</div><div class="sl">Prontos p/ importar</div></div>
       <div class="stat-box ${erros.length?'vermelho':''}"><div class="sv">${erros.length}</div><div class="sl">Com erro</div></div>
-      <div class="stat-box ${duplicados.length?'laranja':''}"><div class="sv">${duplicados.length}</div><div class="sl">Já importados</div></div>
+      <div class="stat-box ${duplicados.length?'laranja':''}"><div class="sv">${duplicados.length}</div><div class="sl">Já ${s.tipo==='fornecedores'?'cadastrados':'importados'}</div></div>
     </div>
-    <div class="card" style="text-align:center;padding:1rem">
+    ${temValores?`<div class="card" style="text-align:center;padding:1rem">
       <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Soma de todos os valores prontos p/ importar</div>
       <div style="font-size:24px;font-weight:700;color:var(--teal)">${fmtM(somaTotal)}</div>
       <div style="font-size:11px;color:var(--text2);margin-top:6px">Confira esse número contra o total da sua planilha original antes de confirmar. Se não bater, o erro mais comum é linhas ignoradas (veja abaixo) ou coluna mapeada errada.</div>
-    </div>
+    </div>`:''}
     ${erros.length?`<div class="alert laranja"><i class="ti ti-alert-triangle"></i><p><strong>${erros.length} linha${erros.length!==1?'s':''}</strong> não pôde ser importada e portanto NÃO entra na soma acima. Linhas: ${erros.slice(0,8).map(e=>`${e.linha} (${e.motivo})`).join('; ')}${erros.length>8?'...':''}</p></div>`:''}
-    ${duplicados.length?`<div class="alert azul"><i class="ti ti-copy"></i><p><strong>${duplicados.length} linha${duplicados.length!==1?'s':''}</strong> já ${duplicados.length!==1?'existem':'existe'} no histórico (mesmo nº de NF/boleto de uma importação anterior) e ${duplicados.length!==1?'foram':'foi'} ignorada${duplicados.length!==1?'s':''} para não contar 2x.</p></div>`:''}
+    ${duplicados.length?`<div class="alert azul"><i class="ti ti-copy"></i><p><strong>${duplicados.length} linha${duplicados.length!==1?'s':''}</strong> já ${duplicados.length!==1?'existem':'existe'}${s.tipo==='fornecedores'?' no cadastro de fornecedores':' no histórico'} (mesmo ${s.tipo==='fornecedores'?'nome+cidade':'nº de NF/boleto'} de uma importação anterior) e ${duplicados.length!==1?'foram':'foi'} ignorada${duplicados.length!==1?'s':''} para não duplicar.</p></div>`:''}
     ${registros.length===0?`<div class="empty"><i class="ti ti-file-off"></i><p>Nenhum registro válido encontrado. Volte e revise o mapeamento das colunas.</p></div>`:`
     <div class="section-title">Amostra (${amostra.length} de ${registros.length})</div>
     ${s.tipo==='vendas'?(()=>{
@@ -4388,7 +4707,13 @@ function _renderImportPreview(){
         ${doc?`<div style="font-size:11px;color:var(--text3);margin-top:2px">${doc}</div>`:''}
         <span class="badge ${pago?'verde':'laranja'}" style="margin-top:4px">${pago?'Pago: '+fmtM(v.pagamentos[0].valor):'Pendente'}</span>
       </div>`;}).join('')}`;
-    })():amostra.map(c=>`<div class="card" style="padding:.6rem 1rem">
+    })():s.tipo==='fornecedores'?amostra.map(f=>`<div class="card" style="padding:.6rem 1rem">
+      <div style="display:flex;justify-content:space-between"><strong style="font-size:13px">${f.nome}${f.codLoja?' · '+f.codLoja:''}</strong>${f.rede?`<span class="badge azul" style="font-size:10px">${f.rede}</span>`:''}</div>
+      <div style="font-size:11px;color:var(--text2)">${f.cidade}/${f.uf}${f.cep?' · CEP '+f.cep:''}</div>
+      ${f.endereco?`<div style="font-size:11px;color:var(--text3);margin-top:2px">${f.endereco}</div>`:''}
+      <div style="font-size:11px;color:var(--text2);margin-top:2px">Periodicidade: ${f.ciclo} du${f.uc?' · Última coleta: '+f.uc:''}</div>
+      ${f.observacao?`<div style="font-size:11px;color:var(--orange);margin-top:2px"><i class="ti ti-alert-triangle"></i> ${f.observacao}</div>`:''}
+    </div>`).join(''):amostra.map(c=>`<div class="card" style="padding:.6rem 1rem">
       <div style="display:flex;justify-content:space-between"><strong style="font-size:13px">${c.cliente}</strong><span style="font-size:13px;font-weight:700">${fmtM(c.valor)}</span></div>
       <div style="font-size:11px;color:var(--text2)">${c.tipo} · vence ${c.vencimento}${c.filial?' · '+c.filial:''}</div>
     </div>`).join('')}
@@ -4404,6 +4729,9 @@ function _renderImportPreview(){
     } else if(s.tipo==='contas'){
       CONTAS_RECEBER.push(...registros);
       await salvarContasReceber();
+    } else if(s.tipo==='fornecedores'){
+      FORNS_ROT.push(...registros);
+      await salvarLojas();
     }
     importState.resultado={importados:registros.length,ignorados:erros.length,duplicados:duplicados.length};
     importState.etapa='concluido';
@@ -4424,7 +4752,7 @@ function _renderImportConcluido(){
       <div class="fin-row"><span class="fl">Ignorados (com erro)</span><span class="fv ${r.ignorados?'neg':''}">${r.ignorados}</span></div>
       <div class="fin-row"><span class="fl">Já existiam (duplicados)</span><span class="fv">${r.duplicados||0}</span></div>
     </div>
-    <div class="alert verde"><i class="ti ti-info-circle"></i><p>Os dados já estão salvos e aparecem no ${importState.tipo==='vendas'?'<strong>Histórico de vendas</strong> e no módulo <strong>Financeiro</strong>':'<strong>Financeiro → Outras contas a receber</strong>'}.</p></div>
+    <div class="alert verde"><i class="ti ti-info-circle"></i><p>Os dados já estão salvos e aparecem ${importState.tipo==='vendas'?'no <strong>Histórico de vendas</strong> e no módulo <strong>Financeiro</strong>':importState.tipo==='fornecedores'?'em <strong>Cadastros → Fornecedores</strong>':'em <strong>Financeiro → Outras contas a receber</strong>'}.</p></div>
     <button class="btn btn-primary btn-block" id="imp-nova" style="margin-top:.5rem"><i class="ti ti-plus"></i> Importar outro arquivo</button>`;
   document.getElementById('btn-back-mod')?.addEventListener('click',renderDashboard);
   document.getElementById('imp-nova')?.addEventListener('click',()=>{resetImportState();renderImportarDados();});
