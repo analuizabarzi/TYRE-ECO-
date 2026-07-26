@@ -1,8 +1,8 @@
 # 🏭 Tyre Eco — Sistema Logístico
 
-Sistema web de gestão logística e comercial para a **Tyre Eco**, empresa de reciclagem de pneus baseada em Osasco/SP.
+Sistema web de gestão logística, financeira e comercial da **Tyre Eco**, empresa de reciclagem de pneus baseada em Osasco/SP.
 
-Coleta sucata automotiva (pneus, discos, filtros etc.) das redes **Campneus** e **DPaschoal** em todo o Brasil.
+Coleta sucata automotiva (pneus, discos, filtros, etc.) das redes **Campneus**, **DPaschoal** e outras, em todo o Brasil, e revende os materiais recicláveis a clientes cadastrados.
 
 ---
 
@@ -10,207 +10,158 @@ Coleta sucata automotiva (pneus, discos, filtros etc.) das redes **Campneus** e 
 
 | Arquivo | Descrição |
 |---|---|
-| `sistema_tyre_eco.html` | Sistema principal com login e todos os módulos integrados |
-| `vendas_v2.html` | Módulo de vendas refatorado (separado para desenvolvimento) |
-| `vendas_melhorias.html` | Mix WhatsApp, recibo PDF, histórico, fiado, relatório |
-| `consignacao.html` | Módulo de consignação com devolução e crédito |
+| `index.html` | **Sistema completo** — login, todos os módulos, todo o negócio. Este é o único arquivo em produção. |
+| `firebase.json` / `.firebaserc` | Configuração do Firebase Hosting |
+| `.github/workflows/deploy.yml` | Deploy automático (ver seção "Publicação") |
 
-> Todos os arquivos são **HTML standalone** — abrem direto no navegador, sem servidor, sem dependências instaladas.
+> Arquivos antigos como `sistema_tyre_eco.html`, `vendas_v2.html`, `vendas_melhorias.html`, `consignacao.html`, `cadastros (12).html`, `tyre_eco (1).html` são **protótipos anteriores**, já incorporados ao `index.html`. Podem ser apagados do repositório sem perda de funcionalidade.
 
----
-
-## 🔐 Acesso ao sistema principal
-
-**URL:** abrir `sistema_tyre_eco.html` no navegador
-
-| Usuário | Senha | Perfil |
-|---|---|---|
-| `gestor` | `tyre2024` | Logística — roteizador, frota, financeiro, alertas |
-| `motorista` | `tyre2024` | Herlon Carrera — rota do dia, check-in |
-| `conferente` | `tyre2024` | Conferência operacional de descarga |
-| `fiscal` | `tyre2024` | Conferência fiscal com IA — NF-e |
-| `triagem` | `tyre2024` | Triagem de pneus por categoria e aro |
-| `vendas` | `tyre2024` | Módulo comercial |
+O sistema é uma aplicação **standalone** (HTML + CSS + JS num único arquivo) — não tem build, não tem `npm install`, não tem servidor próprio. O banco de dados é o **Firebase Firestore**, então é preciso estar online.
 
 ---
 
-## 🗺️ Módulos implementados
+## 🔐 Acesso ao sistema
+
+Cada colaborador tem **login individual** (usuário + senha), criado pelo Gestor na tela **Usuários**. Não existe mais senha compartilhada.
+
+Cada usuário tem um **perfil** (Gestor, Motorista, Conferente Operacional, Conferente Fiscal, Triagem, Vendas, Financeiro, Emissão de NF, Logística) que define um conjunto padrão de módulos visíveis — mas o Gestor pode **customizar exatamente quais módulos cada pessoa vê**, módulo por módulo, independente do perfil (tela Usuários → botão 🔑 Permissões).
+
+A trava de permissão é aplicada tanto na tela (esconde os cards) quanto na abertura do módulo (`abrirModulo`), então não dá pra contornar digitando o módulo direto no console do navegador.
+
+---
+
+## 🗺️ Módulos
 
 ### 👔 Gestor
-- **Roteizador multi-rota** — K-Means geográfico, Nearest Neighbor TSP, geocodificação ViaCEP + Nominatim, Google Maps rota circular
-- Seleção em lote por cidade, urgência (vencimento), filtro por UF
-- Atribuição de motorista/veículo por rota
-- Cálculo de km ida + volta e custo logístico estimado
-- **Frota** — 33 veículos, 33 funcionários
-- **Financeiro** — fechamento de rotas, custo logístico vs receita
+- **Roteirizador** — seleção de lojas por cidade/UF/urgência, geocodificação (ViaCEP + Nominatim), K-Means + Nearest Neighbor, atribuição de motorista/veículo/ajudante/frete, link de rota no Google Maps, histórico de rotas criadas
+- **Cadastros** (abas): Pessoas · Fornecedores · Itens · Veículos · Clientes · Medidas · Custos por rede
+- **Financeiro** — fechamento de rotas, Plano de Contas, Contas a pagar e a receber (CRUD completo, parcelamento, registro de pagamento parcial)
+- **Relatórios** — consolidado, contas a pagar, contas a receber, pagos/recebidos, vendas, com filtros de período
+- **Emitir NF** — gera a ficha de dados da NFS-e (preenchimento manual na prefeitura; não emite a nota oficialmente)
+- **Importar dados** — importação por Excel/CSV de vendas, contas e fornecedores, com detecção automática de colunas, checagem de duplicados e histórico de importações
+- **Alertas WhatsApp (Z-API)** — três alertas configuráveis (ver seção própria)
+- **Usuários** — criação de login por colaborador + permissões granulares por módulo
 - **Dashboard** — visão geral do dia
-- **Alertas WhatsApp (Z-API)** — 2 alertas automáticos (ver seção abaixo)
+
+### 🧭 Logística
+- Mesmo Roteirizador do Gestor
+- **Painel de Motoristas** — acompanha a viagem em andamento (progresso de check-ins, próxima parada) e lista as rotas já criadas
 
 ### 🚛 Motorista
-- Rota do dia com linha do tempo Base → Lojas → Base
-- **Check-in em 4 etapas:** chegada → fotos (5 tipos) → 13 itens com quantidade → finalização (NF, assinatura digital canvas)
+- Rota do dia atribuída
+- **Check-in de coleta** por loja: itens coletados (13 tipos), assinatura digital, NF/observações
+- Ao confirmar o check-in, o sistema já **gera automaticamente uma conta a pagar** para a rede daquela loja, calculada pelos itens coletados × tabela de custo vigente (ver Cadastros → Custos por rede)
 - Histórico de viagens
 
 ### 📋 Conferente Operacional
 - Lista caminhões aguardando conferência
-- Conferência nota por nota: lançamento do motorista vs conferido
-- Divergências em destaque, atalho "Tudo igual"
+- Confere nota por nota: lançamento do motorista vs. conferido, divergências em destaque
 
-### 🤖 Conferente Fiscal (IA)
-- **NF Entrada** — upload XML NF-e, identifica loja pelo CNPJ, cruza com check-in
-- **NF Saída** — converte pneus UN → TON, compara com NF emitida
-- Parser NF-e namespace `http://www.portalfiscal.inf.br/nfe`
+### 🧾 Conferente Fiscal
+- **NF Entrada** — cruza XML de NF-e das lojas com o check-in do motorista
+- **NF Saída** — compara pneus (UN → TON) com a NF emitida na venda do material
 
 ### 🔍 Triagem
-- Só caminhões com conferência operacional concluída
-- Grade 5 categorias × 8 aros: Carcaça, Risco, Meia Vida, Cortados, Lixo / 13,14,15,16,17,SUV,Camionete,Caminhão
-- Totais em tempo real, botão confirmar só ativa quando soma = total conferido
-- Dispara alerta WhatsApp se % Lixo ≥ limite
+- Grade por categoria (Carcaça, Risco, Meia Vida, Cortados, Lixo) × aro
+- Dispara alerta de WhatsApp se % de Lixo passar do limite configurado
 
-### 🛒 Vendas (`vendas_v2.html`)
-- 4 abas: **Vendas · Devoluções · Extrato · Mix**
-- Grade automática pelo cadastro do cliente (por medida para clientes tipo TCP, por aro para os demais)
-- Crédito disponível do cliente aparece na venda e pode ser aplicado com 1 toque
-- **Devoluções** — lança por aro/medida, gera crédito automaticamente
-- **Extrato do cliente** — vendas, devoluções, créditos aplicados, pagamentos recebidos, saldo atual
-- **Mix global** — por período + por cliente + por categoria (barras visuais)
-- Envio de mix por WhatsApp ao confirmar venda
+### 🛒 Vendas
+- Grade de preços por cliente (por aro ou por medida específica, conforme cadastro)
+- **Foto do produto** antes de finalizar a venda (comprimida automaticamente, guardada por venda)
+- **Regra de mix de venda** configurável: alerta (não bloqueia) quando Aro 13 ou Aro 14 passam do % combinado do mix total — limites ajustáveis em Alertas
+- Resumo do mix sempre exibido ao final da venda
+- **Imprimir pedido de venda** (cliente, itens, pagamento, foto)
+- **Gerar ficha de NF** direto da venda confirmada, já preenchida com CNPJ/endereço/e-mail do cliente (se cadastrados)
+- Histórico de vendas, edição e exclusão de vendas já lançadas
+
+---
+
+## 🧩 Cadastros
+
+| Aba | Conteúdo |
+|---|---|
+| **Pessoas** | Funcionários e ajudantes |
+| **Fornecedores** | Lojas de coleta — Rede, Loja, Cód. loja, Endereço completo, Cidade/UF/CEP, Periodicidade de coleta, Observações. Suporta importação em massa por Excel/CSV. |
+| **Itens** | Volume (m³) por item coletado |
+| **Veículos** | Frota e capacidade do baú |
+| **Clientes** | Clientes de venda — nome, categoria/tabela de preço (por aro ou por medida), e dados fiscais (CNPJ, endereço, e-mail) usados para preencher a NF automaticamente |
+| **Medidas** | Catálogo de medidas de pneu por aro, usado nas tabelas de preço detalhadas |
+| **Custos por rede** | Custo de cada item coletado, por rede (Campneus, DPaschoal, etc.), com **vigência de contrato** (início/fim). Alimenta a geração automática de contas a pagar. |
+
+---
+
+## 💰 Financeiro
+
+- **Plano de Contas** — categorias de receita e despesa configuráveis
+- **Contas a pagar** — manuais (fornecedores, frota, salários, etc.) ou **geradas automaticamente pela coleta** (marcadas com a rede e a loja de origem); suporta parcelamento e registro de pagamento parcial
+- **Contas a receber** — clientes, com o mesmo suporte a parcelamento/pagamento parcial
+- Se uma coleta for feita numa loja de rede sem tabela de custo configurada, a conta ainda é gerada (valor R$ 0) e fica sinalizada, para não perder o rastro
 
 ---
 
 ## 💬 Alertas WhatsApp (Z-API)
 
-Dois alertas automáticos enviados para o **mesmo grupo** com mensagens diferentes:
+Três alertas configuráveis, todos enviados para o mesmo grupo:
 
-| Alerta | Gatilho | Fonte |
-|---|---|---|
-| 🚚 Estourados | Check-in com estourados ≥ limite (padrão 30%) | Módulo motorista |
-| 🔴 Lixo | Triagem finalizada com categoria Lixo ≥ limite (padrão 30%) | Módulo triagem |
-
-**Configuração (perfil Gestor → Alertas WhatsApp):**
-- Instance ID, Instance Token, Client Token (painel z-api.io)
-- ID do grupo WhatsApp de destino
-- Limite percentual configurável por alerta (slider)
-- Mensagens customizáveis com variáveis dinâmicas
-- Botões de simulação para testar sem esperar evento real
-- Log de todos os envios com status e timestamp
-
----
-
-## 🏗️ Arquitetura técnica
-
-### Stack
-- **Frontend:** HTML + CSS + JavaScript vanilla (sem framework)
-- **Persistência:** `window.storage` (storage do claude.ai) — substituir por `localStorage` ao rodar fora do claude.ai
-- **PDF:** jsPDF via CDN (gerado no browser)
-- **Mapas:** Google Maps URL (rota circular, sem API key)
-- **Geocodificação:** ViaCEP + Nominatim (rate limit 320ms entre requests)
-- **Algoritmos:** K-Means++ geográfico (25 iterações) + Nearest Neighbor TSP
-- **WhatsApp:** Z-API endpoint `send-text`
-- **NF-e:** Parser XML nativo, namespace `http://www.portalfiscal.inf.br/nfe`
-
-### Dados reais importados
-- **33 funcionários** (PDF de relação de funcionários)
-- **33 veículos**
-- **699 clientes** (PDF histórico de vendas 2020-2026)
-- **Tabela TCP Ecology Tyre** — 34 medidas × 5 aros com preços por medida
-- **Tabelas Campneus e DPaschoal** — preços por item coletado
-- **6 NF-e reais** processadas para testes do conferente fiscal
-
-### Perfis de usuário
-Todos compartilham a senha `tyre2024`. Cada perfil acessa apenas seus módulos relevantes.
-
----
-
-## 📐 Decisões de arquitetura
-
-| Decisão | Motivo |
+| Alerta | Gatilho |
 |---|---|
-| HTML standalone sem framework | Funciona offline, sem deploy, abre direto no celular |
-| `window.storage` para persistência | API do claude.ai — trocar por `localStorage` em produção |
-| Eventos via `addEventListener` (não `onclick` inline) | `onclick` inline quebra em alguns contextos do widget |
-| Saudação pré-calculada antes do template literal | Aspas simples dentro de backtick quebram o JS parser |
-| Geocodificação com delay de 320ms | Rate limit do Nominatim (1 req/seg) |
-| K-Means com fallback de coordenadas por cidade | Quando ViaCEP ou Nominatim falham |
+| 🚚 Estourados | Check-in com % de pneus estourados ≥ limite (slider, padrão 30%) |
+| 🔴 Lixo | Triagem finalizada com % de Lixo ≥ limite (slider, padrão 30%) |
+| 📊 Mix de venda | Não envia WhatsApp — controla os limites de Aro 13/14 usados no alerta visual da tela de Vendas |
 
-### Bug recorrente crítico ⚠️
-**Aspas simples dentro de template literals quebram o parser.**
-
-```js
-// ❌ ERRADO — quebra
-`${hora<12?'Bom dia':'Boa tarde'}`
-
-// ✅ CORRETO — pré-calcular
-const saudacao = hora<12?'Bom dia':'Boa tarde';
-`${saudacao}`
-```
+Configuração em **Alertas WhatsApp** (perfil Gestor): credenciais Z-API, ID do grupo, limites, mensagens customizáveis com variáveis, simulação de disparo, log de envios.
 
 ---
 
-## 🔌 Integrações externas
+## 🚀 Publicação (deploy)
 
-| Serviço | Uso | Status |
-|---|---|---|
-| **Z-API** | WhatsApp Business API | Configurar credenciais reais |
-| **ViaCEP** | Geocodificação de CEPs | Funcional |
-| **Nominatim** | Lat/lng a partir de endereço | Funcional |
-| **Google Maps** | Rota circular para motoristas | Funcional (URL, sem API key) |
-| **jsPDF** | Geração de recibo PDF no browser | Funcional |
-| **Focus NFe / eNotas** | Emissão de NF-e real | Pendente — requer certificado A1/A3 |
+O sistema roda em dois endereços, sincronizados automaticamente:
 
----
+- **GitHub Pages:** `https://analuizabarzi.github.io/TYRE-ECO-/`
+- **Firebase Hosting:** `https://tyre-eco.web.app`
 
-## 📦 Preços por categoria (tabela padrão)
+Fluxo: qualquer commit de `index.html` na branch `main` já atualiza o GitHub Pages; o GitHub Actions (`.github/workflows/deploy.yml`) dispara em seguida um deploy automático no Firebase Hosting, usando a credencial guardada no secret `FIREBASE_SERVICE_ACCOUNT` do repositório. Não é preciso terminal nem `firebase deploy` manual.
 
-| Categoria | Aro 13 | Aro 14 | Aro 15 | Aro 16 | Aro 17 | SUV |
-|---|---|---|---|---|---|---|
-| Carcaça | R$35 | R$30 | R$25 | R$10 | R$5 | R$20 |
-| Risco | R$35 | R$35 | R$35 | R$35 | R$35 | R$35 |
-| Meia Vida | R$55 | R$55 | R$55 | R$55 | R$55 | R$55 |
-| Cortados | R$45 | R$45 | R$45 | R$45 | R$45 | R$45 |
-| Lixo | R$1 | R$1 | R$1 | R$1 | R$1 | R$1 |
-
-Clientes com tabela individual (ex: TCP) têm preços por medida específica.
+Pra atualizar o sistema: baixe o `index.html`, edite, e suba de novo pelo **Add file → Upload files** do GitHub — os dois sites atualizam sozinhos em menos de um minuto.
 
 ---
 
-## 🗺️ Próximos passos
+## 🔥 Firebase
 
-### Alta prioridade
-- [ ] Integrar `vendas_v2.html` no `sistema_tyre_eco.html` (módulo vendas/perfil vendas)
-- [ ] Substituir `window.storage` por `localStorage` para rodar fora do claude.ai
-- [ ] Configurar Z-API com credenciais reais e testar alertas
-- [ ] Testar roteizador com geocodificação real (ViaCEP + Nominatim)
+- **Projeto:** `tyre-eco` (região `southamerica-east1`)
+- **Autenticação:** Firebase Auth (e-mail/senha; login de usuário vira `usuario@tyreeco.app` internamente)
+- **Banco de dados:** Firestore
+  - `usuarios/{uid}` — perfil, permissões, dados de login
+  - `app_storage/{chave}` — armazena a maior parte dos dados do sistema (cadastros, vendas, contas, custos, etc.) através de um shim (`window.storage`) que expõe `get/set` como se fosse local, mas grava no Firestore
+  - `venda_foto_{id}` — foto de cada venda, guardada separadamente do histórico principal (evita estourar o limite de tamanho de documento)
 
-### Média prioridade
-- [ ] Estoque em tempo real (triagem alimenta → vendas consomem)
-- [ ] Odômetro no check-in (km real para fechar custo logístico real)
-- [ ] Importação automática de XML NF-e via e-mail
-- [ ] Alerta de mix de venda abaixo de X% por aro
-- [ ] DRE simplificado + fluxo de caixa
+⚠️ Fotos e arquivos grandes **nunca** devem ser guardados dentro de arrays grandes salvos como um único documento (histórico de vendas, contas, etc.) — isso já causou risco de estourar o limite de 1 MB por documento do Firestore no passado. Sempre usar uma chave própria por registro quando o conteúdo for pesado (base64 de imagem, por exemplo).
 
-### Futuros
-- [ ] Portal do cliente para declaração de devolução (Render.com + Supabase)
-- [ ] Integração NF-e real via Focus NFe ou eNotas (certificado digital A1/A3)
-- [ ] App mobile nativo (React Native) a partir dos módulos HTML validados
+---
+
+## ⚠️ Limitações conhecidas
+
+- O acompanhamento de "viagem em andamento" (Painel de Motoristas) hoje segue **uma viagem ativa por vez**, não múltiplos motoristas rodando simultaneamente com estado independente. Se isso virar necessário no dia a dia, é preciso um trabalho maior para dar identidade própria a cada rota/motorista em andamento.
+- A emissão de NF é uma **ficha auxiliar**, não uma integração real com a prefeitura — o lançamento final ainda é manual no portal da NFS-e.
+
+---
+
+## 🛠️ Convenções técnicas (para quem for mexer no código)
+
+- Eventos via `addEventListener`, nunca `onclick` inline.
+- Toda saída de texto que vem do usuário (nome, observação, endereço) passa por `escapeHtml()` antes de entrar no HTML.
+- Confirmações e avisos usam `confirmarAcao()` / `mostrarToast()` / `abrirModal()` — não usar `confirm()`/`alert()`/`prompt()` nativos do navegador em telas novas.
+- Arrays de cadastro (`FORNS_ROT`, `CLIENTES_VND`, etc.) são declarados com `const` — para remover itens, usar `.splice()`, nunca reatribuir (`arr = arr.filter(...)` quebra, pois é `const`).
+- Ao adicionar um novo tipo de dado importável por Excel, seguir o padrão em `CAMPOS_IMPORT` / `IMPORT_ALIASES` / `processarLinhasImport` / `_renderImportPreview`.
 
 ---
 
 ## 📞 Contexto do negócio
 
-- **Empresa:** Tyre Eco — Osasco/SP (CEP 06233-040)
-- **Operação:** coleta de sucata automotiva em lojas Campneus e DPaschoal
-- **Cobertura:** 16 UFs, ~250 fornecedores ativos
-- **Volume:** ~700 pneus por caminhão, múltiplas rotas simultâneas
-- **Clientes de venda:** 699 cadastrados (borracharias, distribuidoras de pneus)
-
-### Pesos médios por pneu (conferência NF saída)
-- Pneu passeio: 6,5 kg
-- Pneu estourado/inservível: 3,0 kg
-
-### Itens coletados nas lojas
-Pneus passeio, pneus estourados, amortecedor, bandeja, disco, filtro óleo, frascos óleo, mola, papelão, pastilha, plásticos, roda, sucata ferrosa
+- **Empresa:** Tyre Eco — Osasco/SP
+- **Operação:** coleta de sucata automotiva em lojas Campneus, DPaschoal e outras redes
+- **Itens coletados:** pneus passeio, pneus estourados, amortecedor, bandeja, disco, filtro óleo, frascos óleo, mola, papelão, pastilha, plásticos, roda, sucata ferrosa
 
 ---
 
-*Desenvolvido com Claude (Anthropic) — Junho 2026*
+*Desenvolvido com Claude (Anthropic), com contribuições de Ana Luiza Barzi e equipe.*
