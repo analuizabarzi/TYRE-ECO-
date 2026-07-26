@@ -409,7 +409,16 @@ function totalPneusRota(rota){
 // caixa e espaços nas pontas — é o único vínculo hoje entre um login de
 // motorista e as rotas atribuídas a ele pelo gestor.
 function nomesIguais(a,b){
-  return !!a && !!b && String(a).trim().toLowerCase()===String(b).trim().toLowerCase();
+  if(!a||!b) return false;
+  const x=String(a).trim().toLowerCase();
+  const y=String(b).trim().toLowerCase();
+  if(x===y) return true;
+  // O login geralmente tem só o primeiro nome (ex: "Herlon"), enquanto o cadastro de
+  // Pessoas/a rota tem o nome completo (ex: "Herlon Carrera") — considera a mesma
+  // pessoa quando um nome é o início do outro por palavra inteira, ou o primeiro
+  // nome bate exatamente. Sem isso, a rota nunca aparecia pro motorista logado.
+  if(x.startsWith(y+' ')||y.startsWith(x+' ')) return true;
+  return x.split(' ')[0]===y.split(' ')[0];
 }
 // Recalcula ROTA_MOTORISTA: a rota do usuário motorista logado que ainda não
 // foi finalizada (aguardando ou em andamento). Chamar sempre no início das
@@ -5424,6 +5433,30 @@ function checarRegraMix(qtds){
     return {...m,limite,excedeu:limite!=null&&m.pct>limite};
   });
 }
+// Itens de uma venda no nível de detalhe original — por MEDIDA específica quando o
+// cliente usa tabela detalhada por medida, por ARO quando usa tabela simples por aro.
+// Usado na devolução: agregar tudo por aro (como fazia antes) perdia a medida
+// específica devolvida sempre que o cliente tinha preços diferentes por medida no
+// mesmo aro, o que tornava o crédito calculado impreciso.
+function itensDetalheVnd(v){
+  const cad=vndCad[v.cliId];
+  const qtds=v.qtds||{};
+  return Object.entries(qtds)
+    .filter(([,q])=>(parseInt(q)||0)>0)
+    .map(([key,q])=>{
+      const qtd=parseInt(q)||0;
+      if(key.includes('|')){
+        const[aro,idx]=key.split('|');
+        const nomeMedida=cad?.tabela?.[aro]?.[parseInt(idx)]?.m||MEDIDAS[aro]?.[parseInt(idx)]||'';
+        const preco=cad?.tabela?.[aro]?.[parseInt(idx)]?.p||0;
+        return{key,aro,label:nomeMedida?`Aro ${aro} — ${nomeMedida}`:`Aro ${aro}`,qtd,preco};
+      } else {
+        const preco=parseFloat(cad?.precos?.[key])||0;
+        return{key,aro:key,label:`Aro ${key}`,qtd,preco};
+      }
+    })
+    .sort((a,b)=>a.aro.localeCompare(b.aro,undefined,{numeric:true})||a.label.localeCompare(b.label));
+}
 function calcMixVnd(qtds){
   const porAro={};
   Object.entries(qtds||{}).forEach(([k,v])=>{
@@ -5462,7 +5495,7 @@ function getVendaHist(vid){return vendasState.historico.find(v=>v.id===vid);}
 
 function renderDetalheVenda(){
   const v=getVendaHist(devState.vendaId);if(!v)return;
-  const mix=calcMixVnd(v.qtds||{});
+  const itens=itensDetalheVnd(v);
   const devConf=v.dev?.conferido;
   const devDecl=v.dev?.declarado;
   const temDev=!!(devDecl||devConf);
@@ -5483,16 +5516,18 @@ function renderDetalheVenda(){
       ${v.obs?`<div class="fin-row"><span class="fl">Obs.</span><span class="fv">${escapeHtml(v.obs)}</span></div>`:''}
     </div>
 
-    ${mix.length?`
-    <div class="section-title">Mix enviado ao cliente</div>
+    ${itens.length?`
+    <div class="section-title">Itens enviados ao cliente</div>
     <div class="card">
-      ${mix.map(m=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border-light)">
-        <span style="font-size:13px;font-weight:500">Aro ${m.aro}</span>
+      ${itens.map(m=>{
+        const pct=v.pneus?Math.round(m.qtd/v.pneus*100):0;
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border-light)">
+        <span style="font-size:13px;font-weight:500">${m.label}</span>
         <div style="display:flex;align-items:center;gap:8px">
-          <div style="background:var(--bg);border-radius:20px;height:6px;width:80px;overflow:hidden"><div style="height:6px;border-radius:20px;background:var(--teal);width:${m.pct}%"></div></div>
-          <span style="font-size:12px;font-weight:600;color:var(--teal);min-width:70px;text-align:right">${m.qtd} un · ${m.pct}%</span>
+          <div style="background:var(--bg);border-radius:20px;height:6px;width:80px;overflow:hidden"><div style="height:6px;border-radius:20px;background:var(--teal);width:${pct}%"></div></div>
+          <span style="font-size:12px;font-weight:600;color:var(--teal);min-width:70px;text-align:right">${m.qtd} un · ${pct}%</span>
         </div>
-      </div>`).join('')}
+      </div>`;}).join('')}
     </div>`:''}
 
     ${temDev?`
@@ -5507,20 +5542,21 @@ function renderDetalheVenda(){
       </div>
     </div>
     ${devConf||devDecl?`
-    <div class="section-title">Mix — Enviado vs Ficou com cliente</div>
+    <div class="section-title">Itens — Enviado vs Ficou com cliente</div>
     <div class="card">
-      ${mix.map(m=>{
-        const dv=(devConf||devDecl)[m.aro]||0;
+      ${itens.map(m=>{
+        const dv=(devConf||devDecl)[m.key]||0;
         const ficou=m.qtd-dv;
+        const pctEnv=v.pneus?Math.round(m.qtd/v.pneus*100):0;
         const pctFicou=m.qtd>0?Math.round(ficou/m.qtd*100):0;
         return `<div style="padding:6px 0;border-bottom:1px solid var(--border-light)">
           <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px">
-            <span style="font-weight:600">Aro ${m.aro}</span>
+            <span style="font-weight:600">${m.label}</span>
             <span>${dv>0?`devolveu ${dv} · `:''}ficou <strong style="color:var(--green)">${ficou}</strong></span>
           </div>
-          <div style="height:5px;background:var(--blue-bg);border-radius:3px;overflow:hidden;margin-bottom:2px"><div style="height:5px;background:var(--blue);width:${m.pct}%;border-radius:3px"></div></div>
+          <div style="height:5px;background:var(--blue-bg);border-radius:3px;overflow:hidden;margin-bottom:2px"><div style="height:5px;background:var(--blue);width:${pctEnv}%;border-radius:3px"></div></div>
           <div style="height:5px;background:var(--green-bg);border-radius:3px;overflow:hidden"><div style="height:5px;background:var(--green);width:${pctFicou}%;border-radius:3px"></div></div>
-          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text2);margin-top:2px"><span style="color:var(--blue)">■ enviado ${m.pct}%</span><span style="color:var(--green)">■ ficou ${pctFicou}%</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text2);margin-top:2px"><span style="color:var(--blue)">■ enviado ${pctEnv}%</span><span style="color:var(--green)">■ ficou ${pctFicou}%</span></div>
         </div>`;
       }).join('')}
     </div>`:''}
@@ -5552,7 +5588,7 @@ function renderDetalheVenda(){
 
 function renderFormDev(){
   const v=getVendaHist(devState.vendaId);if(!v)return;
-  const mix=calcMixVnd(v.qtds||{});
+  const itens=itensDetalheVnd(v);
   const isConferir=devState.tela==='conferir';
   const fonte=isConferir?'conferido':'declarado';
   const atual=isConferir?(v.dev?.declarado||{}):v.dev?.[fonte]||{};
@@ -5566,30 +5602,30 @@ function renderFormDev(){
     </div>
     ${isConferir
       ?`<div class="alert verde"><i class="ti ti-info-circle"></i><p>Valide o que chegou fisicamente. Se diferir do declarado, registre a observação.</p></div>`
-      :`<div class="alert laranja"><i class="ti ti-info-circle"></i><p>Informe o adiantamento recebido (se houver) e quantos pneus o cliente declarou que vai devolver.</p></div>
+      :`<div class="alert laranja"><i class="ti ti-info-circle"></i><p>Informe o adiantamento recebido (se houver) e quantos pneus o cliente declarou que vai devolver — por medida específica, quando o cliente tiver tabela detalhada.</p></div>
       <label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px;text-transform:uppercase;margin-top:4px">Adiantamento recebido (R$)</label>
       <input id="dev-adiant" type="number" step="0.01" min="0" placeholder="0,00" value="${v.dev?.adiantamento||''}" style="margin-bottom:14px">`}
     <div class="card" style="padding:.75rem 1rem">
-      <div style="display:grid;grid-template-columns:60px 60px 1fr 60px;gap:4px;padding:5px 0;border-bottom:1px solid var(--border);margin-bottom:4px">
-        <span style="font-size:10px;font-weight:700;color:var(--text2)">ARO</span>
+      <div style="display:grid;grid-template-columns:1fr 50px 1fr 50px;gap:4px;padding:5px 0;border-bottom:1px solid var(--border);margin-bottom:4px">
+        <span style="font-size:10px;font-weight:700;color:var(--text2)">ITEM</span>
         <span style="font-size:10px;font-weight:700;color:var(--blue);text-align:center">ENV.</span>
         <span style="font-size:10px;font-weight:700;color:var(--red);text-align:center">${isConferir?'CHEGOU':'DEV.'}</span>
         <span style="font-size:10px;font-weight:700;color:var(--green);text-align:right">FICA</span>
       </div>
-      ${mix.map(m=>{
-        const val=atual[m.aro]||'';
+      ${itens.map(m=>{
+        const val=atual[m.key]||'';
         const ficou=m.qtd-(parseInt(val)||0);
-        return `<div style="display:grid;grid-template-columns:60px 60px 1fr 60px;gap:4px;align-items:center;padding:5px 0;border-bottom:1px solid var(--border-light)">
-          <span style="font-size:13px;font-weight:700">Aro ${m.aro}</span>
+        return `<div style="display:grid;grid-template-columns:1fr 50px 1fr 50px;gap:4px;align-items:center;padding:5px 0;border-bottom:1px solid var(--border-light)">
+          <span style="font-size:12px;font-weight:700">${m.label}</span>
           <span style="text-align:center;font-size:13px;font-weight:600;color:var(--blue)">${m.qtd}</span>
-          <div style="text-align:center"><input class="cell-inp dev-inp${parseInt(val)>0?' dev':''}" type="number" inputmode="numeric" min="0" max="${m.qtd}" style="width:52px;height:42px;font-size:15px;border-color:${parseInt(val)>0?'var(--red)':'var(--border)'};background:${parseInt(val)>0?'var(--red-bg)':'var(--surface)'};color:${parseInt(val)>0?'var(--red)':'var(--text)'}" value="${val}" placeholder="0" data-aro="${m.aro}" data-env="${m.qtd}"></div>
-          <span class="dev-fica" data-aro="${m.aro}" style="text-align:right;font-size:13px;font-weight:700;color:${ficou>0?'var(--green)':'var(--text2)'}">${ficou}</span>
+          <div style="text-align:center"><input class="cell-inp dev-inp${parseInt(val)>0?' dev':''}" type="number" inputmode="numeric" min="0" max="${m.qtd}" style="width:52px;height:42px;font-size:15px;border-color:${parseInt(val)>0?'var(--red)':'var(--border)'};background:${parseInt(val)>0?'var(--red-bg)':'var(--surface)'};color:${parseInt(val)>0?'var(--red)':'var(--text)'}" value="${val}" placeholder="0" data-key="${m.key}" data-env="${m.qtd}"></div>
+          <span class="dev-fica" data-key="${m.key}" style="text-align:right;font-size:13px;font-weight:700;color:${ficou>0?'var(--green)':'var(--text2)'}">${ficou}</span>
         </div>`;
       }).join('')}
     </div>
     ${isConferir?`
     <label style="display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px;text-transform:uppercase">Observações / Divergências</label>
-    <input id="dev-obs" type="text" placeholder="Ex: Aro 14 chegou 18 em vez de 20..." value="${v.dev?.obs||''}" style="margin-bottom:14px">`:''}
+    <input id="dev-obs" type="text" placeholder="Ex: 205/55R16 chegou 3 em vez de 5..." value="${v.dev?.obs||''}" style="margin-bottom:14px">`:''}
     <button class="btn btn-success btn-block" id="btn-salvar-dev-form" style="font-size:14px;padding:12px">
       <i class="ti ti-device-floppy"></i> Salvar ${titulo}
     </button>`;
@@ -5605,13 +5641,13 @@ function renderFormDev(){
       inp.style.borderColor=dev>0?'var(--red)':'var(--border)';
       inp.style.background=dev>0?'var(--red-bg)':'var(--surface)';
       inp.style.color=dev>0?'var(--red)':'var(--text)';
-      const elF=document.querySelector(`.dev-fica[data-aro="${inp.dataset.aro}"]`);
+      const elF=document.querySelector(`.dev-fica[data-key="${inp.dataset.key}"]`);
       if(elF){elF.textContent=ficou;elF.style.color=ficou>0?'var(--green)':'var(--text2)';}
     });
   });
   document.getElementById('btn-salvar-dev-form')?.addEventListener('click',()=>{
     const qtdsDev={};
-    document.querySelectorAll('.dev-inp').forEach(inp=>{if(parseInt(inp.value)>0)qtdsDev[inp.dataset.aro]=parseInt(inp.value);});
+    document.querySelectorAll('.dev-inp').forEach(inp=>{if(parseInt(inp.value)>0)qtdsDev[inp.dataset.key]=parseInt(inp.value);});
     const adiant=parseFloat(document.getElementById('dev-adiant')?.value)||v.dev?.adiantamento||0;
     const obs=document.getElementById('dev-obs')?.value||v.dev?.obs||'';
     if(!v.dev)v.dev={adiantamento:0,declarado:null,conferido:null,obs:''};
