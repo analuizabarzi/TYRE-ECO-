@@ -6180,7 +6180,11 @@ function _renderImportMapear(){
     });
   });
   document.getElementById('imp-ir-preview')?.addEventListener('click',()=>{
-    if(!todosObrigOk)return;
+    const faltando=campos.filter(c=>c.obrigatorio&&(s.mapeamento[c.id]===undefined||s.mapeamento[c.id]===''));
+    if(faltando.length){
+      mostrarToast(`Selecione a coluna de: ${faltando.map(c=>c.label).join(', ')} antes de continuar.`,'erro');
+      return;
+    }
     importState.etapa='preview';renderImportarDados();
   });
 }
