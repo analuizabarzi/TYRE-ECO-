@@ -426,7 +426,7 @@ function nomesIguais(a,b){
 function sincronizarViagemMotorista(){
   const nome = usuarioAtual?.nome || '';
   ROTA_MOTORISTA = (rotState?.rotasSalvas||[]).find(r =>
-    nomesIguais(r.motoristaNome, nome) && (r.status==='aguardando' || r.status==='em_rota')
+    nomesIguais(r.motoristaNome, nome) && (!r.status||r.status==='aguardando'||r.status==='em_rota')
   ) || null;
 }
 // Recalcula CAMINHOES_CONF a partir das rotas salvas que já terminaram a
@@ -1778,7 +1778,7 @@ function _renderSalvas(){
     ${[...s.rotasSalvas].reverse().map(r=>`<div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
         <strong style="font-size:14px">${r.nome}</strong>
-        <span class="badge verde">Criada</span>
+        <span class="badge verde">${{aguardando:'Aguardando',em_rota:'Em rota',aguardando_conferencia:'Aguard. conferência',conferido:'Conferido',triado:'Triado'}[r.status]||'Criada'}</span>
       </div>
       <div style="background:var(--bg);border-radius:var(--radius-sm);padding:8px 10px;margin-bottom:8px">
         <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);padding:2px 0"><span>Ida</span><strong>~${Math.round(r.kmIda)} km</strong></div>
@@ -1786,14 +1786,115 @@ function _renderSalvas(){
         <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;padding-top:5px;margin-top:3px;border-top:1px solid var(--border)"><span>Total</span><span>~${Math.round(r.kmTotal)} km</span></div>
         ${r.custoLog>0?`<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--orange);padding-top:3px"><span>Custo logístico (aprox.)</span><strong>${fmtM(r.custoLog)}</strong></div>`:''}
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
         ${r.placa?`<span class="badge azul"><i class="ti ti-truck" style="font-size:10px"></i> ${r.placa}</span>`:''}
         ${r.motoristaNome?`<span class="badge verde"><i class="ti ti-user" style="font-size:10px"></i> ${r.motoristaNome}</span>`:''}
+        <span class="badge cinza"><i class="ti ti-map-pin" style="font-size:10px"></i> ${(r.lojas||[]).length} parada${(r.lojas||[]).length!==1?'s':''}</span>
       </div>
-      ${r.mapsUrl?`<a href="${r.mapsUrl}" target="_blank" style="text-decoration:none;display:block;margin-top:8px"><button class="btn btn-block" style="background:#1A73E8;color:#fff;border:none;font-size:12px;padding:8px"><i class="ti ti-map-pin"></i> Google Maps</button></a>`:''}
+      ${r.mapsUrl?`<a href="${r.mapsUrl}" target="_blank" style="text-decoration:none;display:block;margin-bottom:8px"><button class="btn btn-block" style="background:#1A73E8;color:#fff;border:none;font-size:12px;padding:8px"><i class="ti ti-map-pin"></i> Google Maps</button></a>`:''}
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-secondary btn-sm" style="flex:1;justify-content:center" data-editar-rota="${r.id}"><i class="ti ti-pencil"></i> Editar paradas</button>
+        <button class="btn btn-secondary btn-sm" style="color:var(--red)" data-excluir-rota="${r.id}"><i class="ti ti-trash"></i></button>
+      </div>
     </div>`).join('')}`;
   document.getElementById('btn-back-mod')?.addEventListener('click',renderDashboard);
   document.getElementById('rot-nova')?.addEventListener('click',()=>{rotState.tela='selecao';rotState.rotasSugeridas=[];_renderRoteizador();});
+  document.querySelectorAll('[data-excluir-rota]').forEach(btn=>{
+    btn.addEventListener('click',async()=>{
+      const id=btn.dataset.excluirRota;
+      const rota=rotState.rotasSalvas.find(r=>r.id===id);
+      if(!rota)return;
+      const ok=await confirmarAcao({titulo:'Excluir rota?',mensagem:`A rota "${rota.nome}" (${(rota.lojas||[]).length} paradas) será removida permanentemente, junto com o vínculo ao motorista e veículo.`,textoConfirmar:'Excluir'});
+      if(!ok)return;
+      const idx=rotState.rotasSalvas.findIndex(r=>r.id===id);
+      if(idx>=0) rotState.rotasSalvas.splice(idx,1);
+      salvarRotasSalvas();
+      mostrarToast('Rota excluída.','sucesso');
+      _renderSalvas();
+    });
+  });
+  document.querySelectorAll('[data-editar-rota]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      rotEditState.rotaId=btn.dataset.editarRota;
+      rotEditState.buscaLoja='';
+      _renderEditarRota();
+    });
+  });
+}
+
+// ── Editar paradas de uma rota já salva (mesmo depois de iniciada) ──────────
+let rotEditState={rotaId:null,buscaLoja:''};
+function _renderEditarRota(){
+  const rota=rotState.rotasSalvas.find(r=>r.id===rotEditState.rotaId);
+  if(!rota){ _renderSalvas(); return; }
+  const emAndamento=rota.status==='em_rota'||rota.status==='aguardando_conferencia';
+  const busca=(rotEditState.buscaLoja||'').toLowerCase();
+  const idsNaRota=new Set((rota.lojas||[]).map(l=>l.nome+'|'+l.cidade));
+  const sugestoes=busca?FORNS_ROT.filter(f=>!idsNaRota.has(f.nome+'|'+f.cidade)&&(f.nome.toLowerCase().includes(busca)||f.cidade.toLowerCase().includes(busca))).slice(0,15):[];
+
+  document.getElementById('content-area').innerHTML=`
+    <button class="btn btn-secondary btn-sm" id="btn-voltar-editar-rota" style="margin-bottom:1rem"><i class="ti ti-arrow-left"></i> Rotas salvas</button>
+    <div class="mod-header"><div class="mod-header-icon verde"><i class="ti ti-pencil"></i></div><div><h2>${escapeHtml(rota.nome)}</h2><span>Editar paradas</span></div></div>
+    ${emAndamento?`<div class="alert laranja"><i class="ti ti-alert-triangle"></i><p>Essa rota já está em andamento. Dá pra adicionar ou remover paradas, mas o <strong>km e custo logístico calculados não são recalculados automaticamente</strong> — revise-os manualmente se mudar muita coisa.</p></div>`:''}
+    <div class="section-title">Paradas atuais (${(rota.lojas||[]).length})</div>
+    <div class="card" style="padding:.25rem 1rem">
+      ${(rota.lojas||[]).length===0?'<p class="dash-date" style="padding:.5rem 0">Nenhuma parada nessa rota.</p>':(rota.lojas||[]).map(l=>{
+        const coletada=!!motorState.checkins?.[l.id]?.done;
+        return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border-light)">
+          <div style="flex:1;min-width:0">
+            <strong style="font-size:13px;display:block">${escapeHtml(l.nome)}</strong>
+            <span style="font-size:11px;color:var(--text2)">${escapeHtml(l.cidade||'')}${l.marca?' · '+escapeHtml(l.marca):''}${coletada?' · <span style="color:var(--green)">já coletada</span>':''}</span>
+          </div>
+          <button class="btn-icon-sm" data-remover-parada="${l.id}" style="border:none;background:transparent;color:${coletada?'var(--text3)':'var(--red)'};padding:4px" title="${coletada?'Já coletada — remover mesmo assim':'Remover parada'}"><i class="ti ti-trash"></i></button>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <div class="section-title" style="margin-top:1rem">Adicionar parada</div>
+    <div class="search-wrap" style="margin-bottom:.5rem"><i class="ti ti-search"></i><input id="busca-parada" type="text" placeholder="Buscar loja por nome ou cidade..." value="${escapeHtml(rotEditState.buscaLoja||'')}" autocomplete="off" autocorrect="off"></div>
+    ${sugestoes.length?`<div class="card" style="padding:.25rem 1rem;margin-bottom:1rem">
+      ${sugestoes.map(f=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border-light)">
+        <div style="flex:1;min-width:0"><strong style="font-size:13px;display:block">${escapeHtml(f.nome)}</strong><span style="font-size:11px;color:var(--text2)">${escapeHtml(f.cidade||'')}${f.marca?' · '+escapeHtml(f.marca):''}</span></div>
+        <button class="btn btn-primary btn-sm" data-add-parada="${f.id}"><i class="ti ti-plus"></i></button>
+      </div>`).join('')}
+    </div>`:busca?'<p class="dash-date" style="margin-bottom:1rem">Nenhuma loja encontrada.</p>':''}
+  `;
+  document.getElementById('btn-voltar-editar-rota')?.addEventListener('click',()=>{rotEditState.rotaId=null;_renderSalvas();});
+  document.getElementById('busca-parada')?.addEventListener('input',e=>{rotEditState.buscaLoja=e.target.value;_renderEditarRota();});
+  document.querySelectorAll('[data-remover-parada]').forEach(btn=>{
+    btn.addEventListener('click',async()=>{
+      const lojaId=btn.dataset.removerParada;
+      const loja=(rota.lojas||[]).find(l=>l.id===lojaId);
+      const coletada=!!motorState.checkins?.[lojaId]?.done;
+      const ok=await confirmarAcao({
+        titulo:'Remover parada?',
+        mensagem:coletada
+          ?`Atenção: "${loja?.nome}" já tem check-in de coleta registrado. Remover a parada NÃO apaga o check-in já feito, só tira essa loja da lista da rota.`
+          :`A loja "${loja?.nome}" será removida desta rota.`,
+        textoConfirmar:'Remover'
+      });
+      if(!ok)return;
+      const idx=rota.lojas.findIndex(l=>l.id===lojaId);
+      if(idx>=0) rota.lojas.splice(idx,1);
+      rota.nLojas=rota.lojas.length;
+      salvarRotasSalvas();
+      mostrarToast('Parada removida.','sucesso');
+      _renderEditarRota();
+    });
+  });
+  document.querySelectorAll('[data-add-parada]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const forn=FORNS_ROT.find(f=>f.id===btn.dataset.addParada);
+      if(!forn)return;
+      if(!rota.lojas) rota.lojas=[];
+      rota.lojas.push({id:`${rota.id}_${forn.id}`,nome:forn.nome,cidade:forn.cidade,marca:forn.rede||forn.marca,endereco:forn.endereco,dist:0});
+      rota.nLojas=rota.lojas.length;
+      salvarRotasSalvas();
+      mostrarToast('Parada adicionada.','sucesso');
+      rotEditState.buscaLoja='';
+      _renderEditarRota();
+    });
+  });
 }
 
 // ── ALERTAS WHATSAPP ──────────────────────────────────────────────────────────
@@ -4912,48 +5013,83 @@ function renderFiscal(tipo){
 }
 
 // ── TRIAGEM ───────────────────────────────────────────────────────────────────
+let triagemNavState={camId:null};
 function renderTriagemLista(){
   sincronizarCaminhoesConf();
-  const conf=CAMINHOES_CONF.filter(c=>c.status==='conferido');
+  if(triagemNavState.camId) return renderTriagemLojas(triagemNavState.camId);
+  const conf=CAMINHOES_CONF.filter(c=>c.status==='conferido'||c.status==='triado');
   document.getElementById('content-area').innerHTML=`
     ${btnBack()}
-    <div class="mod-header"><div class="mod-header-icon teal"><i class="ti ti-filter"></i></div><div><h2>Triagem de pneus</h2><span>Por categoria e aro</span></div></div>
+    <div class="mod-header"><div class="mod-header-icon teal"><i class="ti ti-filter"></i></div><div><h2>Triagem de pneus</h2><span>Por loja, categoria e aro</span></div></div>
     ${conf.length===0?`<div class="empty"><i class="ti ti-truck-off"></i><p>Nenhum caminhão conferido disponível.</p></div>`:''}
-    ${conf.map(c=>`<div class="card" style="display:flex;align-items:center;gap:12px;cursor:pointer" id="triagem-cam-${c.id}">
+    ${conf.map(c=>{
+      const totalLojas=(c.lojas||[]).length;
+      const lojasTriadas=(c.lojas||[]).filter(l=>triagemState.salvas[l.id]).length;
+      const completo=totalLojas>0&&lojasTriadas===totalLojas;
+      return `<div class="card" style="display:flex;align-items:center;gap:12px;cursor:pointer" id="triagem-cam-${c.id}">
       <div class="mod-icon teal"><i class="ti ti-filter"></i></div>
       <div style="flex:1">
         <strong style="font-size:15px;letter-spacing:.04em;display:block">${c.placa}</strong>
         <span style="font-size:12px;color:var(--text2)">${c.motorista} · ${c.rota}</span>
-        <div style="font-size:13px;font-weight:600;color:var(--teal);margin-top:4px">${c.totalPneus} pneus para triar</div>
+        <div style="font-size:13px;font-weight:600;color:var(--teal);margin-top:4px">${c.totalPneus} pneus · ${lojasTriadas}/${totalLojas} loja${totalLojas!==1?'s':''} triada${totalLojas!==1?'s':''}</div>
       </div>
+      ${completo?'<span class="badge verde">Completo</span>':''}
       <i class="ti ti-chevron-right" style="color:var(--text3);font-size:16px"></i>
-    </div>`).join('')}`;
+    </div>`;}).join('')}`;
   bindBack();
   conf.forEach(c=>{
-    document.getElementById(`triagem-cam-${c.id}`)?.addEventListener('click',()=>renderTriagemGrade(c.id));
+    document.getElementById(`triagem-cam-${c.id}`)?.addEventListener('click',()=>{triagemNavState.camId=c.id;renderTriagemLojas(c.id);});
   });
 }
 
-function renderTriagemGrade(camId){
+function renderTriagemLojas(camId){
+  sincronizarCaminhoesConf();
   const cam=CAMINHOES_CONF.find(c=>c.id===camId);
-  if(!triagemGrade[camId]) triagemGrade[camId]={};
-  CATS_TRIAGEM.forEach(cat=>{
-    if(!triagemGrade[camId][cat.id]) triagemGrade[camId][cat.id]={};
-    AROS_FULL.forEach(a=>{if(!triagemGrade[camId][cat.id][a]) triagemGrade[camId][cat.id][a]=0;});
+  if(!cam){ triagemNavState.camId=null; renderTriagemLista(); return; }
+  document.getElementById('content-area').innerHTML=`
+    <button class="btn btn-secondary btn-sm" id="btn-voltar-triagem-cam" style="margin-bottom:1rem"><i class="ti ti-arrow-left"></i> Caminhões</button>
+    <div class="mod-header"><div class="mod-header-icon teal"><i class="ti ti-filter"></i></div><div><h2>${cam.placa}</h2><span>${cam.motorista} · ${cam.rota}</span></div></div>
+    ${(cam.lojas||[]).length===0?`<div class="empty"><i class="ti ti-building-store"></i><p>Essa rota não tem lojas registradas.</p></div>`:''}
+    ${(cam.lojas||[]).map(l=>{
+      const salva=triagemState.salvas[l.id];
+      return `<div class="card" style="display:flex;align-items:center;gap:12px;cursor:pointer" id="triagem-loja-${l.id}">
+      <div class="mod-icon ${salva?'verde':'teal'}"><i class="ti ti-${salva?'circle-check':'building-store'}"></i></div>
+      <div style="flex:1;min-width:0">
+        <strong style="font-size:14px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(l.nome)}</strong>
+        <span style="font-size:12px;color:var(--text2)">${l.marca?escapeHtml(l.marca)+' · ':''}${l.pneus} pneus para triar</span>
+      </div>
+      <span class="badge ${salva?'verde':'laranja'}">${salva?'Triada':'Pendente'}</span>
+      <i class="ti ti-chevron-right" style="color:var(--text3);font-size:16px"></i>
+    </div>`;}).join('')}`;
+  document.getElementById('btn-voltar-triagem-cam')?.addEventListener('click',()=>{triagemNavState.camId=null;renderTriagemLista();});
+  (cam.lojas||[]).forEach(l=>{
+    document.getElementById(`triagem-loja-${l.id}`)?.addEventListener('click',()=>renderTriagemGrade(l.id,camId));
   });
-  const tot=CATS_TRIAGEM.reduce((s,c)=>s+AROS_FULL.reduce((ss,a)=>ss+(parseInt(triagemGrade[camId][c.id][a])||0),0),0);
-  const valido=tot===cam.totalPneus;
-  const pct=Math.min(100,Math.round(tot/cam.totalPneus*100));
+}
+
+function renderTriagemGrade(lojaId,camId){
+  const cam=CAMINHOES_CONF.find(c=>c.id===camId);
+  const loja=cam?.lojas?.find(l=>l.id===lojaId);
+  if(!cam||!loja){ triagemNavState.camId=null; renderTriagemLista(); return; }
+  if(!triagemGrade[lojaId]) triagemGrade[lojaId]={};
+  CATS_TRIAGEM.forEach(cat=>{
+    if(!triagemGrade[lojaId][cat.id]) triagemGrade[lojaId][cat.id]={};
+    AROS_FULL.forEach(a=>{if(!triagemGrade[lojaId][cat.id][a]) triagemGrade[lojaId][cat.id][a]=0;});
+  });
+  const tot=CATS_TRIAGEM.reduce((s,c)=>s+AROS_FULL.reduce((ss,a)=>ss+(parseInt(triagemGrade[lojaId][c.id][a])||0),0),0);
+  const totalLoja=loja.pneus;
+  const valido=tot===totalLoja;
+  const pct=totalLoja>0?Math.min(100,Math.round(tot/totalLoja*100)):0;
 
   document.getElementById('content-area').innerHTML=`
-    <button class="btn btn-secondary btn-sm" id="btn-back-triagem" style="margin-bottom:1rem"><i class="ti ti-arrow-left"></i> Caminhões</button>
-    <div class="mod-header"><div class="mod-header-icon teal"><i class="ti ti-filter"></i></div><div><h2>${cam.placa}</h2><span>${cam.totalPneus} pneus para triar</span></div></div>
-    <div class="prog-wrap"><div class="prog-bar${tot>cam.totalPneus?' err':valido?'':' warn'}" style="width:${pct}%"></div></div>
+    <button class="btn btn-secondary btn-sm" id="btn-back-triagem" style="margin-bottom:1rem"><i class="ti ti-arrow-left"></i> ${cam.placa}</button>
+    <div class="mod-header"><div class="mod-header-icon teal"><i class="ti ti-filter"></i></div><div><h2>${escapeHtml(loja.nome)}</h2><span>${totalLoja} pneus para triar</span></div></div>
+    <div class="prog-wrap"><div class="prog-bar${tot>totalLoja?' err':valido?'':' warn'}" id="triagem-prog-bar" style="width:${pct}%"></div></div>
     <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:12px">
-      <span>Lançado: <strong style="color:var(--text)">${tot}</strong> de <strong>${cam.totalPneus}</strong></span>
-      <span style="font-weight:600;color:${tot>cam.totalPneus?'var(--red)':valido?'var(--green)':'var(--orange)'}">${tot>cam.totalPneus?`${tot-cam.totalPneus} a mais — corrija`:valido?'✓ Completo':`Faltam ${cam.totalPneus-tot}`}</span>
+      <span>Lançado: <strong style="color:var(--text)" id="triagem-lancado">${tot}</strong> de <strong>${totalLoja}</strong></span>
+      <span style="font-weight:600;color:${tot>totalLoja?'var(--red)':valido?'var(--green)':'var(--orange)'}" id="triagem-faltam">${tot>totalLoja?`${tot-totalLoja} a mais — corrija`:valido?'✓ Completo':`Faltam ${totalLoja-tot}`}</span>
     </div>
-    ${valido?`<div class="alert verde"><i class="ti ti-circle-check"></i><p>Total confere! Pronto para confirmar.</p></div>`:''}
+    <div id="triagem-alerta-completo">${valido?`<div class="alert verde"><i class="ti ti-circle-check"></i><p>Total confere! Pronto para confirmar.</p></div>`:''}</div>
     <div class="grade-scroll">
       <table class="grade" id="triagem-grade">
         <thead><tr>
@@ -4963,12 +5099,12 @@ function renderTriagemGrade(camId){
         </tr></thead>
         <tbody>
           ${CATS_TRIAGEM.map(cat=>{
-            const catTot=AROS_FULL.reduce((s,a)=>s+(parseInt(triagemGrade[camId][cat.id][a])||0),0);
+            const catTot=AROS_FULL.reduce((s,a)=>s+(parseInt(triagemGrade[lojaId][cat.id][a])||0),0);
             return `<tr>
               <td class="cat-label" style="color:${cat.cor}">${cat.nome}</td>
               ${AROS_FULL.map(a=>{
-                const v=parseInt(triagemGrade[camId][cat.id][a])||0;
-                return `<td style="text-align:center;padding:2px"><input class="cell-inp${v>0?' tem':''}" type="number" inputmode="numeric" min="0" max="999" value="${v||''}" placeholder="·" data-cam="${camId}" data-cat="${cat.id}" data-aro="${a}"></td>`;
+                const v=parseInt(triagemGrade[lojaId][cat.id][a])||0;
+                return `<td style="text-align:center;padding:2px"><input class="cell-inp${v>0?' tem':''}" type="number" inputmode="numeric" min="0" max="999" value="${v||''}" placeholder="·" data-loja="${lojaId}" data-cat="${cat.id}" data-aro="${a}"></td>`;
               }).join('')}
               <td class="tot-col${catTot>0?' tem':''}" id="tcat-${cat.id}">${catTot||'—'}</td>
             </tr>`;
@@ -4976,7 +5112,7 @@ function renderTriagemGrade(camId){
           <tr class="total-row">
             <td style="text-align:left;padding-left:6px;font-size:10px;text-transform:uppercase;letter-spacing:.04em">Total aro</td>
             ${AROS_FULL.map(a=>{
-              const t=CATS_TRIAGEM.reduce((s,c)=>s+(parseInt(triagemGrade[camId][c.id][a])||0),0);
+              const t=CATS_TRIAGEM.reduce((s,c)=>s+(parseInt(triagemGrade[lojaId][c.id][a])||0),0);
               return `<td id="taro-${a}">${t||'—'}</td>`;
             }).join('')}
             <td class="geral${valido?' ok':''}" id="tgeral">${tot||'—'}</td>
@@ -4985,44 +5121,63 @@ function renderTriagemGrade(camId){
       </table>
     </div>
     <button class="btn btn-primary btn-block${valido?'':' btn-dis'}" id="btn-confirmar-triagem" style="margin-top:12px;font-size:15px;padding:13px">
-      <i class="ti ti-${valido?'device-floppy':'lock'}"></i> ${valido?'Confirmar triagem':`Preencha a grade — faltam ${cam.totalPneus-tot}`}
+      <i class="ti ti-${valido?'device-floppy':'lock'}"></i> ${valido?'Confirmar triagem':`Preencha a grade — faltam ${totalLoja-tot}`}
     </button>`;
 
-  document.getElementById('btn-back-triagem')?.addEventListener('click',renderTriagemLista);
-  document.querySelectorAll('.cell-inp[data-cam]').forEach(inp=>{
+  document.getElementById('btn-back-triagem')?.addEventListener('click',()=>renderTriagemLojas(camId));
+  document.querySelectorAll('.cell-inp[data-loja]').forEach(inp=>{
     inp.addEventListener('focus',()=>inp.select());
     inp.addEventListener('input',()=>{
-      const {cam:cId,cat,aro}=inp.dataset;
+      const {loja:lId,cat,aro}=inp.dataset;
       const val=Math.max(0,parseInt(inp.value)||0);
-      triagemGrade[cId][cat][aro]=val;
+      triagemGrade[lId][cat][aro]=val;
       inp.value=val||'';
       inp.className='cell-inp'+(val>0?' tem':'');
-      const catTot=AROS_FULL.reduce((s,a)=>s+(parseInt(triagemGrade[cId][cat][a])||0),0);
-      const aroTot=CATS_TRIAGEM.reduce((s,c)=>s+(parseInt(triagemGrade[cId][c.id][aro])||0),0);
-      const geral=CATS_TRIAGEM.reduce((s,c)=>s+AROS_FULL.reduce((ss,a)=>ss+(parseInt(triagemGrade[cId][c.id][a])||0),0),0);
-      const camTot=CAMINHOES_CONF.find(c=>c.id===cId)?.totalPneus||0;
-      const ok=geral===camTot;
+      const catTot=AROS_FULL.reduce((s,a)=>s+(parseInt(triagemGrade[lId][cat][a])||0),0);
+      const aroTot=CATS_TRIAGEM.reduce((s,c)=>s+(parseInt(triagemGrade[lId][c.id][aro])||0),0);
+      const geral=CATS_TRIAGEM.reduce((s,c)=>s+AROS_FULL.reduce((ss,a)=>ss+(parseInt(triagemGrade[lId][c.id][a])||0),0),0);
+      const lojaTot=totalLoja;
+      const ok=geral===lojaTot;
       const elC=document.getElementById(`tcat-${cat}`);if(elC){elC.textContent=catTot||'—';elC.className='tot-col'+(catTot>0?' tem':'');}
       const elA=document.getElementById(`taro-${aro}`);if(elA)elA.textContent=aroTot||'—';
       const elG=document.getElementById('tgeral');if(elG){elG.textContent=geral||'—';elG.className='geral'+(ok?' ok':'');}
       const btn=document.getElementById('btn-confirmar-triagem');
-      if(btn){if(ok){btn.innerHTML=`<i class="ti ti-device-floppy"></i> Confirmar triagem`;btn.classList.remove('btn-dis');}else{btn.innerHTML=`<i class="ti ti-lock"></i> Preencha a grade — faltam ${Math.max(0,camTot-geral)}`;btn.classList.add('btn-dis');}}
+      if(btn){if(ok){btn.innerHTML=`<i class="ti ti-device-floppy"></i> Confirmar triagem`;btn.classList.remove('btn-dis');}else{btn.innerHTML=`<i class="ti ti-lock"></i> Preencha a grade — faltam ${Math.max(0,lojaTot-geral)}`;btn.classList.add('btn-dis');}}
+      const elLanc=document.getElementById('triagem-lancado');if(elLanc)elLanc.textContent=geral;
+      const elFaltam=document.getElementById('triagem-faltam');
+      if(elFaltam){
+        elFaltam.textContent=geral>lojaTot?`${geral-lojaTot} a mais — corrija`:ok?'✓ Completo':`Faltam ${lojaTot-geral}`;
+        elFaltam.style.color=geral>lojaTot?'var(--red)':ok?'var(--green)':'var(--orange)';
+      }
+      const elBar=document.getElementById('triagem-prog-bar');
+      if(elBar){
+        elBar.style.width=(lojaTot>0?Math.min(100,Math.round(geral/lojaTot*100)):0)+'%';
+        elBar.className='prog-bar'+(geral>lojaTot?' err':ok?'':' warn');
+      }
+      const elAlerta=document.getElementById('triagem-alerta-completo');
+      if(elAlerta) elAlerta.innerHTML=ok?`<div class="alert verde"><i class="ti ti-circle-check"></i><p>Total confere! Pronto para confirmar.</p></div>`:'';
     });
   });
   document.getElementById('btn-confirmar-triagem')?.addEventListener('click',()=>{
-    const pctLixo=cam.totalPneus>0?Math.round(AROS_FULL.reduce((s,a)=>s+(parseInt(triagemGrade[camId]?.['lixo']?.[a]||0)),0)/cam.totalPneus*100):0;
-    window.wppDispararTriagem?.({placa:cam.placa,motorista:cam.motorista,total:cam.totalPneus,lixo:AROS_FULL.reduce((s,a)=>s+(parseInt(triagemGrade[camId]?.['lixo']?.[a]||0)),0),pct:pctLixo});
-    // Grava o resultado da triagem (antes essas funções existiam mas nunca
-    // eram chamadas) e fecha o ciclo da rota real: aguardando -> em_rota ->
-    // aguardando_conferencia -> conferido -> triado.
-    triagemState.salvas[camId]={grade:triagemGrade[camId], confirmadoEm:new Date().toISOString(), placa:cam.placa, totalPneus:cam.totalPneus};
+    const lixoLoja=AROS_FULL.reduce((s,a)=>s+(parseInt(triagemGrade[lojaId]?.['lixo']?.[a]||0)),0);
+    const pctLixo=totalLoja>0?Math.round(lixoLoja/totalLoja*100):0;
+    window.wppDispararTriagem?.({placa:cam.placa,motorista:cam.motorista,total:totalLoja,lixo:lixoLoja,pct:pctLixo});
+    // Grava o resultado da triagem por loja (não mais por caminhão inteiro) —
+    // cada parada da rota tem sua própria triagem, já que os itens coletados
+    // em cada loja podem ter categorias/custos diferentes entre si.
+    triagemState.salvas[lojaId]={grade:triagemGrade[lojaId],confirmadoEm:new Date().toISOString(),loja:loja.nome,placa:cam.placa,totalPneus:totalLoja,camId};
     salvarTriagemSalvas();
+    // A rota/caminhão só passa para "triado" quando TODAS as lojas dela já
+    // tiverem sua triagem confirmada individualmente.
     const rota=rotState.rotasSalvas.find(r=>r.id===camId);
-    if(rota) rota.status='triado';
-    salvarRotasSalvas();
+    if(rota){
+      const todasTriadas=(rota.lojas||[]).every(l=>triagemState.salvas[l.id]);
+      if(todasTriadas) rota.status='triado';
+      salvarRotasSalvas();
+    }
     sincronizarCaminhoesConf();
-    mostrarToast('Triagem confirmada!'+(pctLixo>=(window.wppCfg?.limiteTriagem||30)?' Alerta WhatsApp enviado ('+pctLixo+'% lixo).':' Dados enviados ao gestor.'),'sucesso');
-    renderTriagemLista();
+    mostrarToast('Triagem da loja confirmada!'+(pctLixo>=(window.wppCfg?.limiteTriagem||30)?' Alerta WhatsApp enviado ('+pctLixo+'% lixo).':''),'sucesso');
+    renderTriagemLojas(camId);
   });
 }
 
