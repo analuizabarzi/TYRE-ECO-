@@ -919,6 +919,7 @@ function renderDashboard(){
   const mods={
     gestor:[
       {id:'rota',icon:'ti-route-2',cor:'verde',nome:'Roterizador',desc:'Criar e gerenciar rotas'},
+      {id:'painel_frota',icon:'ti-truck',cor:'azul',nome:'Painel de Frota',desc:'Todas as placas, filtrar por motorista'},
       {id:'cadastros',icon:'ti-settings',cor:'roxo',nome:'Cadastros',desc:'Volumes m³ e capacidades'},
       {id:'financeiro',icon:'ti-report-money',cor:'laranja',nome:'Financeiro',desc:'Fechamento de rotas'},
       {id:'financeiro_relatorios',icon:'ti-report-analytics',cor:'vermelho',nome:'Relatórios',desc:'Filtrar vendas, pagamentos e NFs'},
@@ -957,6 +958,7 @@ function renderDashboard(){
     ],
     logistica:[
       {id:'rota',icon:'ti-route-2',cor:'verde',nome:'Roterizador',desc:'Criar e gerenciar rotas'},
+      {id:'painel_frota',icon:'ti-truck',cor:'azul',nome:'Painel de Frota',desc:'Todas as placas, filtrar por motorista'},
       {id:'logistica_painel',icon:'ti-layout-dashboard',cor:'azul',nome:'Painel de Motoristas',desc:'Acompanhar rotas e check-ins'},
     ],
     gestor_rede:[
@@ -1007,7 +1009,7 @@ function modulosPermitidos(modsPorPerfil, perfil){
 function idsModulosPermitidos(){
   const perfil=usuarioAtual.perfil;
   const mods={
-    gestor:['rota','cadastros','financeiro','financeiro_relatorios','nf_emitir','dashboard_gestor','alertas','importar_dados','usuarios'],
+    gestor:['rota','cadastros','financeiro','financeiro_relatorios','nf_emitir','dashboard_gestor','alertas','importar_dados','usuarios','painel_frota'],
     motorista:['motorista_rota','motorista_checkin','motorista_hist'],
     conferente:['conf_lista'],
     fiscal:['fiscal_entrada','fiscal_saida'],
@@ -1015,7 +1017,7 @@ function idsModulosPermitidos(){
     vendas:['vendas_nova','vendas_hist'],
     financeiro:['financeiro','financeiro_relatorios','importar_dados'],
     emissao_nf:['nf_emitir'],
-    logistica:['rota','logistica_painel'],
+    logistica:['rota','logistica_painel','painel_frota'],
   };
   if(!usuarioAtual.permissoes) return new Set(mods[perfil]||[]);
   return new Set(Object.keys(usuarioAtual.permissoes).filter(id=>usuarioAtual.permissoes[id]));
@@ -1042,6 +1044,7 @@ function abrirModulo(id){
     'vendas_nova':()=>{vendasState.tela='cliente';renderVendas();},'vendas_hist':renderVendasHist,
     'usuarios':renderUsuarios,
     'logistica_painel':renderPainelMotoristas,
+    'painel_frota':renderPainelFrota,
     'coletas_rede':renderHistoricoColetas,
   };
   mapa[id]?.();
@@ -1083,11 +1086,12 @@ const MODULOS_TODOS=[
   {id:'vendas_nova',nome:'Nova venda'},
   {id:'vendas_hist',nome:'Histórico de vendas'},
   {id:'logistica_painel',nome:'Painel de Motoristas'},
+  {id:'painel_frota',nome:'Painel de Frota'},
   {id:'coletas_rede',nome:'Histórico de Coletas (portal cliente)'},
 ];
 // Permissões padrão sugeridas ao escolher cada perfil (o gestor pode ajustar antes de criar)
 const PERFIL_MODULOS_PADRAO={
-  gestor:['rota','cadastros','financeiro','financeiro_relatorios','nf_emitir','dashboard_gestor','alertas','importar_dados','usuarios'],
+  gestor:['rota','cadastros','financeiro','financeiro_relatorios','nf_emitir','dashboard_gestor','alertas','importar_dados','usuarios','painel_frota'],
   motorista:['motorista_rota','motorista_checkin','motorista_hist'],
   conferente:['conf_lista'],
   fiscal:['fiscal_entrada','fiscal_saida'],
@@ -1095,7 +1099,7 @@ const PERFIL_MODULOS_PADRAO={
   vendas:['vendas_nova','vendas_hist'],
   financeiro:['financeiro','financeiro_relatorios','importar_dados'],
   emissao_nf:['nf_emitir'],
-  logistica:['rota','logistica_painel'],
+  logistica:['rota','logistica_painel','painel_frota'],
   gestor_rede:['coletas_rede'],
   gerente_loja:['coletas_rede'],
 };
@@ -1821,6 +1825,74 @@ function renderHistoricoColetas(){
       </div>`;
     }).join('')}`;
   bindBack();
+}
+// ── Painel de Frota: visão geral de todas as placas, com filtro por placa e motorista ──
+let frotaState={filtroPlaca:'',filtroMotorista:''};
+const FROTA_STATUS_LABEL={aguardando:'Aguardando saída',em_rota:'Em rota',aguardando_conferencia:'Aguard. conferência',conferido:'Conferido',triado:'Triado'};
+const FROTA_STATUS_COR={aguardando:'laranja',em_rota:'azul',aguardando_conferencia:'roxo',conferido:'teal',triado:'verde'};
+function renderPainelFrota(){
+  telaAtual='painel_frota';
+  const placasUnicas=[...new Set([...VEICULOS_ROT.map(v=>v.placa),...rotState.rotasSalvas.map(r=>r.placa)].filter(Boolean))].sort();
+  const motoristasUnicos=[...new Set(rotState.rotasSalvas.map(r=>r.motoristaNome).filter(Boolean))].sort();
+
+  let registros=placasUnicas.map(placa=>{
+    const rotasVeiculo=[...rotState.rotasSalvas].filter(r=>r.placa===placa).sort((a,b)=>(b.criadaEm||'').localeCompare(a.criadaEm||''));
+    const atual=rotasVeiculo[0]||null;
+    const veic=VEICULOS_ROT.find(v=>v.placa===placa);
+    return {
+      placa, modelo:veic?.modelo||'',
+      motorista:atual?.motoristaNome||'',
+      status:atual?.status||null,
+      rotaNome:atual?.nome||'',
+      kmTotal:atual?.kmTotal||0,
+      pneus:atual?totalPneusRota(atual):0,
+      nLojas:atual?.nLojas||(atual?.lojas||[]).length||0,
+      criadaEm:atual?.criadaEm||'',
+      totalRotas:rotasVeiculo.length,
+    };
+  });
+
+  if(frotaState.filtroPlaca) registros=registros.filter(r=>r.placa===frotaState.filtroPlaca);
+  if(frotaState.filtroMotorista) registros=registros.filter(r=>r.motorista===frotaState.filtroMotorista);
+
+  const emRota=registros.filter(r=>r.status==='em_rota').length;
+  const aguardando=registros.filter(r=>r.status==='aguardando').length;
+  const semRotaAtiva=registros.filter(r=>!r.status).length;
+
+  document.getElementById('content-area').innerHTML=`
+    ${btnBack('Dashboard')}
+    <div class="mod-header"><div class="mod-header-icon azul"><i class="ti ti-truck"></i></div><div><h2>Painel de Frota</h2><span>${placasUnicas.length} placa${placasUnicas.length!==1?'s':''} no total</span></div></div>
+    <div class="stat-grid-3">
+      <div class="stat-box azul"><div class="sv">${emRota}</div><div class="sl">Em rota</div></div>
+      <div class="stat-box laranja"><div class="sv">${aguardando}</div><div class="sl">Aguardando</div></div>
+      <div class="stat-box"><div class="sv">${semRotaAtiva}</div><div class="sl">Sem rota ativa</div></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:1rem">
+      <select class="login-input" id="frota-filtro-placa" style="flex:1">
+        <option value="">Todas as placas</option>
+        ${placasUnicas.map(p=>`<option value="${p}" ${frotaState.filtroPlaca===p?'selected':''}>${p}</option>`).join('')}
+      </select>
+      <select class="login-input" id="frota-filtro-motorista" style="flex:1">
+        <option value="">Todos os motoristas</option>
+        ${motoristasUnicos.map(m=>`<option value="${escapeHtml(m)}" ${frotaState.filtroMotorista===m?'selected':''}>${escapeHtml(m)}</option>`).join('')}
+      </select>
+    </div>
+    ${(frotaState.filtroPlaca||frotaState.filtroMotorista)?`<button class="btn btn-secondary btn-sm btn-block" id="frota-limpar-filtro" style="margin-bottom:1rem"><i class="ti ti-x"></i> Limpar filtros</button>`:''}
+    ${registros.length===0?`<div class="empty"><i class="ti ti-truck-off"></i><p>Nenhuma placa encontrada com esse filtro.</p></div>`:''}
+    ${registros.map(r=>`<div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <strong style="font-size:15px;letter-spacing:.04em">${r.placa}</strong>
+        ${r.status?`<span class="badge ${FROTA_STATUS_COR[r.status]||'cinza'}">${FROTA_STATUS_LABEL[r.status]||r.status}</span>`:'<span class="badge cinza">Sem rota ativa</span>'}
+      </div>
+      ${r.modelo?`<div style="font-size:12px;color:var(--text2);margin-bottom:6px">${escapeHtml(r.modelo)}</div>`:''}
+      ${r.motorista?`<div style="font-size:13px;margin-bottom:4px"><i class="ti ti-user" style="font-size:12px;color:var(--text2)"></i> ${escapeHtml(r.motorista)}</div>`:'<div style="font-size:12px;color:var(--text3);margin-bottom:4px">Nenhum motorista atribuído</div>'}
+      ${r.rotaNome?`<div style="font-size:12px;color:var(--text2)">Rota: <strong style="color:var(--text)">${escapeHtml(r.rotaNome)}</strong> · ${r.nLojas} loja${r.nLojas!==1?'s':''} · ~${Math.round(r.kmTotal)} km${r.pneus?' · '+r.pneus+' pneus':''}</div>`:''}
+      <div style="font-size:11px;color:var(--text3);margin-top:6px">${r.totalRotas} rota${r.totalRotas!==1?'s':''} no histórico</div>
+    </div>`).join('')}`;
+  bindBack();
+  document.getElementById('frota-filtro-placa')?.addEventListener('change',e=>{frotaState.filtroPlaca=e.target.value;renderPainelFrota();});
+  document.getElementById('frota-filtro-motorista')?.addEventListener('change',e=>{frotaState.filtroMotorista=e.target.value;renderPainelFrota();});
+  document.getElementById('frota-limpar-filtro')?.addEventListener('click',()=>{frotaState={filtroPlaca:'',filtroMotorista:''};renderPainelFrota();});
 }
 function renderPainelMotoristas(){
   telaAtual='logistica_painel';
