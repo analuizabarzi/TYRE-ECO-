@@ -495,7 +495,7 @@ async function carregarDadosColaborativos(){
     carregarDespesas(), carregarContasReceber(), carregarVendasHistorico(),
     carregarMotoristaCheckins(), carregarConferencias(), carregarTriagemSalvas(),
     carregarFichasNF(), carregarRotasSalvas(), carregarPlanoContas(), carregarContasPagar(),
-    carregarHistoricoImportacoes()
+    carregarHistoricoImportacoes(), carregarRedesContato()
   ]);
 }
 let triagemGrade={};
@@ -852,7 +852,7 @@ auth.onAuthStateChanged(async (user)=>{
       await auth.signOut();
       return;
     }
-    usuarioAtual={uid:user.uid, login:p.login, nome:p.nome, perfil:p.perfil, cor:p.cor, permissoes:p.permissoes||null};
+    usuarioAtual={uid:user.uid, login:p.login, nome:p.nome, perfil:p.perfil, cor:p.cor, permissoes:p.permissoes||null, escopoRede:p.escopoRede||null, escopoLojaId:p.escopoLojaId||null};
     document.getElementById('tela-login').style.display='none';
     document.getElementById('app').style.display='flex';
     document.getElementById('topbar-titulo').textContent='Tyre Eco';
@@ -872,7 +872,7 @@ auth.onAuthStateChanged(async (user)=>{
 // ── Gestão de colaboradores (só para o perfil "gestor") ─────────────────────
 // Cria um login novo sem derrubar a sessão de quem está criando: abre um app
 // Firebase secundário só para o createUser, depois descarta.
-async function criarColaborador({login, senha, nome, perfil, cor, permissoes}){
+async function criarColaborador({login, senha, nome, perfil, cor, permissoes, escopoRede, escopoLojaId}){
   const email=emailDoLogin(login);
   const nomeApp='secundario-'+Date.now();
   const appSecundario=firebase.initializeApp(firebaseConfig, nomeApp);
@@ -880,6 +880,7 @@ async function criarColaborador({login, senha, nome, perfil, cor, permissoes}){
     const cred=await appSecundario.auth().createUserWithEmailAndPassword(email, senha);
     await db.collection('usuarios').doc(cred.user.uid).set({
       login: login.toLowerCase(), nome, perfil, cor, email, ativo:true, permissoes: permissoes||null,
+      escopoRede: escopoRede||null, escopoLojaId: escopoLojaId||null,
       criadoEm: firebase.firestore.FieldValue.serverTimestamp(),
       criadoPor: usuarioAtual?.nome || null
     });
@@ -958,6 +959,12 @@ function renderDashboard(){
       {id:'rota',icon:'ti-route-2',cor:'verde',nome:'Roterizador',desc:'Criar e gerenciar rotas'},
       {id:'logistica_painel',icon:'ti-layout-dashboard',cor:'azul',nome:'Painel de Motoristas',desc:'Acompanhar rotas e check-ins'},
     ],
+    gestor_rede:[
+      {id:'coletas_rede',icon:'ti-history',cor:'azul',nome:'Histórico de Coletas',desc:`Todas as lojas ${usuarioAtual?.escopoRede||'da rede'}`},
+    ],
+    gerente_loja:[
+      {id:'coletas_rede',icon:'ti-history',cor:'teal',nome:'Histórico de Coletas',desc:'Coletas da sua loja'},
+    ],
   };
 
   const items = modulosPermitidos(mods, perfil);
@@ -1035,6 +1042,7 @@ function abrirModulo(id){
     'vendas_nova':()=>{vendasState.tela='cliente';renderVendas();},'vendas_hist':renderVendasHist,
     'usuarios':renderUsuarios,
     'logistica_painel':renderPainelMotoristas,
+    'coletas_rede':renderHistoricoColetas,
   };
   mapa[id]?.();
 }
@@ -1050,6 +1058,8 @@ const PERFIS_DISPONIVEIS=[
   {id:'vendas',nome:'Vendas',cor:'amarelo'},
   {id:'financeiro',nome:'Financeiro',cor:'vermelho'},
   {id:'emissao_nf',nome:'Emissão de NF',cor:'roxo'},
+  {id:'gestor_rede',nome:'Gestor de Rede (portal cliente)',cor:'azul'},
+  {id:'gerente_loja',nome:'Gerente de Loja (portal cliente)',cor:'teal'},
 ];
 
 // Lista mestra de todos os módulos existentes no sistema (usada na tela de permissões)
@@ -1073,6 +1083,7 @@ const MODULOS_TODOS=[
   {id:'vendas_nova',nome:'Nova venda'},
   {id:'vendas_hist',nome:'Histórico de vendas'},
   {id:'logistica_painel',nome:'Painel de Motoristas'},
+  {id:'coletas_rede',nome:'Histórico de Coletas (portal cliente)'},
 ];
 // Permissões padrão sugeridas ao escolher cada perfil (o gestor pode ajustar antes de criar)
 const PERFIL_MODULOS_PADRAO={
@@ -1085,6 +1096,8 @@ const PERFIL_MODULOS_PADRAO={
   financeiro:['financeiro','financeiro_relatorios','importar_dados'],
   emissao_nf:['nf_emitir'],
   logistica:['rota','logistica_painel'],
+  gestor_rede:['coletas_rede'],
+  gerente_loja:['coletas_rede'],
 };
 function htmlChecklistPermissoes(groupId, permissoesAtivas){
   return `<div data-permgroup="${groupId}">${MODULOS_TODOS.map(m=>`<label style="display:flex;align-items:center;gap:8px;font-size:13px;padding:5px 0;border-bottom:1px solid var(--border-light)">
@@ -1093,6 +1106,22 @@ function htmlChecklistPermissoes(groupId, permissoesAtivas){
   </label>`).join('')}</div>`;
 }
 
+function htmlEscopoPortal(perfil,valorAtual){
+  if(perfil==='gestor_rede'){
+    const redes=[...new Set(FORNS_ROT.map(f=>f.rede||f.marca).filter(Boolean))].sort();
+    return `<div class="form-group"><label class="login-label">Rede que esse usuário acompanha</label>
+      <select class="login-input" id="usr-escopo-rede">
+        ${redes.length?redes.map(r=>`<option value="${escapeHtml(r)}" ${r===valorAtual?'selected':''}>${escapeHtml(r)}</option>`).join(''):'<option value="">Nenhuma rede cadastrada ainda</option>'}
+      </select></div>`;
+  }
+  if(perfil==='gerente_loja'){
+    return `<div class="form-group"><label class="login-label">Loja que esse usuário acompanha</label>
+      <select class="login-input" id="usr-escopo-loja">
+        ${FORNS_ROT.length?FORNS_ROT.map(f=>`<option value="${f.id}" ${f.id===valorAtual?'selected':''}>${escapeHtml(f.nome)} — ${escapeHtml(f.cidade||'')}</option>`).join(''):'<option value="">Nenhuma loja cadastrada ainda</option>'}
+      </select></div>`;
+  }
+  return '';
+}
 let usrPermState={editandoUid:null};
 async function renderUsuarios(){
   telaAtual='usuarios';
@@ -1109,6 +1138,7 @@ async function renderUsuarios(){
           ${PERFIS_DISPONIVEIS.map(p=>`<option value="${p.id}">${p.nome}</option>`).join('')}
         </select>
       </div>
+      <div id="usr-escopo-wrap">${htmlEscopoPortal('gestor')}</div>
       <div class="form-group">
         <label class="login-label">Permissões de acesso (marque o que este usuário pode ver)</label>
         <div id="usr-permissoes-lista" style="max-height:280px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:8px 10px">
@@ -1125,6 +1155,7 @@ async function renderUsuarios(){
   document.getElementById('usr-perfil').addEventListener('change',e=>{
     const padrao=PERFIL_MODULOS_PADRAO[e.target.value]||[];
     document.getElementById('usr-permissoes-lista').innerHTML=htmlChecklistPermissoes('novo',padrao);
+    document.getElementById('usr-escopo-wrap').innerHTML=htmlEscopoPortal(e.target.value);
   });
   document.getElementById('usr-criar').addEventListener('click', async ()=>{
     const nome=document.getElementById('usr-nome').value.trim();
@@ -1134,16 +1165,26 @@ async function renderUsuarios(){
     const cor=PERFIS_DISPONIVEIS.find(p=>p.id===perfilSel)?.cor||'verde';
     const permissoes={};
     document.querySelectorAll('#usr-permissoes-lista .perm-chk').forEach(chk=>{ permissoes[chk.dataset.mod]=chk.checked; });
+    const escopoRede=perfilSel==='gestor_rede'?(document.getElementById('usr-escopo-rede')?.value||''):null;
+    const escopoLojaId=perfilSel==='gerente_loja'?(document.getElementById('usr-escopo-loja')?.value||''):null;
     const erroEl=document.getElementById('usr-erro');
     erroEl.style.display='none';
     if(!nome||!login||senha.length<6){
       erroEl.textContent='Preencha nome, usuário e uma senha com pelo menos 6 caracteres.';
       erroEl.style.display='block'; return;
     }
+    if(perfilSel==='gestor_rede'&&!escopoRede){
+      erroEl.textContent='Selecione a rede que esse usuário vai acompanhar.';
+      erroEl.style.display='block'; return;
+    }
+    if(perfilSel==='gerente_loja'&&!escopoLojaId){
+      erroEl.textContent='Selecione a loja que esse usuário vai acompanhar.';
+      erroEl.style.display='block'; return;
+    }
     const btn=document.getElementById('usr-criar');
     btn.disabled=true; btn.innerHTML='<i class="ti ti-loader-2"></i> Criando...';
     try{
-      await criarColaborador({login, senha, nome, perfil:perfilSel, cor, permissoes});
+      await criarColaborador({login, senha, nome, perfil:perfilSel, cor, permissoes, escopoRede, escopoLojaId});
       renderUsuarios();
     }catch(err){
       erroEl.textContent = err.code==='auth/email-already-in-use' ? 'Já existe um usuário com esse login.' : ('Erro ao criar: '+(err.message||err));
@@ -1392,7 +1433,7 @@ function _renderRoteizador(){
   // ── TELA SELEÇÃO ──
   const ufs=['Todos',...new Set(FORNS_ROT.map(f=>f.uf))].sort();
   const b=s.busca.toLowerCase();
-  const lista=FORNS_ROT.filter(f=>(s.filtroUF==='Todos'||f.uf===s.filtroUF)&&(!b||f.nome.toLowerCase().includes(b)||f.cidade.toLowerCase().includes(b)));
+  const lista=FORNS_ROT.filter(f=>(s.filtroUF==='Todos'||f.uf===s.filtroUF)&&(!b||f.nome.toLowerCase().includes(b)||f.cidade.toLowerCase().includes(b)||(f.codLoja||'').toLowerCase().includes(b)));
   const cidades=[...new Set(lista.map(f=>f.cidade))];
   const nSel=s.sel.size;
   const todosVis=lista.length>0&&lista.every(f=>s.sel.has(f.id));
@@ -1463,7 +1504,7 @@ function _renderRoteizador(){
               ${sel?'<i class="ti ti-check" style="font-size:11px;color:#fff"></i>':''}
             </div>
             <div style="flex:1;min-width:0">
-              <strong style="font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${f.nome}</strong>
+              <strong style="font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${f.nome}${f.codLoja?` <span style="font-weight:400;color:var(--text2)">· ${f.codLoja}</span>`:''}</strong>
               <span style="font-size:11px;color:var(--text2)">${f.cidade}/${f.uf}</span>
             </div>
             <span class="badge ${f.marca==='CP'?'azul':'verde'}" style="flex-shrink:0">${f.marca}</span>
@@ -1502,7 +1543,7 @@ function _renderRoteizador(){
 
 function _gerarHTMLLista(s){
   const b=s.busca.toLowerCase();
-  const lista=FORNS_ROT.filter(f=>(s.filtroUF==='Todos'||f.uf===s.filtroUF)&&(!b||f.nome.toLowerCase().includes(b)||f.cidade.toLowerCase().includes(b)));
+  const lista=FORNS_ROT.filter(f=>(s.filtroUF==='Todos'||f.uf===s.filtroUF)&&(!b||f.nome.toLowerCase().includes(b)||f.cidade.toLowerCase().includes(b)||(f.codLoja||'').toLowerCase().includes(b)));
   const cidades=[...new Set(lista.map(f=>f.cidade))].sort();
   const todosVis=lista.length>0&&lista.every(f=>s.sel.has(f.id));
   const algunsVis=lista.some(f=>s.sel.has(f.id));
@@ -1527,7 +1568,7 @@ function _gerarHTMLLista(s){
 }
 
 function _bindListaLojas(){
-  document.getElementById('rot-todos-wrap')?.addEventListener('click',()=>{const s=rotState;const b=s.busca.toLowerCase();const lista=FORNS_ROT.filter(f=>(s.filtroUF==='Todos'||f.uf===s.filtroUF)&&(!b||f.nome.toLowerCase().includes(b)||f.cidade.toLowerCase().includes(b)));const todosOn=lista.every(f=>s.sel.has(f.id));lista.forEach(f=>todosOn?s.sel.delete(f.id):s.sel.add(f.id));_atualizarListaLojas();});
+  document.getElementById('rot-todos-wrap')?.addEventListener('click',()=>{const s=rotState;const b=s.busca.toLowerCase();const lista=FORNS_ROT.filter(f=>(s.filtroUF==='Todos'||f.uf===s.filtroUF)&&(!b||f.nome.toLowerCase().includes(b)||f.cidade.toLowerCase().includes(b)||(f.codLoja||'').toLowerCase().includes(b)));const todosOn=lista.every(f=>s.sel.has(f.id));lista.forEach(f=>todosOn?s.sel.delete(f.id):s.sel.add(f.id));_atualizarListaLojas();});
   document.querySelectorAll('.rot-forn-row').forEach(el=>el.addEventListener('click',()=>{const id=el.dataset.fid;rotState.sel.has(id)?rotState.sel.delete(id):rotState.sel.add(id);_atualizarListaLojas();}));
   document.querySelectorAll('.rot-cidade-btn').forEach(el=>el.addEventListener('click',e=>{e.stopPropagation();const cidade=el.dataset.cidade;const dc=FORNS_ROT.filter(f=>f.cidade===cidade);const on=dc.every(f=>rotState.sel.has(f.id));dc.forEach(f=>on?rotState.sel.delete(f.id):rotState.sel.add(f.id));_atualizarListaLojas();}));
 }
@@ -1719,6 +1760,68 @@ function salvarTodasRotas(){
 }
 
 // ── LOGÍSTICA: Painel de acompanhamento dos motoristas ──────────────────────
+// ── Portal do cliente: histórico de coletas por rede ou por loja ────────────
+// Extrai o id estável do fornecedor (Cadastros → Fornecedores) a partir do id
+// composto usado nas rotas: "${rotaId}${fornecedorId}" tem exatamente um "_"
+// no meio, sempre entre o id da rota e o id do fornecedor.
+function extrairFornecedorId(lojaCompostaId){
+  const idx=(lojaCompostaId||'').indexOf('_');
+  return idx>=0?lojaCompostaId.slice(idx+1):lojaCompostaId;
+}
+// Monta a lista de coletas (uma linha por loja/parada com check-in feito),
+// cruzando as rotas salvas com os check-ins registrados pelos motoristas.
+// filtro = {rede} para portal de gestor de rede, ou {fornecedorId} para
+// portal de gerente de loja (uma loja só).
+function listarHistoricoColetas(filtro){
+  const registros=[];
+  (rotState.rotasSalvas||[]).forEach(rota=>{
+    (rota.lojas||[]).forEach(loja=>{
+      const ci=motorState.checkins[loja.id];
+      if(!ci?.done) return;
+      const fornecedorId=extrairFornecedorId(loja.id);
+      const rede=loja.rede||loja.marca||'';
+      if(filtro.rede&&normalizarTexto(rede)!==normalizarTexto(filtro.rede)) return;
+      if(filtro.fornecedorId&&fornecedorId!==filtro.fornecedorId) return;
+      registros.push({
+        lojaNome:loja.nome, lojaCidade:loja.cidade||'', rede,
+        rotaNome:rota.nome, motorista:rota.motoristaNome||'',
+        data:ci.hora?.split(' ')[0]||'', hora:ci.hora||'',
+        itens:ci.itens||{}, nf:ci.nf||'', responsavel:ci.responsavel||'',
+      });
+    });
+  });
+  return registros.sort((a,b)=>(b.hora||'').localeCompare(a.hora||''));
+}
+function renderHistoricoColetas(){
+  const perfil=usuarioAtual?.perfil;
+  const filtro=perfil==='gestor_rede'?{rede:usuarioAtual.escopoRede}:{fornecedorId:usuarioAtual.escopoLojaId};
+  const registros=listarHistoricoColetas(filtro);
+  const tituloEscopo=perfil==='gestor_rede'?`Rede ${usuarioAtual.escopoRede||''}`:(FORNS_ROT.find(f=>f.id===usuarioAtual.escopoLojaId)?.nome||'Sua loja');
+  const totalItens=registros.reduce((s,r)=>s+Object.values(r.itens).reduce((ss,v)=>ss+(parseInt(v)||0),0),0);
+
+  document.getElementById('content-area').innerHTML=`
+    ${btnBack('Dashboard')}
+    <div class="mod-header"><div class="mod-header-icon azul"><i class="ti ti-history"></i></div><div><h2>Histórico de Coletas</h2><span>${escapeHtml(tituloEscopo)}</span></div></div>
+    <div class="stat-grid-3">
+      <div class="stat-box verde"><div class="sv">${registros.length}</div><div class="sl">Coletas</div></div>
+      <div class="stat-box azul"><div class="sv">${totalItens}</div><div class="sl">Itens coletados</div></div>
+      <div class="stat-box"><div class="sv">${new Set(registros.map(r=>r.lojaNome)).size}</div><div class="sl">Loja${new Set(registros.map(r=>r.lojaNome)).size!==1?'s':''}</div></div>
+    </div>
+    ${registros.length===0?`<div class="empty"><i class="ti ti-history-off"></i><p>Nenhuma coleta registrada ainda.</p></div>`:''}
+    ${registros.map(r=>{
+      const itensTexto=Object.entries(r.itens).filter(([,v])=>parseInt(v)>0).map(([k,v])=>`${v} ${ITENS_CI.find(it=>it.id===k)?.nome||k}`).join(', ');
+      return `<div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <strong style="font-size:14px">${escapeHtml(r.lojaNome)}</strong>
+          <span style="font-size:11px;color:var(--text2)">${r.data} ${r.hora?'· '+r.hora:''}</span>
+        </div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:6px">${escapeHtml(r.lojaCidade)}${r.rotaNome?' · Rota: '+escapeHtml(r.rotaNome):''}${r.motorista?' · '+escapeHtml(r.motorista):''}</div>
+        <div style="font-size:13px">${itensTexto||'—'}</div>
+        ${r.nf?`<div style="font-size:11px;color:var(--text3);margin-top:4px">NF: ${escapeHtml(r.nf)}</div>`:''}
+      </div>`;
+    }).join('')}`;
+  bindBack();
+}
 function renderPainelMotoristas(){
   telaAtual='logistica_painel';
   // Painel do gestor: mostra TODAS as viagens em andamento (um motorista por
@@ -1908,23 +2011,65 @@ function renderAlertas(){
     ${btnBack('Dashboard')}
     <div class="mod-header">
       <div class="mod-header-icon verde" style="background:#E7F8DC"><i class="ti ti-brand-whatsapp" style="color:#25D366"></i></div>
-      <div><h2>Alertas WhatsApp</h2><span>Z-API · ${conectado?'Configurado':'Não configurado'}</span></div>
+      <div><h2>Alertas & Notificações</h2><span>WhatsApp (Z-API) e E-mail</span></div>
     </div>
 
-    <div style="display:flex;gap:3px;margin-bottom:1rem;background:var(--bg);border-radius:var(--radius-sm);padding:3px">
-      ${[['config','Configuração'],['alertas','Alertas'],['msgs','Mensagens'],['log',`Log (${log.length})`]].map(([t,l])=>
-        `<button class="btn ${tabA===t?'btn-primary':'btn-secondary'} btn-sm" style="flex:1;justify-content:center;font-size:11px" data-wpp-tab="${t}">${l}</button>`).join('')}
+    <div style="display:flex;gap:3px;margin-bottom:1rem;background:var(--bg);border-radius:var(--radius-sm);padding:3px;flex-wrap:wrap">
+      ${[['config','Configuração'],['alertas','Alertas'],['msgs','Mensagens'],['email','E-mail'],['log',`Log (${log.length})`]].map(([t,l])=>
+        `<button class="btn ${tabA===t?'btn-primary':'btn-secondary'} btn-sm" style="flex:1;justify-content:center;font-size:11px;min-width:70px" data-wpp-tab="${t}">${l}</button>`).join('')}
     </div>
 
     <div id="wpp-content">
-      ${tabA==='config'?_wppConfig(c,conectado):tabA==='alertas'?_wppAlertas(c):tabA==='msgs'?_wppMsgs(c):_wppLog(log)}
+      ${tabA==='config'?_wppConfig(c,conectado):tabA==='alertas'?_wppAlertas(c):tabA==='msgs'?_wppMsgs(c):tabA==='email'?_emailConfig(c):_wppLog(log)}
     </div>`;
 
   bindBack();
   document.querySelectorAll('[data-wpp-tab]').forEach(btn=>{
     btn.addEventListener('click',()=>{window._wppTab=btn.dataset.wppTab;renderAlertas();});
   });
-  _bindWpp(tabA);
+  if(tabA==='email') _bindEmail(); else _bindWpp(tabA);
+}
+
+function _emailConfig(c){
+  const redes=[...new Set([...FORNS_ROT.map(f=>f.rede||f.marca).filter(Boolean), ...Object.keys(REDES_CONTATO||{})])].sort();
+  return `
+    <div class="card">
+      <div style="margin-bottom:10px"><strong style="font-size:14px">📧 EmailJS — credenciais</strong><p style="font-size:12px;color:var(--text2);margin-top:2px">Criadas em emailjs.com — necessário pra disparar e-mail sem servidor próprio.</p></div>
+      <div class="form-group"><label class="login-label">Public Key</label><input class="login-input" id="email-publickey" value="${c.emailPublicKey||''}" placeholder="Ex: AbCdEfGh12345"></div>
+      <div class="form-group"><label class="login-label">Service ID</label><input class="login-input" id="email-serviceid" value="${c.emailServiceId||''}" placeholder="Ex: service_abc123"></div>
+      <div class="form-group"><label class="login-label">Template ID</label><input class="login-input" id="email-templateid" value="${c.emailTemplateId||''}" placeholder="Ex: template_xyz789"></div>
+      <div class="form-group"><label class="login-label">E-mail do gestor Tyre Eco (recebe cópia de toda coleta)</label><input class="login-input" id="email-gestor" type="email" value="${c.emailGestorTyre||''}" placeholder="voce@tyreeco.com"></div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;margin-top:6px">
+        <input type="checkbox" id="email-ativo" ${c.emailAtivo!==false?'checked':''}> Enviar e-mail automaticamente ao concluir um check-in
+      </label>
+    </div>
+    <div class="card" style="margin-top:1rem">
+      <div style="margin-bottom:10px"><strong style="font-size:14px">🏢 E-mail de contato por rede</strong><p style="font-size:12px;color:var(--text2);margin-top:2px">Além do gestor Tyre Eco, o e-mail da coleta também vai pro contato da rede daquela loja (se preenchido).</p></div>
+      ${redes.length===0?'<p class="dash-date">Nenhuma rede cadastrada ainda (cadastre fornecedores primeiro).</p>':redes.map(r=>`<div class="form-group">
+        <label class="login-label">${escapeHtml(r)}</label>
+        <input class="login-input email-rede-inp" type="email" data-rede="${escapeHtml(r)}" value="${escapeHtml(REDES_CONTATO?.[r]?.email||'')}" placeholder="contato@${r.toLowerCase().replace(/[^a-z]/g,'')}.com.br">
+      </div>`).join('')}
+    </div>
+    <button class="btn btn-primary btn-block" id="email-salvar" style="margin-top:1rem"><i class="ti ti-device-floppy"></i> Salvar</button>
+  `;
+}
+function _bindEmail(){
+  document.getElementById('email-salvar')?.addEventListener('click',()=>{
+    window.wppCfg.emailPublicKey=document.getElementById('email-publickey').value.trim();
+    window.wppCfg.emailServiceId=document.getElementById('email-serviceid').value.trim();
+    window.wppCfg.emailTemplateId=document.getElementById('email-templateid').value.trim();
+    window.wppCfg.emailGestorTyre=document.getElementById('email-gestor').value.trim();
+    window.wppCfg.emailAtivo=document.getElementById('email-ativo').checked;
+    document.querySelectorAll('.email-rede-inp').forEach(inp=>{
+      const rede=inp.dataset.rede;
+      const val=inp.value.trim();
+      if(!REDES_CONTATO[rede]) REDES_CONTATO[rede]={};
+      REDES_CONTATO[rede].email=val;
+    });
+    wppSalvarCfg();
+    salvarRedesContato();
+    mostrarToast('Configuração de e-mail salva!','sucesso');
+  });
 }
 
 function _wppConfig(c,conectado){
@@ -2470,6 +2615,7 @@ function renderCadastros(){
       const clientesFiltrados=CLIENTES_VND.filter(c=>!buscaCli||c.nome.toLowerCase().includes(buscaCli)||(c.cnpj||'').toLowerCase().includes(buscaCli));
       return `
     <div class="section-title">Clientes disponíveis para venda</div>
+    <button class="btn btn-secondary btn-block" id="btn-importar-clientes" style="margin-bottom:.75rem"><i class="ti ti-file-spreadsheet"></i> Importar lista via Excel/CSV</button>
     <div class="search-wrap" style="margin-bottom:.75rem"><i class="ti ti-search"></i><input id="busca-cliente-cad" type="text" placeholder="Buscar por nome ou CNPJ..." value="${escapeHtml(cadastrosState.buscaCliente||'')}" autocomplete="off" autocorrect="off"></div>
     <div class="card" style="padding:.75rem 1rem;max-height:340px;overflow-y:auto">
       ${clientesFiltrados.length?clientesFiltrados.map(c=>{
@@ -2667,6 +2813,12 @@ function renderCadastros(){
   document.getElementById('btn-importar-fornecedores')?.addEventListener('click',()=>{
     resetImportState();
     importState.tipo='fornecedores';
+    importState.etapa='upload';
+    renderImportarDados();
+  });
+  document.getElementById('btn-importar-clientes')?.addEventListener('click',()=>{
+    resetImportState();
+    importState.tipo='clientes';
     importState.etapa='upload';
     renderImportarDados();
   });
@@ -4764,6 +4916,7 @@ function renderCI(){
     motorState.checkins[ciLoja.id]={done:true,hora:now(),itens:{...ciItens},nf:ciNF,responsavel:resp};
     salvarMotoristaCheckins();
     gerarContaPagarCheckin(ciLoja,ciItens);
+    enviarEmailColeta(ciLoja,ciItens,{motorista:ROTA_MOTORISTA?.motoristaNome||usuarioAtual?.nome||''});
     renderMotoristaRota();
   });
   document.getElementById('sig-limpar')?.addEventListener('click',()=>{sigCtx?.clearRect(0,0,360,100);ciSigned=false;});
@@ -5883,11 +6036,18 @@ const CAMPOS_IMPORT={
     {id:'ultimaColeta',label:'Data da última coleta',obrigatorio:false},
     {id:'observacao',label:'Observação',obrigatorio:false},
   ],
+  clientes:[
+    {id:'nome',label:'Cliente',obrigatorio:true},
+    {id:'cnpj',label:'CNPJ',obrigatorio:false},
+    {id:'endereco',label:'Endereço completo',obrigatorio:false},
+    {id:'email',label:'E-mail para NF',obrigatorio:false},
+  ],
 };
 const TIPOS_IMPORT=[
   {id:'contas',nome:'Contas a receber/pagar',icon:'ti-file-invoice',cor:'vermelho'},
   {id:'vendas',nome:'Histórico de vendas',icon:'ti-history',cor:'teal'},
   {id:'fornecedores',nome:'Fornecedores (lojas)',icon:'ti-building-store',cor:'roxo'},
+  {id:'clientes',nome:'Clientes',icon:'ti-users-group',cor:'azul'},
 ];
 
 let importState={
@@ -5986,7 +6146,7 @@ const IMPORT_ALIASES={
   endereco:{inclui:['enderecocompleto','endereco','logradouro','rua'],exclui:[]},
   vencimento:{inclui:['vencimento'],exclui:[]},
   tipo:{inclui:['tipo'],exclui:[]},
-  nome:{inclui:['nomeloja','razaosocial','loja','fornecedor','nome'],exclui:[]},
+  nome:{inclui:['nomeloja','razaosocial','loja','fornecedor','cliente','nome'],exclui:[]},
   cidade:{inclui:['cidade','municipio'],exclui:[]},
   uf:{inclui:['uf','estado'],exclui:[]},
   cep:{inclui:['cep'],exclui:[]},
@@ -5995,6 +6155,8 @@ const IMPORT_ALIASES={
   rede:{inclui:['rede','bandeira','marca'],exclui:[]},
   codLoja:{inclui:['codloja','codigoloja','coddaloja','codigo'],exclui:[]},
   observacao:{inclui:['observacao','obs','notas'],exclui:[]},
+  cnpj:{inclui:['cnpj','cpfcnpj'],exclui:[]},
+  email:{inclui:['email','emailparanf','e-mail'],exclui:[]},
 };
 function autoMapearColuna(headers,campoId){
   const aliases=IMPORT_ALIASES[campoId];
@@ -6218,6 +6380,11 @@ function processarLinhasImport(){
       const chave=`${normalizarTexto(f.nome)}|${normalizarTexto(f.cidade)}`;
       if(!existentesPorChave.has(chave)) existentesPorChave.set(chave, f);
     });
+  } else if(s.tipo==='clientes'){
+    CLIENTES_VND.forEach(c=>{
+      const chave=normalizarTexto(c.nome);
+      if(!existentesPorChave.has(chave)) existentesPorChave.set(chave, c);
+    });
   }
   const chavesVistasNoArquivo=new Set();
   const existentesParaExcluir=[];
@@ -6331,6 +6498,33 @@ function processarLinhasImport(){
         ciclo:parseInt(get('ciclo'))||30,
         valor:0,
       });
+    } else if(s.tipo==='clientes'){
+      const nome=String(get('nome')||'').trim();
+      if(!nome){erros.push({linha:nLinha,motivo:'Nome do cliente ausente'});return;}
+      const chave=normalizarTexto(nome);
+
+      if(chavesVistasNoArquivo.has(chave)){
+        duplicados.push({linha:nLinha, chave, cliente:nome, valor:0, data:'', origem:'arquivo', existenteId:null});
+        return;
+      }
+      const existente=existentesPorChave.get(chave);
+      if(existente){
+        if(!substituir.has(chave)){
+          duplicados.push({linha:nLinha, chave, cliente:nome, valor:0, data:'', origem:'existente', existenteId:existente.id});
+          return;
+        }
+        existentesParaExcluir.push(existente.id);
+      }
+      chavesVistasNoArquivo.add(chave);
+
+      registros.push({
+        id:'cli'+Date.now()+i,
+        nome,
+        cnpj:String(get('cnpj')||'').trim(),
+        endereco:String(get('endereco')||'').trim(),
+        email:String(get('email')||'').trim(),
+        valor:0,
+      });
     }
   });
   return{registros,erros,duplicados,existentesParaExcluir};
@@ -6342,10 +6536,10 @@ function _renderImportPreview(){
   const{registros,erros,duplicados,existentesParaExcluir}=processarLinhasImport();
   const amostra=registros.slice(0,8);
   const somaTotal=registros.reduce((acc,r)=>acc+(parseFloat(r.valor)||0),0);
-  const temValores=s.tipo!=='fornecedores';
+  const temValores=s.tipo!=='fornecedores'&&s.tipo!=='clientes';
   const duplicadosExistentes=duplicados.filter(d=>d.origem==='existente');
   const duplicadosArquivo=duplicados.filter(d=>d.origem==='arquivo');
-  const labelData=s.tipo==='vendas'?'Data':s.tipo==='fornecedores'?'—':'Vencimento';
+  const labelData=s.tipo==='vendas'?'Data':(s.tipo==='fornecedores'||s.tipo==='clientes')?'—':'Vencimento';
 
   document.getElementById('content-area').innerHTML=`
     <button class="btn btn-secondary btn-sm" id="imp-voltar-mapear" style="margin-bottom:1rem"><i class="ti ti-arrow-left"></i> Ajustar mapeamento</button>
@@ -6402,6 +6596,11 @@ function _renderImportPreview(){
       ${f.endereco?`<div style="font-size:11px;color:var(--text3);margin-top:2px">${escapeHtml(f.endereco)}</div>`:''}
       <div style="font-size:11px;color:var(--text2);margin-top:2px">Periodicidade: ${f.ciclo} du${f.uc?' · Última coleta: '+f.uc:''}</div>
       ${f.observacao?`<div style="font-size:11px;color:var(--orange);margin-top:2px"><i class="ti ti-alert-triangle"></i> ${escapeHtml(f.observacao)}</div>`:''}
+    </div>`).join(''):s.tipo==='clientes'?amostra.map(cl=>`<div class="card" style="padding:.6rem 1rem">
+      <strong style="font-size:13px;display:block">${escapeHtml(cl.nome)}</strong>
+      ${cl.cnpj?`<div style="font-size:11px;color:var(--text2);margin-top:2px">${escapeHtml(cl.cnpj)}</div>`:''}
+      ${cl.endereco?`<div style="font-size:11px;color:var(--text3);margin-top:2px">${escapeHtml(cl.endereco)}</div>`:''}
+      ${cl.email?`<div style="font-size:11px;color:var(--text2);margin-top:2px"><i class="ti ti-mail"></i> ${escapeHtml(cl.email)}</div>`:''}
     </div>`).join(''):amostra.map(c=>`<div class="card" style="padding:.6rem 1rem">
       <div style="display:flex;justify-content:space-between"><strong style="font-size:13px">${c.cliente}</strong><span style="font-size:13px;font-weight:700">${fmtM(c.valor)}</span></div>
       <div style="font-size:11px;color:var(--text2)">${c.tipo} · vence ${c.vencimento}${c.filial?' · '+c.filial:''}</div>
@@ -6436,6 +6635,14 @@ function _renderImportPreview(){
       }
       FORNS_ROT.push(...registros);
       await salvarLojas();
+    } else if(s.tipo==='clientes'){
+      if(excluirSet.size){
+        for(let idx=CLIENTES_VND.length-1; idx>=0; idx--){
+          if(excluirSet.has(CLIENTES_VND[idx].id)) CLIENTES_VND.splice(idx,1);
+        }
+      }
+      CLIENTES_VND.push(...registros);
+      await salvarClientesCad();
     }
     importState.resultado={importados:registros.length,ignorados:erros.length,duplicados:duplicados.length,substituidos:existentesParaExcluir.length};
     // Registra este upload no histórico de importações — inclui o arquivo original em
@@ -6477,7 +6684,7 @@ function _renderImportConcluido(){
       <div class="fin-row"><span class="fl">Duplicados (não importados)</span><span class="fv">${r.duplicados||0}</span></div>
       ${r.substituidos?`<div class="fin-row"><span class="fl">Substituídos (existente excluído)</span><span class="fv warn">${r.substituidos}</span></div>`:''}
     </div>
-    <div class="alert verde"><i class="ti ti-info-circle"></i><p>Os dados já estão salvos e aparecem ${importState.tipo==='vendas'?'no <strong>Histórico de vendas</strong> e no módulo <strong>Financeiro</strong>':importState.tipo==='fornecedores'?'em <strong>Cadastros → Fornecedores</strong>':'em <strong>Financeiro → Outras contas a receber</strong>'}. Este upload também ficou registrado no <strong>histórico de importações</strong>.</p></div>
+    <div class="alert verde"><i class="ti ti-info-circle"></i><p>Os dados já estão salvos e aparecem ${importState.tipo==='vendas'?'no <strong>Histórico de vendas</strong> e no módulo <strong>Financeiro</strong>':importState.tipo==='fornecedores'?'em <strong>Cadastros → Fornecedores</strong>':importState.tipo==='clientes'?'em <strong>Cadastros → Clientes</strong>':'em <strong>Financeiro → Outras contas a receber</strong>'}. Este upload também ficou registrado no <strong>histórico de importações</strong>.</p></div>
     <div style="display:flex;gap:8px;margin-top:.5rem">
       <button class="btn btn-primary" style="flex:1;justify-content:center" id="imp-nova"><i class="ti ti-plus"></i> Importar outro arquivo</button>
       <button class="btn btn-secondary" style="flex:1;justify-content:center" id="imp-ver-historico"><i class="ti ti-history"></i> Ver histórico</button>
@@ -6493,7 +6700,7 @@ function _renderImportHistorico(){
     <button class="btn btn-secondary btn-sm" id="imp-hist-voltar" style="margin-bottom:1rem"><i class="ti ti-arrow-left"></i> Voltar</button>
     <div class="mod-header"><div class="mod-header-icon azul"><i class="ti ti-history"></i></div><div><h2>Histórico de importações</h2><span>${itens.length} upload${itens.length!==1?'s':''} registrado${itens.length!==1?'s':''}</span></div></div>
     ${itens.length===0?`<div class="empty"><i class="ti ti-history"></i><p>Nenhuma importação feita ainda.</p></div>`:itens.map(h=>{
-      const tipoNome=h.tipo==='vendas'?'Vendas':h.tipo==='fornecedores'?'Fornecedores':'Contas a receber/pagar';
+      const tipoNome=h.tipo==='vendas'?'Vendas':h.tipo==='fornecedores'?'Fornecedores':h.tipo==='clientes'?'Clientes':'Contas a receber/pagar';
       const dups=h.duplicadosDetalhe||[];
       const dupsExistentes=dups.filter(d=>d.origem==='existente');
       const dupsArquivo=dups.filter(d=>d.origem==='arquivo');
@@ -6532,10 +6739,47 @@ function _renderImportHistorico(){
 window.wppCfg = {
   instanceId:'', instanceToken:'', clientToken:'', grupoId:'',
   ativoCheckin:true, ativoTriagem:true, limiteCheckin:30, limiteTriagem:30,
+  limiteMixAro13:20, limiteMixAro14:30,
+  emailPublicKey:'', emailServiceId:'', emailTemplateId:'', emailGestorTyre:'', emailAtivo:true,
   msgCheckin:'🚚 *Alerta — Check-in {loja}*\n\nRota: {rota}\nMotorista: {motorista}\nPlaca: {placa}\n\nTotal coletado: *{total}* pneus\nEstourados: *{estourados}* ({pct}%)\n\n_Limite configurado: {limite}%_\n_{hora}_',
   msgTriagem:'🔴 *Alerta — Triagem {placa}*\n\nMotorista: {motorista}\nTotal triado: *{total}* pneus\nLixo: *{lixo}* ({pct}%)\n\n_Limite configurado: {limite}%_\n_{hora}_',
 };
 window.wppLog = [];
+
+// E-mail de contato por rede (portal de coleta) — { 'CAMPNEUS': {email:'...'}, ... }
+let REDES_CONTATO = {};
+async function salvarRedesContato(){
+  try{ await window.storage?.set('redes_contato', JSON.stringify(REDES_CONTATO)); }catch(e){console.warn('salvarRedesContato',e);}
+}
+async function carregarRedesContato(){
+  try{ const r=await window.storage?.get('redes_contato'); if(r) REDES_CONTATO=JSON.parse(r.value); }catch(e){/* mantém vazio */}
+}
+// Envia (via EmailJS, sem precisar de servidor próprio) o relatório de uma coleta
+// recém-confirmada pro gestor Tyre Eco e pro contato cadastrado da rede da loja.
+async function enviarEmailColeta(loja,itens,dados){
+  const cfg=window.wppCfg||{};
+  if(cfg.emailAtivo===false) return;
+  if(!cfg.emailServiceId||!cfg.emailTemplateId||!cfg.emailPublicKey) return; // não configurado ainda
+  const rede=loja.rede||loja.marca||'';
+  const destinatarios=[cfg.emailGestorTyre, REDES_CONTATO?.[rede]?.email].filter(Boolean);
+  if(!destinatarios.length) return;
+  const itensTexto=Object.entries(itens||{}).filter(([,v])=>parseInt(v)>0)
+    .map(([k,v])=>`${v} ${ITENS_CI.find(it=>it.id===k)?.nome||k}`).join(', ')||'—';
+  for(const destino of destinatarios){
+    try{
+      await fetch('https://api.emailjs.com/api/v1.0/email/send',{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          service_id:cfg.emailServiceId, template_id:cfg.emailTemplateId, user_id:cfg.emailPublicKey,
+          template_params:{
+            to_email:destino, loja:loja.nome, cidade:loja.cidade||'', rede,
+            data:today(), hora:now(), motorista:dados?.motorista||'', itens:itensTexto,
+          }
+        })
+      });
+    }catch(e){ console.warn('enviarEmailColeta',e); }
+  }
+}
 
 async function wppSalvarCfg(){
   try{ await window.storage?.set('wpp_cfg', JSON.stringify(window.wppCfg)); }catch(e){console.warn('wppSalvarCfg',e);}
