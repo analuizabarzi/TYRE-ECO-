@@ -243,6 +243,18 @@ input:focus,select:focus{outline:none;border-color:var(--green);background:#fff}
 .empty{text-align:center;padding:2.5rem 1rem;color:var(--text2)}
 .empty i{font-size:32px;display:block;margin-bottom:10px;opacity:.3}
 .empty p{font-size:14px}
+.etapa-lista{display:flex;flex-direction:column;gap:0;margin:8px 0 14px}
+.etapa-item{display:flex;gap:12px;padding:0 0 14px}
+.etapa-item:last-child{padding-bottom:0}
+.etapa-rail{width:22px;flex-shrink:0;display:flex;flex-direction:column;align-items:center}
+.etapa-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border);background:var(--surface);flex-shrink:0;margin-top:3px}
+.etapa-dot.done{background:var(--green);border-color:var(--green)}
+.etapa-dot.active{background:var(--orange);border-color:var(--orange);box-shadow:0 0 0 4px var(--orange-bg)}
+.etapa-line{flex:1;width:2px;background:var(--border);margin:4px 0 0}
+.etapa-item:last-child .etapa-line{display:none}
+.etapa-body{flex:1;min-width:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px}
+.etapa-body.done{border-color:var(--green-light);background:var(--green-bg)}
+.etapa-body.active{border-color:var(--orange-light);background:var(--orange-bg)}
 .sig-pad{border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);cursor:crosshair;display:block;width:100%;touch-action:none}
 .cli-list{max-height:260px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius)}
 .cli-row{display:flex;align-items:center;gap:10px;padding:11px 12px;border-bottom:1px solid var(--border-light);cursor:pointer;touch-action:manipulation}
@@ -457,6 +469,7 @@ const PAGS=[{id:'dinheiro',nome:'Dinheiro',icon:'ti-cash'},{id:'pix',nome:'PIX',
 let motorState={viagemIniciada:false,checkins:{}};
 let confState={camId:null,conferencias:{}};
 let triagemState={camId:null,grade:{},salvas:{}};
+let prodState={ops:[],pa:[],ajustes:[],tab:'painel',nova:null,opId:null};
 
 // ── Persistência colaborativa: motorista, conferência, triagem, rotas, NF ──
 async function salvarMotoristaCheckins(){
@@ -477,6 +490,27 @@ async function salvarTriagemSalvas(){
 async function carregarTriagemSalvas(){
   try{ const r=await window.storage?.get('triagem_salvas'); if(r) triagemState.salvas=JSON.parse(r.value); }catch(e){}
 }
+async function salvarProducaoOps(){
+  try{ await window.storage?.set('producao_ops', JSON.stringify(prodState.ops)); }catch(e){console.warn('salvarProducaoOps',e);}
+}
+async function salvarProducaoPA(){
+  try{ await window.storage?.set('producao_pa', JSON.stringify(prodState.pa)); }catch(e){console.warn('salvarProducaoPA',e);}
+}
+async function salvarProducaoAjustes(){
+  try{ await window.storage?.set('producao_ajustes', JSON.stringify(prodState.ajustes)); }catch(e){console.warn('salvarProducaoAjustes',e);}
+}
+async function carregarProducao(){
+  try{
+    const [ops,pa,aj]=await Promise.all([
+      window.storage?.get('producao_ops'),
+      window.storage?.get('producao_pa'),
+      window.storage?.get('producao_ajustes')
+    ]);
+    if(ops?.value){ const v=JSON.parse(ops.value); if(Array.isArray(v)) prodState.ops=v; }
+    if(pa?.value){ const v=JSON.parse(pa.value); if(Array.isArray(v)) prodState.pa=v; }
+    if(aj?.value){ const v=JSON.parse(aj.value); if(Array.isArray(v)) prodState.ajustes=v; }
+  }catch(e){ console.warn('carregarProducao',e); }
+}
 async function salvarFichasNF(){
   try{ await window.storage?.set('fichas_nf', JSON.stringify(fichasNF)); }catch(e){console.warn('salvarFichasNF',e);}
 }
@@ -496,7 +530,8 @@ async function carregarDadosColaborativos(){
     carregarMotoristaCheckins(), carregarConferencias(), carregarTriagemSalvas(),
     carregarFichasNF(), carregarRotasSalvas(), carregarPlanoContas(), carregarContasPagar(),
     carregarHistoricoImportacoes(), carregarRedesContato(), carregarBancos(),
-    carregarConciliacoesConfirmadas(), carregarHistoricoConciliacoesIA()
+    carregarConciliacoesConfirmadas(), carregarHistoricoConciliacoesIA(),
+    carregarProducao()
   ]);
 }
 let triagemGrade={};
@@ -908,6 +943,8 @@ function rerenderizarTelaAtual(){
     'vendas_hist':renderVendasHist,
     'dashboard':renderDashboard,
     'conciliacao_bancaria':renderRelatorioFinanceiro,
+    'producao':()=>{ if(prodState.nova) return; renderProducao(); },
+    'producao_chao':()=>{ if(prodState.nova) return; renderProducao(); },
   };
   mapaTelas[telaAtual]?.();
 }
@@ -925,6 +962,9 @@ function iniciarSincronizacaoTempoReal(){
   registrar('contas_pagar', v=>{ contasPagarState.itens=v; });
   registrar('contas_bancos', v=>{ BANCOS=v; });
   registrar('plano_contas', v=>{ planoContas=v; });
+  registrar('producao_ops', v=>{ if(Array.isArray(v)) prodState.ops=v; });
+  registrar('producao_pa', v=>{ if(Array.isArray(v)) prodState.pa=v; });
+  registrar('producao_ajustes', v=>{ if(Array.isArray(v)) prodState.ajustes=v; });
 }
 
 auth.onAuthStateChanged(async (user)=>{
@@ -1026,6 +1066,7 @@ function renderDashboard(){
       {id:'alertas',icon:'ti-brand-whatsapp',cor:'verde',nome:'Alertas WhatsApp',desc:'Z-API · Avisos de lixo'},
       {id:'importar_dados',icon:'ti-upload',cor:'azul',nome:'Importar dados',desc:'Migrar do Sygecom (CSV/Excel)'},
       {id:'usuarios',icon:'ti-users',cor:'teal',nome:'Usuários',desc:'Criar e gerenciar acessos'},
+      {id:'producao',icon:'ti-building-factory-2',cor:'laranja',nome:'Produção',desc:'Estoque, ordens e chão de fábrica',badge:opsProducaoBadge()},
     ],
     motorista:[
       {id:'motorista_rota',icon:'ti-map-pin',cor:'azul',nome:'Rota do dia',desc:descRotaMotorista},
@@ -1041,6 +1082,10 @@ function renderDashboard(){
     ],
     triagem:[
       {id:'triagem_lista',icon:'ti-filter',cor:'teal',nome:'Triagem',desc:'Pneus por categoria e aro'},
+    ],
+    producao:[
+      {id:'producao_chao',icon:'ti-tool',cor:'laranja',nome:'Chão de fábrica',desc:'Apontar etapas das ordens',badge:opsProducaoBadge()},
+      {id:'producao',icon:'ti-building-factory-2',cor:'teal',nome:'Painel da fábrica',desc:'Estoque, ordens e rendimento'},
     ],
     vendas:[
       {id:'vendas_nova',icon:'ti-shopping-cart',cor:'amarelo',nome:'Nova venda',desc:`${CLIENTES_VND.length} clientes cadastrados`},
@@ -1099,28 +1144,35 @@ function modulosPermitidos(modsPorPerfil, perfil){
   if(!usuarioAtual.permissoes) return modsPorPerfil[perfil]||[];
   const flat={};
   Object.values(modsPorPerfil).forEach(arr=>arr.forEach(m=>{ if(!flat[m.id]) flat[m.id]=m; }));
-  return Object.keys(usuarioAtual.permissoes)
-    .filter(id=>usuarioAtual.permissoes[id])
-    .map(id=>flat[id])
-    .filter(Boolean);
+  const ids=new Set(Object.keys(usuarioAtual.permissoes).filter(id=>usuarioAtual.permissoes[id]));
+  // módulos novos do perfil, ainda não gravados na permissão do usuário, entram ligados
+  (PERFIL_MODULOS_PADRAO[perfil]||[]).forEach(id=>{
+    if(usuarioAtual.permissoes[id]===undefined) ids.add(id);
+  });
+  return [...ids].map(id=>flat[id]).filter(Boolean);
 }
 // Monta o mesmo mapa de módulos usado no dashboard, só para checar permissão
 // (mantido separado da árvore de renderização para não duplicar os cards).
 function idsModulosPermitidos(){
   const perfil=usuarioAtual.perfil;
   const mods={
-    gestor:['rota','cadastros','financeiro','financeiro_relatorios','conciliacao_bancaria','conciliacao_ia','nf_emitir','dashboard_gestor','alertas','importar_dados','usuarios','painel_frota'],
+    gestor:['rota','cadastros','financeiro','financeiro_relatorios','conciliacao_bancaria','conciliacao_ia','nf_emitir','dashboard_gestor','alertas','importar_dados','usuarios','painel_frota','producao','producao_chao'],
     motorista:['motorista_rota','motorista_checkin','motorista_hist'],
     conferente:['conf_lista'],
     fiscal:['fiscal_entrada','fiscal_saida'],
     triagem:['triagem_lista'],
+    producao:['producao','producao_chao'],
     vendas:['vendas_nova','vendas_hist'],
     financeiro:['financeiro','financeiro_relatorios','conciliacao_bancaria','conciliacao_ia','importar_dados'],
     emissao_nf:['nf_emitir'],
     logistica:['rota','logistica_painel','painel_frota'],
   };
   if(!usuarioAtual.permissoes) return new Set(mods[perfil]||[]);
-  return new Set(Object.keys(usuarioAtual.permissoes).filter(id=>usuarioAtual.permissoes[id]));
+  const set=new Set(Object.keys(usuarioAtual.permissoes).filter(id=>usuarioAtual.permissoes[id]));
+  (PERFIL_MODULOS_PADRAO[perfil]||[]).forEach(id=>{
+    if(usuarioAtual.permissoes[id]===undefined) set.add(id);
+  });
+  return set;
 }
 
 // ── Roteador de módulos ───────────────────────────────────────────────────────
@@ -1148,6 +1200,8 @@ function abrirModulo(id){
     'coletas_rede':renderHistoricoColetas,
     'conciliacao_bancaria':()=>{relatorioState.tab='pagosrecebidos';renderRelatorioFinanceiro();},
     'conciliacao_ia':()=>{resetConciliacaoIAState();renderConciliacaoIA();},
+    'producao':()=>{prodState.tab='painel';prodState.opId=null;prodState.nova=null;renderProducao();},
+    'producao_chao':()=>{prodState.tab='chao';prodState.opId=null;prodState.nova=null;renderProducao();},
   };
   mapa[id]?.();
 }
@@ -1160,6 +1214,7 @@ const PERFIS_DISPONIVEIS=[
   {id:'conferente',nome:'Conferente Operacional',cor:'laranja'},
   {id:'fiscal',nome:'Conferente Fiscal',cor:'roxo'},
   {id:'triagem',nome:'Triagem',cor:'teal'},
+  {id:'producao',nome:'Produção / Fábrica',cor:'laranja'},
   {id:'vendas',nome:'Vendas',cor:'amarelo'},
   {id:'financeiro',nome:'Financeiro',cor:'vermelho'},
   {id:'emissao_nf',nome:'Emissão de NF',cor:'roxo'},
@@ -1187,6 +1242,8 @@ const MODULOS_TODOS=[
   {id:'fiscal_entrada',nome:'NF Entrada (fiscal)'},
   {id:'fiscal_saida',nome:'NF Saída (fiscal)'},
   {id:'triagem_lista',nome:'Triagem'},
+  {id:'producao',nome:'Painel da fábrica'},
+  {id:'producao_chao',nome:'Chão de fábrica'},
   {id:'vendas_nova',nome:'Nova venda'},
   {id:'vendas_hist',nome:'Histórico de vendas'},
   {id:'logistica_painel',nome:'Painel de Motoristas'},
@@ -1195,11 +1252,12 @@ const MODULOS_TODOS=[
 ];
 // Permissões padrão sugeridas ao escolher cada perfil (o gestor pode ajustar antes de criar)
 const PERFIL_MODULOS_PADRAO={
-  gestor:['rota','cadastros','financeiro','financeiro_relatorios','conciliacao_bancaria','conciliacao_ia','nf_emitir','dashboard_gestor','alertas','importar_dados','usuarios','painel_frota'],
+  gestor:['rota','cadastros','financeiro','financeiro_relatorios','conciliacao_bancaria','conciliacao_ia','nf_emitir','dashboard_gestor','alertas','importar_dados','usuarios','painel_frota','producao'],
   motorista:['motorista_rota','motorista_checkin','motorista_hist'],
   conferente:['conf_lista'],
   fiscal:['fiscal_entrada','fiscal_saida'],
   triagem:['triagem_lista'],
+  producao:['producao','producao_chao'],
   vendas:['vendas_nova','vendas_hist'],
   financeiro:['financeiro','financeiro_relatorios','conciliacao_bancaria','conciliacao_ia','importar_dados'],
   emissao_nf:['nf_emitir'],
@@ -1207,6 +1265,14 @@ const PERFIL_MODULOS_PADRAO={
   gestor_rede:['coletas_rede'],
   gerente_loja:['coletas_rede'],
 };
+function permissoesAtivasDe(c){
+  if(!c.permissoes) return PERFIL_MODULOS_PADRAO[c.perfil]||[];
+  const ids=new Set(Object.keys(c.permissoes).filter(k=>c.permissoes[k]));
+  (PERFIL_MODULOS_PADRAO[c.perfil]||[]).forEach(id=>{
+    if(c.permissoes[id]===undefined) ids.add(id);
+  });
+  return [...ids];
+}
 function htmlChecklistPermissoes(groupId, permissoesAtivas){
   return `<div data-permgroup="${groupId}">${MODULOS_TODOS.map(m=>`<label style="display:flex;align-items:center;gap:8px;font-size:13px;padding:5px 0;border-bottom:1px solid var(--border-light)">
     <input type="checkbox" class="perm-chk" data-mod="${m.id}" ${permissoesAtivas.includes(m.id)?'checked':''}>
@@ -1303,7 +1369,7 @@ async function renderUsuarios(){
   });
   const colaboradores=await listarColaboradores();
   document.getElementById('usr-lista').innerHTML = colaboradores.map(c=>{
-    const permissoesAtivas=c.permissoes?Object.keys(c.permissoes).filter(k=>c.permissoes[k]):(PERFIL_MODULOS_PADRAO[c.perfil]||[]);
+    const permissoesAtivas=permissoesAtivasDe(c);
     return `
     <div class="card" style="margin-bottom:8px">
       <div style="display:flex;justify-content:space-between;align-items:center">
@@ -2717,6 +2783,7 @@ function renderCadastros(){
         <select class="login-input" id="func-cargo">
           <option value="Motorista">Motorista</option>
           <option value="Ajudante">Ajudante</option>
+          <option value="Operador de produção">Operador de produção</option>
           <option value="Outro">Outro</option>
         </select>
       </div>
@@ -5524,6 +5591,12 @@ function renderDashboardGestor(){
       <div class="stat-box laranja"><div class="sv">${triagemPend}</div><div class="sl">Triagem pend.</div></div>
       <div class="stat-box verde"><div class="sv">${vendasState.historico.length}</div><div class="sl">Vendas hoje</div></div>
     </div>
+    <div class="section-title">Fábrica</div>
+    <div class="stat-grid-3">
+      <div class="stat-box laranja"><div class="sv">${opsProducaoBadge()}</div><div class="sl">OPs abertas</div></div>
+      <div class="stat-box azul"><div class="sv">${totalEstoqueMPDisponivel()}</div><div class="sl">Pneus em estoque</div></div>
+      <div class="stat-box verde"><div class="sv">${totalEstoquePA()}</div><div class="sl">Lotes acabados</div></div>
+    </div>
     ${rotas.length===0?`<div class="alert azul"><i class="ti ti-info-circle"></i><p>Nenhuma rota criada ainda hoje.</p></div>`
       :proximaUrgente?`<div class="alert laranja"><i class="ti ti-alert-triangle"></i><p><strong>${urgentes.length}</strong> loja${urgentes.length>1?'s':''} com coleta vencida ou vencendo em breve. Próxima: ${proximaUrgente.nome} (${getVenc(proximaUrgente).label}).</p></div>`
       :`<div class="alert verde"><i class="ti ti-circle-check"></i><p>Nenhuma coleta urgente pendente no momento.</p></div>`}
@@ -6209,6 +6282,639 @@ function renderTriagemGrade(lojaId,camId){
 }
 
 
+// ── PRODUÇÃO DE FÁBRICA ───────────────────────────────────────────────────────
+// Fluxo: triagem confirmada vira matéria-prima → ordem de produção (OP) reserva
+// o estoque → operador aponta as etapas no chão → produto acabado entra no pátio.
+const PROD_PROCESSOS=[
+  {id:'lote_venda',nome:'Lote para venda',desc:'Separa e embala pneus classificados para expedição',icon:'ti-package',cor:'azul',etapas:['Separação','Conferência','Embalagem'],produto:{id:'lote_pneus',nome:'Lote de pneus classificados',un:'un'},fator:1},
+  {id:'destalacao',nome:'Destalação',desc:'Retira o talão de aço do pneu',icon:'ti-cut',cor:'laranja',etapas:['Alimentação','Destalação','Separação do aço'],produto:{id:'pneu_destalado',nome:'Pneu destalado',un:'un'},fator:1,subproduto:{id:'aco',nome:'Aço recuperado',un:'kg',fator:0.7}},
+  {id:'picagem',nome:'Picagem / Trituração',desc:'Trita pneus em chips de borracha',icon:'ti-recycle',cor:'teal',etapas:['Alimentação','Picagem','Peneira'],produto:{id:'picado',nome:'Pneu picado',un:'kg'},fator:8},
+  {id:'granulacao',nome:'Granulação',desc:'Transforma o material em grânulo de borracha',icon:'ti-grain',cor:'verde',etapas:['Alimentação','Granulação','Peneiramento'],produto:{id:'granulo',nome:'Grânulo de borracha',un:'kg'},fator:7},
+  {id:'prensagem',nome:'Prensagem de fardos',desc:'Prensa o material em fardos para expedição',icon:'ti-box',cor:'roxo',etapas:['Alimentação','Prensagem','Amarração'],produto:{id:'fardo',nome:'Fardo prensado',un:'un'},fator:1/80},
+  {id:'corte',nome:'Corte',desc:'Corta pneus para reciclo ou destinação',icon:'ti-scissors',cor:'vermelho',etapas:['Seleção','Corte','Separação'],produto:{id:'cortado',nome:'Pneu cortado',un:'un'},fator:1}
+];
+const PROD_TABS=[
+  {id:'painel',nome:'Painel',icon:'ti-layout-dashboard'},
+  {id:'estoque',nome:'Estoque',icon:'ti-packages'},
+  {id:'ordens',nome:'Ordens',icon:'ti-clipboard-list'},
+  {id:'chao',nome:'Chão',icon:'ti-tool'}
+];
+const PROD_STATUS_META={
+  aberta:{label:'Aberta',cor:'azul'},
+  em_producao:{label:'Em produção',cor:'laranja'},
+  pausada:{label:'Pausada',cor:'cinza'},
+  concluida:{label:'Concluída',cor:'verde'},
+  cancelada:{label:'Cancelada',cor:'vermelho'}
+};
+function prodCatNome(id){ return (CATS_TRIAGEM.find(c=>c.id===id)||{}).nome||id; }
+function prodProc(id){ return PROD_PROCESSOS.find(p=>p.id===id)||null; }
+function prodNovoId(prefix,lista){
+  const n=1+(lista||[]).reduce((m,x)=>{
+    const p=parseInt(String(x.id||'').replace(/\D/g,''),10);
+    return Number.isFinite(p)?Math.max(m,p):m;
+  },0);
+  return prefix+String(n).padStart(4,'0');
+}
+function chaveMP(cat,aro){ return cat+'|'+aro; }
+function parseChaveMP(k){ const i=k.indexOf('|'); return {cat:k.slice(0,i),aro:k.slice(i+1)}; }
+function estoqueMPBrutoMap(){
+  const map={};
+  const somar=(cat,aro,q)=>{
+    if(!q) return;
+    const k=chaveMP(cat,aro);
+    map[k]=(map[k]||0)+q;
+  };
+  Object.values(triagemState.salvas||{}).forEach(s=>{
+    const g=s.grade||{};
+    CATS_TRIAGEM.forEach(cat=>{
+      if(cat.id==='lixo') return;
+      AROS_FULL.forEach(aro=>somar(cat.id,aro,parseInt(g[cat.id]?.[aro])||0));
+    });
+  });
+  (prodState.ajustes||[]).forEach(a=>somar(a.cat,a.aro,parseInt(a.qtd)||0));
+  return map;
+}
+function estoqueMPConsumidoMap(){
+  const map={};
+  (prodState.ops||[]).forEach(op=>{
+    if(op.status==='cancelada') return;
+    (op.insumos||[]).forEach(i=>{
+      const k=chaveMP(i.cat,i.aro);
+      map[k]=(map[k]||0)+(parseInt(i.qtd)||0);
+    });
+  });
+  return map;
+}
+function estoqueMPDisponivelMap(){
+  const bruto=estoqueMPBrutoMap();
+  const cons=estoqueMPConsumidoMap();
+  const disp={};
+  Object.keys(bruto).forEach(k=>{ disp[k]=Math.max(0,(bruto[k]||0)-(cons[k]||0)); });
+  Object.keys(cons).forEach(k=>{ if(disp[k]==null) disp[k]=0; });
+  return disp;
+}
+function totalMap(map){ return Object.values(map||{}).reduce((s,v)=>s+(parseInt(v)||0),0); }
+function totalEstoqueMPDisponivel(){ return totalMap(estoqueMPDisponivelMap()); }
+function totalEstoqueMPBruto(){ return totalMap(estoqueMPBrutoMap()); }
+function totalEstoquePA(){
+  return (prodState.pa||[]).filter(l=>!l.baixado).length;
+}
+function opsProducaoBadge(){
+  return (prodState.ops||[]).filter(o=>o.status==='aberta'||o.status==='em_producao'||o.status==='pausada').length;
+}
+function qtdPrevistaProcesso(proc,qtdInsumo){
+  if(!proc) return 0;
+  const q=Number(qtdInsumo)||0;
+  if(proc.id==='prensagem') return Math.max(q?1:0, Math.round(q*(proc.fator||0)));
+  return Math.round(q*(proc.fator||1)*10)/10;
+}
+function fmtQtdProd(q,un){
+  const n=Number(q)||0;
+  const txt=Number.isInteger(n)?String(n):n.toLocaleString('pt-BR',{maximumFractionDigits:1});
+  return un?txt+' '+un:txt;
+}
+function yieldPct(op){
+  const prev=Number(op.qtdPrevista)||0;
+  const real=Number(op.qtdReal)||0;
+  if(prev<=0) return null;
+  return Math.round((real/prev)*100);
+}
+function htmlProdTabs(){
+  return `<div class="cad-tabs" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:1rem">
+    ${PROD_TABS.map(t=>`<button class="cad-tab-btn${prodState.tab===t.id?' active':''}" data-prod-tab="${t.id}"
+      style="flex-shrink:0;display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:20px;border:1.5px solid ${prodState.tab===t.id?'var(--orange)':'var(--border)'};background:${prodState.tab===t.id?'var(--orange)':'var(--bg)'};color:${prodState.tab===t.id?'#fff':'var(--text)'};font-size:13px;font-weight:600">
+      <i class="ti ${t.icon}"></i> ${t.nome}
+    </button>`).join('')}
+  </div>`;
+}
+function bindProdTabs(){
+  document.querySelectorAll('[data-prod-tab]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      prodState.tab=btn.dataset.prodTab;
+      prodState.opId=null;
+      prodState.nova=null;
+      renderProducao();
+    });
+  });
+}
+function renderProducao(){
+  telaAtual = prodState.tab==='chao' ? 'producao_chao' : 'producao';
+  if(prodState.nova) return renderNovaOP();
+  if(prodState.opId) return renderOPDetalhe(prodState.opId);
+  if(prodState.tab==='estoque') return renderEstoqueFabrica();
+  if(prodState.tab==='ordens') return renderListaOPs();
+  if(prodState.tab==='chao') return renderChaoFabrica();
+  return renderPainelFabrica();
+}
+
+function renderPainelFabrica(){
+  const disp=estoqueMPDisponivelMap();
+  const bruto=estoqueMPBrutoMap();
+  const cons=estoqueMPConsumidoMap();
+  const abertas=(prodState.ops||[]).filter(o=>['aberta','em_producao','pausada'].includes(o.status));
+  const concluidasHoje=(prodState.ops||[]).filter(o=>{
+    if(o.status!=='concluida'||!o.concluidaEm) return false;
+    return new Date(o.concluidaEm).toLocaleDateString('pt-BR')===today();
+  });
+  const porCat={};
+  CATS_TRIAGEM.filter(c=>c.id!=='lixo').forEach(c=>{
+    porCat[c.id]=AROS_FULL.reduce((s,a)=>s+(parseInt(disp[chaveMP(c.id,a)])||0),0);
+  });
+  document.getElementById('content-area').innerHTML=`
+    ${btnBack()}
+    <div class="mod-header"><div class="mod-header-icon laranja"><i class="ti ti-building-factory-2"></i></div><div><h2>Produção de fábrica</h2><span>Estoque, ordens e chão de fábrica</span></div></div>
+    ${htmlProdTabs()}
+    <div class="stat-grid">
+      <div class="stat-box azul"><div class="sv">${totalMap(disp)}</div><div class="sl">Disponível (un)</div></div>
+      <div class="stat-box laranja"><div class="sv">${abertas.length}</div><div class="sl">OPs em aberto</div></div>
+    </div>
+    <div class="stat-grid-3">
+      <div class="stat-box"><div class="sv">${totalMap(cons)}</div><div class="sl">Reservado/consumido</div></div>
+      <div class="stat-box verde"><div class="sv">${concluidasHoje.length}</div><div class="sl">Concluídas hoje</div></div>
+      <div class="stat-box"><div class="sv">${totalEstoquePA()}</div><div class="sl">Lotes PA</div></div>
+    </div>
+    ${totalMap(bruto)===0?`<div class="alert azul"><i class="ti ti-info-circle"></i><p>O estoque da fábrica nasce da <strong>triagem confirmada</strong>. Confirme lojas na Triagem ou lance um ajuste em Estoque para começar.</p></div>`:''}
+    <div class="section-title">Matéria-prima disponível</div>
+    ${CATS_TRIAGEM.filter(c=>c.id!=='lixo').map(c=>`
+      <div class="fin-row"><span class="fl" style="color:${c.cor};font-weight:600">${c.nome}</span><span class="fv">${porCat[c.id]||0} un</span></div>
+    `).join('')}
+    <button class="btn btn-primary btn-block" id="btn-nova-op" style="margin-top:14px"><i class="ti ti-plus"></i> Nova ordem de produção</button>
+    ${abertas.length?`<div class="section-title">Em andamento</div>
+      ${abertas.slice(0,5).map(op=>htmlCardOP(op)).join('')}`:''}`;
+  bindBack();
+  bindProdTabs();
+  document.getElementById('btn-nova-op')?.addEventListener('click',abrirNovaOP);
+  abertas.slice(0,5).forEach(op=>bindCardOP(op.id));
+}
+
+function htmlCardOP(op){
+  const st=PROD_STATUS_META[op.status]||PROD_STATUS_META.aberta;
+  const proc=prodProc(op.processoId);
+  const etapasFeitas=(op.etapas||[]).filter(e=>e.status==='concluida').length;
+  const etapasTot=(op.etapas||[]).length||1;
+  const insumoTot=(op.insumos||[]).reduce((s,i)=>s+(parseInt(i.qtd)||0),0);
+  return `<div class="card" style="display:flex;align-items:center;gap:12px;cursor:pointer" id="card-op-${op.id}">
+    <div class="mod-icon ${st.cor}"><i class="ti ${proc?.icon||'ti-clipboard'}"></i></div>
+    <div style="flex:1;min-width:0">
+      <strong style="font-size:14px;display:block">${escapeHtml(op.id)} · ${escapeHtml(proc?.nome||op.processoNome||'')}</strong>
+      <span style="font-size:12px;color:var(--text2)">${insumoTot} un de insumo · ${etapasFeitas}/${etapasTot} etapas</span>
+    </div>
+    <span class="badge ${st.cor}">${st.label}</span>
+  </div>`;
+}
+function bindCardOP(id){
+  document.getElementById(`card-op-${id}`)?.addEventListener('click',()=>{ prodState.opId=id; renderProducao(); });
+}
+
+function renderEstoqueFabrica(){
+  const bruto=estoqueMPBrutoMap();
+  const cons=estoqueMPConsumidoMap();
+  const disp=estoqueMPDisponivelMap();
+  const paAtivos=(prodState.pa||[]).filter(l=>!l.baixado);
+  const paAgrupado={};
+  paAtivos.forEach(l=>{
+    const k=l.produtoId;
+    if(!paAgrupado[k]) paAgrupado[k]={nome:l.produtoNome,un:l.un,qtd:0,lotes:0};
+    paAgrupado[k].qtd+=(parseFloat(l.qtd)||0);
+    paAgrupado[k].lotes++;
+  });
+  document.getElementById('content-area').innerHTML=`
+    ${btnBack()}
+    <div class="mod-header"><div class="mod-header-icon laranja"><i class="ti ti-packages"></i></div><div><h2>Estoque da fábrica</h2><span>Matéria-prima e produto acabado</span></div></div>
+    ${htmlProdTabs()}
+    <div class="section-title">Matéria-prima (pneus triados)</div>
+    <div class="stat-grid-3">
+      <div class="stat-box azul"><div class="sv">${totalMap(bruto)}</div><div class="sl">Entrada</div></div>
+      <div class="stat-box laranja"><div class="sv">${totalMap(cons)}</div><div class="sl">Em OP / usado</div></div>
+      <div class="stat-box verde"><div class="sv">${totalMap(disp)}</div><div class="sl">Disponível</div></div>
+    </div>
+    <div class="grade-scroll">
+      <table class="grade">
+        <thead><tr><th class="lbl">Categoria</th>${AROS.map(a=>`<th>${a}</th>`).join('')}<th style="text-align:right;padding-right:6px">Disp.</th></tr></thead>
+        <tbody>
+          ${CATS_TRIAGEM.filter(c=>c.id!=='lixo').map(cat=>{
+            const tot=AROS_FULL.reduce((s,a)=>s+(parseInt(disp[chaveMP(cat.id,a)])||0),0);
+            return `<tr>
+              <td class="cat-label" style="color:${cat.cor}">${cat.nome}</td>
+              ${AROS_FULL.map(a=>{
+                const v=parseInt(disp[chaveMP(cat.id,a)])||0;
+                return `<td style="text-align:center;font-size:12px;font-weight:600;color:${v>0?'var(--text)':'var(--text3)'}">${v||'·'}</td>`;
+              }).join('')}
+              <td class="tot-col${tot>0?' tem':''}">${tot||'—'}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+    <button class="btn btn-secondary btn-block" id="btn-ajuste-mp" style="margin-top:10px"><i class="ti ti-adjustments"></i> Lançar ajuste / estoque inicial</button>
+    <div class="section-title">Produto acabado</div>
+    ${Object.keys(paAgrupado).length===0?`<div class="empty" style="padding:1.5rem 1rem"><i class="ti ti-box-off"></i><p>Nenhum lote concluído ainda. Finalize uma OP no chão de fábrica.</p></div>`:
+      Object.values(paAgrupado).map(p=>`<div class="card" style="display:flex;align-items:center;gap:12px">
+        <div class="mod-icon verde"><i class="ti ti-box"></i></div>
+        <div style="flex:1"><strong style="font-size:14px;display:block">${escapeHtml(p.nome)}</strong><span style="font-size:12px;color:var(--text2)">${p.lotes} lote${p.lotes!==1?'s':''}</span></div>
+        <strong style="font-size:16px">${fmtQtdProd(p.qtd,p.un)}</strong>
+      </div>`).join('')}
+    ${(prodState.ajustes||[]).length?`<div class="section-title">Ajustes lançados (${prodState.ajustes.length})</div>
+      ${[...prodState.ajustes].reverse().slice(0,8).map(a=>`<div class="fin-row">
+        <span class="fl">${escapeHtml(prodCatNome(a.cat))} ${escapeHtml(a.aro)} · ${escapeHtml(a.motivo||'Ajuste')}</span>
+        <span class="fv" style="color:${(parseInt(a.qtd)||0)>=0?'var(--green)':'var(--red)'}">${(parseInt(a.qtd)||0)>0?'+':''}${a.qtd}</span>
+      </div>`).join('')}`:''}`;
+  bindBack();
+  bindProdTabs();
+  document.getElementById('btn-ajuste-mp')?.addEventListener('click',abrirModalAjusteMP);
+}
+
+function abrirModalAjusteMP(){
+  abrirModal(`
+    <h3>Ajuste de estoque</h3>
+    <p class="modal-desc">Use para estoque que já estava no pátio ou para correção. Valores negativos baixam o disponível.</p>
+    <div class="form-group"><label class="login-label">Categoria</label>
+      <select class="login-input" id="aj-cat">${CATS_TRIAGEM.filter(c=>c.id!=='lixo').map(c=>`<option value="${c.id}">${c.nome}</option>`).join('')}</select>
+    </div>
+    <div class="form-group"><label class="login-label">Aro</label>
+      <select class="login-input" id="aj-aro">${AROS_FULL.map(a=>`<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join('')}</select>
+    </div>
+    <div class="form-group"><label class="login-label">Quantidade (+ ou −)</label>
+      <input class="login-input" id="aj-qtd" type="number" inputmode="numeric" placeholder="Ex: 120 ou -10">
+    </div>
+    <div class="form-group"><label class="login-label">Motivo</label>
+      <input class="login-input" id="aj-motivo" placeholder="Estoque inicial, inventário, perda...">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" style="flex:1;justify-content:center" id="aj-cancelar">Cancelar</button>
+      <button class="btn btn-primary" style="flex:1;justify-content:center" id="aj-salvar">Lançar</button>
+    </div>`);
+  document.getElementById('aj-cancelar').addEventListener('click',fecharModal);
+  document.getElementById('aj-salvar').addEventListener('click',async ()=>{
+    const qtd=parseInt(document.getElementById('aj-qtd').value);
+    if(!Number.isFinite(qtd)||qtd===0){ mostrarToast('Informe uma quantidade diferente de zero.','aviso'); return; }
+    const cat=document.getElementById('aj-cat').value;
+    const aro=document.getElementById('aj-aro').value;
+    if(qtd<0){
+      const disp=parseInt(estoqueMPDisponivelMap()[chaveMP(cat,aro)])||0;
+      if(Math.abs(qtd)>disp){ mostrarToast('Ajuste negativo maior que o disponível ('+disp+').','erro'); return; }
+    }
+    prodState.ajustes.push({
+      id:prodNovoId('AJ-',prodState.ajustes),
+      cat,aro,qtd,
+      motivo:(document.getElementById('aj-motivo').value||'Ajuste').trim(),
+      em:new Date().toISOString(),
+      por:usuarioAtual?.nome||''
+    });
+    await salvarProducaoAjustes();
+    fecharModal();
+    mostrarToast('Ajuste lançado.','sucesso');
+    renderEstoqueFabrica();
+  });
+}
+
+function renderListaOPs(){
+  const filtro=prodState.filtroOp||'abertas';
+  const lista=(prodState.ops||[]).filter(op=>{
+    if(filtro==='todas') return true;
+    if(filtro==='abertas') return ['aberta','em_producao','pausada'].includes(op.status);
+    return op.status===filtro;
+  }).slice().reverse();
+  document.getElementById('content-area').innerHTML=`
+    ${btnBack()}
+    <div class="mod-header"><div class="mod-header-icon laranja"><i class="ti ti-clipboard-list"></i></div><div><h2>Ordens de produção</h2><span>${(prodState.ops||[]).length} ordem${(prodState.ops||[]).length!==1?'ns':''} no histórico</span></div></div>
+    ${htmlProdTabs()}
+    <div style="display:flex;gap:6px;overflow-x:auto;margin-bottom:12px">
+      ${[['abertas','Em aberto'],['concluida','Concluídas'],['cancelada','Canceladas'],['todas','Todas']].map(([id,nome])=>`
+        <button class="btn btn-sm ${filtro===id?'btn-primary':'btn-secondary'}" data-filtro-op="${id}" style="flex-shrink:0">${nome}</button>
+      `).join('')}
+    </div>
+    <button class="btn btn-primary btn-block" id="btn-nova-op" style="margin-bottom:12px"><i class="ti ti-plus"></i> Nova ordem de produção</button>
+    ${lista.length===0?`<div class="empty"><i class="ti ti-clipboard-off"></i><p>Nenhuma ordem neste filtro.</p></div>`:lista.map(op=>htmlCardOP(op)).join('')}`;
+  bindBack();
+  bindProdTabs();
+  document.getElementById('btn-nova-op')?.addEventListener('click',abrirNovaOP);
+  document.querySelectorAll('[data-filtro-op]').forEach(b=>b.addEventListener('click',()=>{ prodState.filtroOp=b.dataset.filtroOp; renderListaOPs(); }));
+  lista.forEach(op=>bindCardOP(op.id));
+}
+
+function renderChaoFabrica(){
+  const fila=(prodState.ops||[]).filter(o=>['aberta','em_producao','pausada'].includes(o.status)).slice().reverse();
+  document.getElementById('content-area').innerHTML=`
+    ${btnBack()}
+    <div class="mod-header"><div class="mod-header-icon laranja"><i class="ti ti-tool"></i></div><div><h2>Chão de fábrica</h2><span>Apontar etapas das ordens em aberto</span></div></div>
+    ${htmlProdTabs()}
+    ${fila.length===0?`<div class="empty"><i class="ti ti-tools-off"></i><p>Nenhuma ordem aguardando apontamento.<br>O gestor cria a OP na aba Ordens.</p></div>`:''}
+    ${fila.map(op=>{
+      const proc=prodProc(op.processoId);
+      const atual=(op.etapas||[]).find(e=>e.status!=='concluida');
+      const feitas=(op.etapas||[]).filter(e=>e.status==='concluida').length;
+      const tot=(op.etapas||[]).length||1;
+      const pct=Math.round(feitas/tot*100);
+      return `<div class="card" id="chao-op-${op.id}" style="cursor:pointer">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div class="mod-icon laranja"><i class="ti ${proc?.icon||'ti-tool'}"></i></div>
+          <div style="flex:1;min-width:0">
+            <strong style="font-size:14px;display:block">${escapeHtml(op.id)}</strong>
+            <span style="font-size:12px;color:var(--text2)">${escapeHtml(proc?.nome||'')}</span>
+          </div>
+          <span class="badge ${(PROD_STATUS_META[op.status]||{}).cor||'laranja'}">${(PROD_STATUS_META[op.status]||{}).label||op.status}</span>
+        </div>
+        <div class="prog-wrap"><div class="prog-bar" style="width:${pct}%"></div></div>
+        <p style="font-size:12px;color:var(--text2);margin-top:6px">${atual?('Próxima: '+atual.nome):'Pronto para concluir'} · ${feitas}/${tot}</p>
+      </div>`;
+    }).join('')}`;
+  bindBack();
+  bindProdTabs();
+  fila.forEach(op=>{
+    document.getElementById(`chao-op-${op.id}`)?.addEventListener('click',()=>{ prodState.opId=op.id; renderProducao(); });
+  });
+}
+
+function abrirNovaOP(){
+  prodState.nova={passo:1,processoId:null,insumos:{},qtdPrevista:'',obs:''};
+  renderNovaOP();
+}
+function renderNovaOP(){
+  const n=prodState.nova;
+  if(!n) return renderProducao();
+  if(n.passo===1){
+    document.getElementById('content-area').innerHTML=`
+      <button class="btn btn-secondary btn-sm" id="btn-cancelar-op" style="margin-bottom:1rem"><i class="ti ti-arrow-left"></i> Cancelar</button>
+      <div class="mod-header"><div class="mod-header-icon laranja"><i class="ti ti-plus"></i></div><div><h2>Nova ordem de produção</h2><span>1 de 2 · Escolha o processo</span></div></div>
+      ${PROD_PROCESSOS.map(p=>`<div class="card" style="display:flex;align-items:center;gap:12px;cursor:pointer" id="proc-${p.id}">
+        <div class="mod-icon ${p.cor}"><i class="ti ${p.icon}"></i></div>
+        <div style="flex:1;min-width:0">
+          <strong style="font-size:14px;display:block">${p.nome}</strong>
+          <span style="font-size:12px;color:var(--text2)">${p.desc}</span>
+        </div>
+        <i class="ti ti-chevron-right" style="color:var(--text3)"></i>
+      </div>`).join('')}`;
+    document.getElementById('btn-cancelar-op')?.addEventListener('click',()=>{ prodState.nova=null; renderProducao(); });
+    PROD_PROCESSOS.forEach(p=>{
+      document.getElementById(`proc-${p.id}`)?.addEventListener('click',()=>{ n.processoId=p.id; n.passo=2; renderNovaOP(); });
+    });
+    return;
+  }
+  const proc=prodProc(n.processoId);
+  const disp=estoqueMPDisponivelMap();
+  const linhas=[];
+  CATS_TRIAGEM.filter(c=>c.id!=='lixo').forEach(cat=>{
+    AROS_FULL.forEach(aro=>{
+      const d=parseInt(disp[chaveMP(cat.id,aro)])||0;
+      if(d<=0 && !(parseInt(n.insumos[chaveMP(cat.id,aro)])||0)) return;
+      linhas.push({cat:cat.id,catNome:cat.nome,cor:cat.cor,aro,disp:d});
+    });
+  });
+  const totInsumo=Object.values(n.insumos).reduce((s,v)=>s+(parseInt(v)||0),0);
+  const prevista=n.qtdPrevista===''||n.qtdPrevista==null?qtdPrevistaProcesso(proc,totInsumo):n.qtdPrevista;
+  document.getElementById('content-area').innerHTML=`
+    <button class="btn btn-secondary btn-sm" id="btn-voltar-proc" style="margin-bottom:1rem"><i class="ti ti-arrow-left"></i> Processos</button>
+    <div class="mod-header"><div class="mod-header-icon ${proc.cor}"><i class="ti ${proc.icon}"></i></div><div><h2>${escapeHtml(proc.nome)}</h2><span>2 de 2 · Consumir estoque</span></div></div>
+    ${linhas.length===0?`<div class="alert laranja"><i class="ti ti-alert-triangle"></i><p>Não há matéria-prima disponível. Confirme triagens ou lance um ajuste no Estoque.</p></div>`:''}
+    <div class="section-title">Insumos (máx. = disponível)</div>
+    ${linhas.map(l=>{
+      const k=chaveMP(l.cat,l.aro);
+      const v=parseInt(n.insumos[k])||0;
+      return `<div class="fin-row" style="align-items:center">
+        <span class="fl"><strong style="color:${l.cor}">${escapeHtml(l.catNome)}</strong> · ${escapeHtml(l.aro)}<br><span style="font-size:11px;color:var(--text3)">${l.disp} disponível</span></span>
+        <input class="cell-inp${v>0?' tem':''}" type="number" inputmode="numeric" min="0" max="${l.disp}" value="${v||''}" placeholder="0" data-insumo="${k}" style="width:64px;height:40px">
+      </div>`;
+    }).join('')}
+    <div class="card" style="margin-top:12px">
+      <div class="fin-row"><span class="fl">Total de pneus na OP</span><strong id="nova-op-tot">${totInsumo}</strong></div>
+      <div class="form-group" style="margin:10px 0 0"><label class="login-label">Saída prevista (${escapeHtml(proc.produto.un)})</label>
+        <input class="login-input" id="nova-op-prevista" type="number" inputmode="decimal" min="0" step="0.1" value="${prevista||''}">
+      </div>
+      <p style="font-size:11px;color:var(--text3);margin-top:4px">Produto: ${escapeHtml(proc.produto.nome)}${proc.subproduto?' · também gera '+proc.subproduto.nome:''}</p>
+      <div class="form-group" style="margin-top:10px"><label class="login-label">Observação</label>
+        <input class="login-input" id="nova-op-obs" placeholder="Turno, máquina, operador..." value="${escapeHtml(n.obs||'')}">
+      </div>
+    </div>
+    <button class="btn btn-primary btn-block${totInsumo>0?'':' btn-dis'}" id="btn-criar-op" style="margin-top:12px"><i class="ti ti-device-floppy"></i> Abrir ordem de produção</button>`;
+  document.getElementById('btn-voltar-proc')?.addEventListener('click',()=>{ n.passo=1; renderNovaOP(); });
+  document.querySelectorAll('[data-insumo]').forEach(inp=>{
+    inp.addEventListener('focus',()=>inp.select());
+    inp.addEventListener('input',()=>{
+      const k=inp.dataset.insumo;
+      const {cat,aro}=parseChaveMP(k);
+      const max=parseInt(disp[chaveMP(cat,aro)])||0;
+      let val=Math.max(0,parseInt(inp.value)||0);
+      if(val>max) val=max;
+      n.insumos[k]=val;
+      inp.value=val||'';
+      inp.className='cell-inp'+(val>0?' tem':'');
+      const tot=Object.values(n.insumos).reduce((s,v)=>s+(parseInt(v)||0),0);
+      const elT=document.getElementById('nova-op-tot'); if(elT) elT.textContent=tot;
+      const elP=document.getElementById('nova-op-prevista');
+      if(elP && (n.qtdPrevista===''||n.qtdPrevista==null)) elP.value=qtdPrevistaProcesso(proc,tot)||'';
+      const btn=document.getElementById('btn-criar-op');
+      if(btn){ if(tot>0) btn.classList.remove('btn-dis'); else btn.classList.add('btn-dis'); }
+    });
+  });
+  document.getElementById('nova-op-prevista')?.addEventListener('input',e=>{ n.qtdPrevista=e.target.value; });
+  document.getElementById('nova-op-obs')?.addEventListener('input',e=>{ n.obs=e.target.value; });
+  document.getElementById('btn-criar-op')?.addEventListener('click',criarOrdemProducao);
+}
+
+async function criarOrdemProducao(){
+  const n=prodState.nova;
+  if(!n) return;
+  const proc=prodProc(n.processoId);
+  const disp=estoqueMPDisponivelMap();
+  const insumos=[];
+  Object.entries(n.insumos).forEach(([k,v])=>{
+    const q=parseInt(v)||0;
+    if(!q) return;
+    const {cat,aro}=parseChaveMP(k);
+    const max=parseInt(disp[k])||0;
+    if(q>max){ mostrarToast('Quantidade acima do estoque em '+prodCatNome(cat)+' '+aro+'.','erro'); throw new Error('estoque'); }
+    insumos.push({cat,aro,qtd:q});
+  });
+  const tot=insumos.reduce((s,i)=>s+i.qtd,0);
+  if(!tot){ mostrarToast('Informe ao menos 1 pneu de insumo.','aviso'); return; }
+  const prevista=parseFloat(document.getElementById('nova-op-prevista')?.value);
+  const op={
+    id:prodNovoId('OP-',prodState.ops),
+    criadoEm:new Date().toISOString(),
+    criadoPor:usuarioAtual?.nome||'',
+    status:'aberta',
+    processoId:proc.id,
+    processoNome:proc.nome,
+    insumos,
+    etapas:proc.etapas.map((nome,i)=>({id:'e'+i,nome,status:'pendente',iniciadoEm:null,finalizadoEm:null,operador:null,obs:''})),
+    produtoId:proc.produto.id,
+    produtoNome:proc.produto.nome,
+    un:proc.produto.un,
+    qtdPrevista:Number.isFinite(prevista)?prevista:qtdPrevistaProcesso(proc,tot),
+    qtdReal:null,
+    subproduto:proc.subproduto?{id:proc.subproduto.id,nome:proc.subproduto.nome,un:proc.subproduto.un,fator:proc.subproduto.fator}:null,
+    obs:(document.getElementById('nova-op-obs')?.value||n.obs||'').trim()
+  };
+  prodState.ops.push(op);
+  prodState.nova=null;
+  prodState.tab='chao';
+  prodState.opId=op.id;
+  await salvarProducaoOps();
+  mostrarToast(op.id+' aberta. Pode apontar no chão de fábrica.','sucesso');
+  renderProducao();
+}
+
+function renderOPDetalhe(opId){
+  const op=(prodState.ops||[]).find(o=>o.id===opId);
+  if(!op){ prodState.opId=null; renderProducao(); return; }
+  const proc=prodProc(op.processoId);
+  const st=PROD_STATUS_META[op.status]||PROD_STATUS_META.aberta;
+  const atual=(op.etapas||[]).find(e=>e.status!=='concluida');
+  const todasFeitas=(op.etapas||[]).every(e=>e.status==='concluida');
+  const insumoTot=(op.insumos||[]).reduce((s,i)=>s+i.qtd,0);
+  const y=yieldPct(op);
+  document.getElementById('content-area').innerHTML=`
+    <button class="btn btn-secondary btn-sm" id="btn-voltar-ops" style="margin-bottom:1rem"><i class="ti ti-arrow-left"></i> Voltar</button>
+    <div class="mod-header"><div class="mod-header-icon ${st.cor}"><i class="ti ${proc?.icon||'ti-clipboard'}"></i></div><div><h2>${escapeHtml(op.id)}</h2><span>${escapeHtml(op.processoNome||proc?.nome||'')} · ${escapeHtml(op.criadoPor||'')}</span></div></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+      <span class="badge ${st.cor}">${st.label}</span>
+      <span class="badge cinza">${insumoTot} un de insumo</span>
+      <span class="badge cinza">Previsto ${fmtQtdProd(op.qtdPrevista,op.un)}</span>
+      ${op.qtdReal!=null?`<span class="badge verde">Real ${fmtQtdProd(op.qtdReal,op.un)}${y!=null?' · '+y+'%':''}</span>`:''}
+    </div>
+    ${op.obs?`<p style="font-size:13px;color:var(--text2);margin-bottom:10px">${escapeHtml(op.obs)}</p>`:''}
+    <div class="section-title">Insumos</div>
+    ${(op.insumos||[]).map(i=>`<div class="fin-row"><span class="fl">${escapeHtml(prodCatNome(i.cat))} · ${escapeHtml(i.aro)}</span><span class="fv">${i.qtd} un</span></div>`).join('')}
+    <div class="section-title">Etapas</div>
+    <div class="etapa-lista">
+      ${(op.etapas||[]).map((e,idx)=>{
+        const done=e.status==='concluida';
+        const active=!done && atual && atual.id===e.id;
+        return `<div class="etapa-item">
+          <div class="etapa-rail"><div class="etapa-dot${done?' done':active?' active':''}"></div><div class="etapa-line"></div></div>
+          <div class="etapa-body${done?' done':active?' active':''}">
+            <strong style="font-size:13px;display:block">${idx+1}. ${escapeHtml(e.nome)}</strong>
+            <span style="font-size:11px;color:var(--text2)">${done?('Concluída'+(e.operador?' · '+escapeHtml(e.operador):'')+(e.finalizadoEm?' · '+new Date(e.finalizadoEm).toLocaleString('pt-BR',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit'}):'')):active?'Em execução':'Aguardando'}</span>
+            ${active && op.status!=='cancelada' && op.status!=='concluida'?`
+              ${e.status==='pendente'?`<button class="btn btn-primary btn-sm" data-iniciar-etapa="${e.id}" style="margin-top:8px"><i class="ti ti-player-play"></i> Iniciar</button>`:`
+                ${idx===(op.etapas.length-1)?`<div class="form-group" style="margin-top:8px"><label class="login-label">Quantidade real produzida (${escapeHtml(op.un)})</label>
+                  <input class="login-input" id="op-qtd-real" type="number" inputmode="decimal" min="0" step="0.1" value="${op.qtdPrevista||''}"></div>`:''}
+                <button class="btn btn-primary btn-sm" data-concluir-etapa="${e.id}" style="margin-top:8px"><i class="ti ti-check"></i> Concluir etapa</button>`}
+            `:''}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+    ${op.status!=='concluida' && op.status!=='cancelada'?`
+      <div style="display:flex;gap:8px;margin-top:8px">
+        ${op.status==='pausada'
+          ?`<button class="btn btn-primary" style="flex:1;justify-content:center" id="btn-retomar-op"><i class="ti ti-player-play"></i> Retomar</button>`
+          :`<button class="btn btn-secondary" style="flex:1;justify-content:center" id="btn-pausar-op"><i class="ti ti-player-pause"></i> Pausar</button>`}
+        <button class="btn btn-danger" style="flex:1;justify-content:center" id="btn-cancelar-op-aberta"><i class="ti ti-x"></i> Cancelar OP</button>
+      </div>`:''}
+    ${todasFeitas && op.status==='concluida'?`<div class="alert verde"><i class="ti ti-circle-check"></i><p>Ordem concluída. Produto acabado lançado no estoque da fábrica.</p></div>`:''}`;
+  document.getElementById('btn-voltar-ops')?.addEventListener('click',()=>{ prodState.opId=null; renderProducao(); });
+  document.querySelectorAll('[data-iniciar-etapa]').forEach(b=>b.addEventListener('click',()=>iniciarEtapaOP(op.id,b.dataset.iniciarEtapa)));
+  document.querySelectorAll('[data-concluir-etapa]').forEach(b=>b.addEventListener('click',()=>concluirEtapaOP(op.id,b.dataset.concluirEtapa)));
+  document.getElementById('btn-pausar-op')?.addEventListener('click',()=>alterarStatusOP(op.id,'pausada'));
+  document.getElementById('btn-retomar-op')?.addEventListener('click',()=>alterarStatusOP(op.id,'em_producao'));
+  document.getElementById('btn-cancelar-op-aberta')?.addEventListener('click',()=>cancelarOP(op.id));
+}
+
+async function iniciarEtapaOP(opId,etapaId){
+  const op=prodState.ops.find(o=>o.id===opId);
+  if(!op||op.status==='cancelada'||op.status==='concluida') return;
+  const et=op.etapas.find(e=>e.id===etapaId);
+  if(!et||et.status!=='pendente') return;
+  et.status='em_andamento';
+  et.iniciadoEm=new Date().toISOString();
+  et.operador=usuarioAtual?.nome||'';
+  if(op.status==='aberta'||op.status==='pausada') op.status='em_producao';
+  await salvarProducaoOps();
+  mostrarToast('Etapa "'+et.nome+'" iniciada.','sucesso');
+  renderOPDetalhe(opId);
+}
+
+async function concluirEtapaOP(opId,etapaId){
+  const op=prodState.ops.find(o=>o.id===opId);
+  if(!op||op.status==='cancelada'||op.status==='concluida') return;
+  const et=op.etapas.find(e=>e.id===etapaId);
+  if(!et||et.status==='concluida') return;
+  const ultima=op.etapas[op.etapas.length-1];
+  if(et.id===ultima.id){
+    const raw=parseFloat(document.getElementById('op-qtd-real')?.value);
+    if(!Number.isFinite(raw)||raw<0){ mostrarToast('Informe a quantidade real produzida.','aviso'); return; }
+    op.qtdReal=raw;
+  }
+  et.status='concluida';
+  et.finalizadoEm=new Date().toISOString();
+  et.operador=et.operador||usuarioAtual?.nome||'';
+  if(!et.iniciadoEm) et.iniciadoEm=et.finalizadoEm;
+  const todas=op.etapas.every(e=>e.status==='concluida');
+  if(todas){
+    op.status='concluida';
+    op.concluidaEm=new Date().toISOString();
+    op.concluidaPor=usuarioAtual?.nome||'';
+    const lot={
+      id:prodNovoId('PA-',prodState.pa),
+      opId:op.id,
+      produtoId:op.produtoId,
+      produtoNome:op.produtoNome,
+      un:op.un,
+      qtd:op.qtdReal,
+      criadoEm:op.concluidaEm,
+      criadoPor:op.concluidaPor,
+      insumos:op.insumos
+    };
+    prodState.pa.push(lot);
+    if(op.subproduto){
+      const qSub=Math.round((op.insumos||[]).reduce((s,i)=>s+i.qtd,0)*(op.subproduto.fator||0)*10)/10;
+      if(qSub>0){
+        prodState.pa.push({
+          id:prodNovoId('PA-',prodState.pa),
+          opId:op.id,
+          produtoId:op.subproduto.id,
+          produtoNome:op.subproduto.nome,
+          un:op.subproduto.un,
+          qtd:qSub,
+          criadoEm:op.concluidaEm,
+          criadoPor:op.concluidaPor,
+          insumos:op.insumos
+        });
+      }
+    }
+    await salvarProducaoPA();
+    const y=yieldPct(op);
+    mostrarToast(op.id+' concluída'+(y!=null?' · rendimento '+y+'%':'')+'.','sucesso');
+  }else{
+    mostrarToast('Etapa "'+et.nome+'" concluída.','sucesso');
+  }
+  await salvarProducaoOps();
+  renderOPDetalhe(opId);
+}
+
+async function alterarStatusOP(opId,status){
+  const op=prodState.ops.find(o=>o.id===opId);
+  if(!op||op.status==='concluida'||op.status==='cancelada') return;
+  op.status=status;
+  await salvarProducaoOps();
+  mostrarToast(status==='pausada'?'OP pausada.':'OP retomada.','info');
+  renderOPDetalhe(opId);
+}
+
+async function cancelarOP(opId){
+  const ok=await confirmarAcao({titulo:'Cancelar ordem',mensagem:'O estoque de matéria-prima volta a ficar disponível. Esta ação não pode ser desfeita.',textoConfirmar:'Cancelar OP',tipoBotao:'danger'});
+  if(!ok) return;
+  const op=prodState.ops.find(o=>o.id===opId);
+  if(!op||op.status==='concluida') return;
+  op.status='cancelada';
+  op.canceladaEm=new Date().toISOString();
+  op.canceladaPor=usuarioAtual?.nome||'';
+  await salvarProducaoOps();
+  mostrarToast(op.id+' cancelada. Estoque liberado.','aviso');
+  prodState.opId=null;
+  renderProducao();
+}
+
+function htmlEstoqueVendaBanner(){
+  const tot=totalEstoqueMPDisponivel();
+  const pa=(prodState.pa||[]).filter(l=>!l.baixado && l.produtoId==='lote_pneus').reduce((s,l)=>s+(parseFloat(l.qtd)||0),0);
+  if(!tot && !pa) return '';
+  return `<div class="alert azul" style="margin-bottom:12px"><i class="ti ti-packages"></i><p>Estoque da fábrica: <strong>${tot}</strong> pneus classificados disponíveis${pa?` · <strong>${fmtQtdProd(pa,'un')}</strong> já em lote de venda`:''}.</p></div>`;
+}
+
+
 // ── VENDAS ────────────────────────────────────────────────────────────────────
 const CLIENTES_VND=[{"id":"1","nome":"BORRACHARIA PEREIRA LTDA"},{"id":"6","nome":"JATOBA PNEUS"},{"id":"7","nome":"WS DA SILVA COMERCIO DE PNEUS"},{"id":"8","nome":"RECAP PNEUS MARINGA"},{"id":"14","nome":"PRIME PNEUS COMERCIO E SERVICOS"},{"id":"17","nome":"SOSUKE CENTRO AUTOMOTIVO"},{"id":"23","nome":"ALEXANDRE DOS SANTOS"},{"id":"24","nome":"DANIEL PNEUS EIRELI ME"},{"id":"33","nome":"ATALAIA PNEUS E SERVICOS"},{"id":"43","nome":"PLATAFORMA CAR CENTER"},{"id":"63","nome":"MESQUITAO COMERCIO DE PNEUS"},{"id":"73","nome":"ROQUE WHEELS RODAS E PNEUS"},{"id":"82","nome":"TRUCKERS PNEUS"},{"id":"96","nome":"BORRACHARIA BR"},{"id":"99","nome":"CELIO CARRION"},{"id":"150","nome":"THINASS PNEUS ME"},{"id":"162","nome":"MULT COMERCIO DE PNEUS"},{"id":"263","nome":"GI PNEUS E RODAS"},{"id":"267","nome":"FR COMERCIO DE PNEUS"},{"id":"357","nome":"TCP ECOLOGY TYRE"},{"id":"363","nome":"SARADAO COMERCIO DE PNEUS"},{"id":"370","nome":"BENGEZEN COMERCIO DE PNEUS"},{"id":"371","nome":"JCM COMERCIO DE PNEUS"},{"id":"385","nome":"PNEUMAT COMERCIO DE PNEUS"},{"id":"399","nome":"AGILI DISTRIBUIDORA DE PNEUS"},{"id":"1000","nome":"KAUE PNEUS"},{"id":"1001","nome":"DANIEL JACOB LIMA"},{"id":"1009","nome":"EVANDRO DA SILVA ANDRADE"}];
 
@@ -6307,6 +7013,7 @@ function renderVendasCliente(){
   document.getElementById('content-area').innerHTML=`
     ${btnBack()}
     <div class="mod-header"><div class="mod-header-icon amarelo"><i class="ti ti-shopping-cart"></i></div><div><h2>Nova venda</h2><span>${CLIENTES_VND.length} clientes cadastrados</span></div></div>
+    ${htmlEstoqueVendaBanner()}
     <div class="search-wrap"><i class="ti ti-search"></i><input id="busca-vnd" type="text" placeholder="Nome ou código..." value="${vendasState.busca}" autocomplete="off" autocorrect="off"></div>
     <div class="cli-list">
       ${lista.map(c=>{

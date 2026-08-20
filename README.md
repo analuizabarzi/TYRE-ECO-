@@ -24,7 +24,7 @@ O sistema é uma aplicação **standalone** (HTML + CSS + JS num único arquivo)
 
 Cada colaborador tem **login individual** (usuário + senha), criado pelo Gestor na tela **Usuários**. Não existe mais senha compartilhada.
 
-Cada usuário tem um **perfil** (Gestor, Motorista, Conferente Operacional, Conferente Fiscal, Triagem, Vendas, Financeiro, Emissão de NF, Logística) que define um conjunto padrão de módulos visíveis — mas o Gestor pode **customizar exatamente quais módulos cada pessoa vê**, módulo por módulo, independente do perfil (tela Usuários → botão 🔑 Permissões).
+Cada usuário tem um **perfil** (Gestor, Motorista, Conferente Operacional, Conferente Fiscal, Triagem, Produção / Fábrica, Vendas, Financeiro, Emissão de NF, Logística) que define um conjunto padrão de módulos visíveis — mas o Gestor pode **customizar exatamente quais módulos cada pessoa vê**, módulo por módulo, independente do perfil (tela Usuários → botão 🔑 Permissões).
 
 A trava de permissão é aplicada tanto na tela (esconde os cards) quanto na abertura do módulo (`abrirModulo`), então não dá pra contornar digitando o módulo direto no console do navegador.
 
@@ -41,7 +41,8 @@ A trava de permissão é aplicada tanto na tela (esconde os cards) quanto na abe
 - **Importar dados** — importação por Excel/CSV de vendas, contas e fornecedores, com detecção automática de colunas, checagem de duplicados e histórico de importações
 - **Alertas WhatsApp (Z-API)** — três alertas configuráveis (ver seção própria)
 - **Usuários** — criação de login por colaborador + permissões granulares por módulo
-- **Dashboard** — visão geral do dia
+- **Dashboard** — visão geral do dia, incluindo indicadores da fábrica
+- **Produção** — estoque de matéria-prima, ordens de produção e chão de fábrica (ver seção própria)
 
 ### 🧭 Logística
 - Mesmo Roteirizador do Gestor
@@ -64,6 +65,18 @@ A trava de permissão é aplicada tanto na tela (esconde os cards) quanto na abe
 ### 🔍 Triagem
 - Grade por categoria (Carcaça, Risco, Meia Vida, Cortados, Lixo) × aro
 - Dispara alerta de WhatsApp se % de Lixo passar do limite configurado
+
+### 🏭 Produção / Fábrica
+Novo perfil **Produção / Fábrica** (operador de chão) e módulo correspondente para o Gestor.
+
+Fluxo: **triagem confirmada → estoque de matéria-prima → ordem de produção (OP) → apontamento das etapas → produto acabado**.
+
+- **Painel** — pneus disponíveis, OPs em aberto, concluídas no dia e lotes de produto acabado
+- **Estoque** — grade categoria × aro (o que veio da triagem, menos o que já está em OP); ajuste / estoque inicial para o que já estava no pátio; produto acabado agrupado por tipo
+- **Ordens** — abre OP escolhendo o processo (lote para venda, destalação, picagem, granulação, prensagem de fardos, corte), consome o estoque disponível e define a saída prevista
+- **Chão de fábrica** — o operador inicia e conclui cada etapa; na última etapa informa a quantidade real produzida (rendimento %). Cancelar a OP devolve o estoque
+
+O **Lixo** da triagem não entra como matéria-prima. A venda continua independente (não baixa automaticamente o estoque da fábrica); a tela de Nova venda só mostra um aviso com o saldo classificado disponível.
 
 ### 🛒 Vendas
 - Grade de preços por cliente (por aro ou por medida específica, conforme cadastro)
@@ -132,8 +145,9 @@ Pra atualizar o sistema: baixe o `index.html`, edite, e suba de novo pelo **Add 
 - **Autenticação:** Firebase Auth (e-mail/senha; login de usuário vira `usuario@tyreeco.app` internamente)
 - **Banco de dados:** Firestore
   - `usuarios/{uid}` — perfil, permissões, dados de login
-  - `app_storage/{chave}` — armazena a maior parte dos dados do sistema (cadastros, vendas, contas, custos, etc.) através de um shim (`window.storage`) que expõe `get/set` como se fosse local, mas grava no Firestore
+  - `app_storage/{chave}` — armazena a maior parte dos dados do sistema (cadastros, vendas, contas, custos, produção, etc.) através de um shim (`window.storage`) que expõe `get/set` como se fosse local, mas grava no Firestore
   - `venda_foto_{id}` — foto de cada venda, guardada separadamente do histórico principal (evita estourar o limite de tamanho de documento)
+  - `producao_ops` / `producao_pa` / `producao_ajustes` — ordens de produção, lotes de produto acabado e ajustes de estoque da fábrica
 
 ⚠️ Fotos e arquivos grandes **nunca** devem ser guardados dentro de arrays grandes salvos como um único documento (histórico de vendas, contas, etc.) — isso já causou risco de estourar o limite de 1 MB por documento do Firestore no passado. Sempre usar uma chave própria por registro quando o conteúdo for pesado (base64 de imagem, por exemplo).
 
@@ -143,6 +157,7 @@ Pra atualizar o sistema: baixe o `index.html`, edite, e suba de novo pelo **Add 
 
 - O acompanhamento de "viagem em andamento" (Painel de Motoristas) hoje segue **uma viagem ativa por vez**, não múltiplos motoristas rodando simultaneamente com estado independente. Se isso virar necessário no dia a dia, é preciso um trabalho maior para dar identidade própria a cada rota/motorista em andamento.
 - A emissão de NF é uma **ficha auxiliar**, não uma integração real com a prefeitura — o lançamento final ainda é manual no portal da NFS-e.
+- A venda **não baixa automaticamente** o estoque da fábrica (matéria-prima ou produto acabado). O saldo aparece só como aviso na Nova venda; a baixa junto com o pedido fica para um próximo passo.
 
 ---
 
