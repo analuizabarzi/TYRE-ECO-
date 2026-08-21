@@ -11,6 +11,7 @@ Coleta sucata automotiva (pneus, discos, filtros, etc.) das redes **Campneus**, 
 | Arquivo | Descrição |
 |---|---|
 | `index.html` | **Sistema completo** — login, todos os módulos, todo o negócio. Este é o único arquivo em produção. |
+| `sag_ambiental.html` | **SAG Ambiental** — painel standalone de custeio fabril da linha de trituração (fora do Tyre Eco). |
 | `firebase.json` / `.firebaserc` | Configuração do Firebase Hosting |
 | `.github/workflows/deploy.yml` | Deploy automático (ver seção "Publicação") |
 

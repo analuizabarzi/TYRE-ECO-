@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAG Ambiental — Custeio fabril</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#15181B;--panel:#1E2226;--panel-alt:#242931;--line:#343B44;
+  --steel:#7C8894;--amber:#E8A33D;--amber-dim:#8C6626;--teal:#4F8C86;
+  --text:#EDEDE8;--text-dim:#9AA3AC;--danger:#C1595A;
+}
+html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif}
+input[type=number]{-moz-appearance:textfield}
+input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.num-input{
+  background:var(--panel-alt);border:1px solid var(--line);color:var(--text);
+  padding:6px 8px;border-radius:4px;width:100%;font-size:13px;font-variant-numeric:tabular-nums;font-family:inherit;
+}
+.num-input:focus{outline:1px solid var(--amber)}
+button:focus-visible,select:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+
+header{
+  border-bottom:1px solid var(--line);padding:18px 24px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  background:linear-gradient(180deg,#1a1e22 0%,var(--bg) 100%);
+}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-icon{
+  width:34px;height:34px;border-radius:6px;background:var(--amber);
+  display:flex;align-items:center;justify-content:center;color:var(--bg);font-size:18px;
+}
+.brand-title{font-size:17px;font-weight:700;letter-spacing:.3px}
+.brand-sub{font-size:11.5px;color:var(--text-dim);letter-spacing:.6px;text-transform:uppercase}
+nav{display:flex;gap:4px;flex-wrap:wrap}
+nav button{
+  background:transparent;color:var(--text-dim);border:1px solid transparent;
+  border-radius:6px;padding:7px 14px;font-size:13px;cursor:pointer;font-weight:600;font-family:inherit;
+}
+nav button.active{background:var(--panel-alt);color:var(--amber);border-color:var(--amber-dim)}
+
+main{padding:24px;max-width:1160px;margin:0 auto}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+@media(max-width:800px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+.kpi .l{font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.kpi .v{font-size:21px;font-weight:700;font-variant-numeric:tabular-nums}
+.kpi .v.neg{color:var(--danger)}
+.warn{background:#2A2117;border:1px solid var(--amber-dim);border-radius:8px;padding:10px 14px;margin-bottom:20px;font-size:12.5px;color:var(--amber)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:20px;margin-bottom:20px}
+.panel-title{font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{padding:6px 8px;font-weight:500;color:var(--text-dim);text-align:left}
+th.r,td.r{text-align:right}
+td{padding:8px;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
+td.strong{font-weight:600}
+.pos{color:var(--teal)}.neg{color:var(--danger)}
+
+.flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.node{background:var(--panel-alt);border:1px solid var(--line);border-radius:8px;padding:10px 12px;min-width:118px;text-align:center}
+.node.out{min-width:96px;border-color:var(--amber-dim)}
+.node .l{font-size:10.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.4px}
+.node .v{font-size:14px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}
+.node .tag{font-size:10.5px;margin-top:6px;font-weight:600;color:var(--amber)}
+.node .tag.teal{color:var(--teal)}
+.arrow{color:var(--steel);font-size:18px;align-self:center}
+.outs{display:flex;gap:8px;flex-wrap:wrap;padding-left:4px}
+.outs .v{color:var(--amber)}
+
+.form-row{display:flex;gap:10px;margin-bottom:18px;align-items:flex-end;flex-wrap:wrap}
+.fg label{display:block;font-size:11px;color:var(--text-dim);margin-bottom:4px}
+.btn-amber{
+  background:var(--amber);color:var(--bg);border:none;border-radius:6px;padding:8px 14px;
+  font-weight:700;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:inherit;
+}
+.btn-icon{background:none;border:none;color:var(--danger);cursor:pointer;padding:4px}
+.hint{display:flex;align-items:center;gap:8px;margin-bottom:16px;color:var(--text-dim);font-size:12.5px}
+.acc{background:var(--panel);border:1px solid var(--line);border-radius:8px;margin-bottom:10px;overflow:hidden}
+.acc-btn{
+  width:100%;display:flex;justify-content:space-between;align-items:center;padding:12px 16px;
+  background:transparent;border:none;color:var(--text);cursor:pointer;font-size:13.5px;font-weight:600;font-family:inherit;text-align:left;
+}
+.acc-body{padding:0 16px 16px}
+.grid-5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:800px){
+  .grid-5,.grid-4{grid-template-columns:repeat(2,1fr)}
+  .grid-3{grid-template-columns:1fr}
+}
+.toast-wrap{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:8px;width:min(92vw,380px);pointer-events:none}
+.toast{padding:12px 14px;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.35);font-size:13px;font-weight:600;background:#2A2117;color:var(--amber);border:1px solid var(--amber-dim);pointer-events:auto}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script>
+const PROCESSOS=[
+  {id:'descarga',nome:'Descarga'},
+  {id:'destalonador',nome:'Destalonador'},
+  {id:'primaria',nome:'Trituração Primária'},
+  {id:'secundaria',nome:'Trituração Secundária'},
+];
+const CATEGORIAS=[
+  {id:'maoObra',label:'Mão de obra'},
+  {id:'energia',label:'Energia'},
+  {id:'manutencao',label:'Manutenção'},
+  {id:'depreciacao',label:'Depreciação'},
+  {id:'insumos',label:'Insumos'},
+];
+const STORAGE_KEY='sag_ambiental_custeio_v1';
+
+function custoZerado(){ return {maoObra:0,energia:0,manutencao:0,depreciacao:0,insumos:0}; }
+function defaultState(){
+  return {
+    aba:'geral',
+    premissasAbertas:null,
+    custosProcesso:{descarga:custoZerado(),destalonador:custoZerado(),primaria:custoZerado(),secundaria:custoZerado()},
+    precos:{acoSujo:300,acoLimpo:500,chip:650,mesh10:1800,mesh20:2000,mesh30:2200},
+    rendimentoSecundaria:{acoLimpo:5,mesh10:30,mesh20:35,mesh30:30},
+    aquisicao:{pneuCarga:0,pneuPasseio:0,chipComprado:0},
+    lotes:[
+      {id:1,materiaPrima:'pneuCarga',quantidade:100},
+      {id:2,materiaPrima:'pneuPasseio',quantidade:60},
+      {id:3,materiaPrima:'chipComprado',quantidade:40},
+    ],
+    novoLote:{materiaPrima:'pneuCarga',quantidade:''},
+  };
+}
+
+let state=defaultState();
+
+function loadState(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(!raw) return;
+    const d=JSON.parse(raw);
+    if(d.custosProcesso){
+      state.custosProcesso={
+        descarga:{...custoZerado(),...(d.custosProcesso.descarga||{})},
+        destalonador:{...custoZerado(),...(d.custosProcesso.destalonador||{})},
+        primaria:{...custoZerado(),...(d.custosProcesso.primaria||{})},
+        secundaria:{...custoZerado(),...(d.custosProcesso.secundaria||{})},
+      };
+    }
+    if(d.precos) state.precos={...state.precos,...d.precos};
+    if(d.rendimentoSecundaria) state.rendimentoSecundaria={...state.rendimentoSecundaria,...d.rendimentoSecundaria};
+    if(d.aquisicao) state.aquisicao={...state.aquisicao,...d.aquisicao};
+    if(Array.isArray(d.lotes)) state.lotes=d.lotes;
+  }catch(e){ console.warn('loadState',e); }
+}
+function saveState(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      custosProcesso:state.custosProcesso,
+      precos:state.precos,
+      rendimentoSecundaria:state.rendimentoSecundaria,
+      aquisicao:state.aquisicao,
+      lotes:state.lotes,
+    }));
+  }catch(e){ console.warn('saveState',e); }
+}
+
+const fmt=(n,d=0)=>Number(n||0).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmtR=(n)=>`R$ ${fmt(n,2)}`;
+function escapeHtml(v){
+  return String(v==null?'':v).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+function toast(msg){
+  const wrap=document.getElementById('toast-wrap');
+  const el=document.createElement('div');
+  el.className='toast';
+  el.textContent=msg;
+  wrap.appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; setTimeout(()=>el.remove(),200); },2200);
+}
+
+function calc(){
+  const {lotes,custosProcesso,precos,rendimentoSecundaria,aquisicao}=state;
+  const tonPorProcesso={descarga:0,destalonador:0,primaria:0,secundaria:0};
+  let chipParaSecundaria=0, chipVendido=0, acoSujoQtd=0;
+
+  lotes.forEach(l=>{
+    const q=Number(l.quantidade)||0;
+    if(q<=0) return;
+    tonPorProcesso.descarga+=q;
+    if(l.materiaPrima==='pneuCarga'){
+      tonPorProcesso.destalonador+=q;
+      acoSujoQtd+=q*0.3;
+      const segue=q*0.7;
+      tonPorProcesso.primaria+=segue;
+      chipParaSecundaria+=segue;
+    }
+    if(l.materiaPrima==='pneuPasseio'){
+      tonPorProcesso.primaria+=q;
+      chipVendido+=q;
+    }
+    if(l.materiaPrima==='chipComprado') chipParaSecundaria+=q;
+  });
+  tonPorProcesso.secundaria=chipParaSecundaria;
+
+  const saidasSecundaria={
+    acoLimpo:chipParaSecundaria*(rendimentoSecundaria.acoLimpo/100),
+    mesh10:chipParaSecundaria*(rendimentoSecundaria.mesh10/100),
+    mesh20:chipParaSecundaria*(rendimentoSecundaria.mesh20/100),
+    mesh30:chipParaSecundaria*(rendimentoSecundaria.mesh30/100),
+  };
+
+  const custoTotalProcesso={}, custoPorTon={};
+  PROCESSOS.forEach(p=>{
+    const total=Object.values(custosProcesso[p.id]).reduce((a,b)=>a+(Number(b)||0),0);
+    custoTotalProcesso[p.id]=total;
+    custoPorTon[p.id]=tonPorProcesso[p.id]>0?total/tonPorProcesso[p.id]:0;
+  });
+
+  const aqCarga=Number(aquisicao.pneuCarga||0);
+  const aqPasseio=Number(aquisicao.pneuPasseio||0);
+  const aqChip=Number(aquisicao.chipComprado||0);
+
+  const custoCargaAteChip=aqCarga + custoPorTon.descarga + custoPorTon.destalonador/0.7 + custoPorTon.primaria;
+  const custoPasseioAteChip=aqPasseio + custoPorTon.descarga + custoPorTon.primaria;
+  const custoChipCompradoAteSecundaria=custoPorTon.descarga + aqChip;
+
+  let chipDaCarga=0, chipDeCompra=0;
+  lotes.forEach(l=>{
+    const q=Number(l.quantidade)||0;
+    if(l.materiaPrima==='pneuCarga') chipDaCarga+=q*0.7;
+    if(l.materiaPrima==='chipComprado') chipDeCompra+=q;
+  });
+  const custoEntradaSecundariaTotal=chipDaCarga*custoCargaAteChip + chipDeCompra*custoChipCompradoAteSecundaria;
+  const custoMedioEntrada=chipParaSecundaria>0?custoEntradaSecundariaTotal/chipParaSecundaria:0;
+  const custoUnitSecundariaSaida=custoMedioEntrada + custoPorTon.secundaria;
+
+  const produtos=[
+    {id:'acoSujo',nome:'Aço Sujo',qtd:acoSujoQtd,custoUnit:aqCarga+custoPorTon.descarga+custoPorTon.destalonador,preco:precos.acoSujo},
+    {id:'chip',nome:'Chip (venda)',qtd:chipVendido,custoUnit:custoPasseioAteChip,preco:precos.chip},
+    {id:'acoLimpo',nome:'Aço Limpo',qtd:saidasSecundaria.acoLimpo,custoUnit:custoUnitSecundariaSaida,preco:precos.acoLimpo},
+    {id:'mesh10',nome:'Mesh 10',qtd:saidasSecundaria.mesh10,custoUnit:custoUnitSecundariaSaida,preco:precos.mesh10},
+    {id:'mesh20',nome:'Mesh 20',qtd:saidasSecundaria.mesh20,custoUnit:custoUnitSecundariaSaida,preco:precos.mesh20},
+    {id:'mesh30',nome:'Mesh 30',qtd:saidasSecundaria.mesh30,custoUnit:custoUnitSecundariaSaida,preco:precos.mesh30},
+  ].map(p=>({
+    ...p,
+    margemUnit:p.preco-p.custoUnit,
+    margemTotal:(p.preco-p.custoUnit)*p.qtd,
+    faturamento:p.preco*p.qtd,
+  }));
+
+  return {
+    tonPorProcesso,produtos,
+    totalTon:lotes.reduce((a,l)=>a+(Number(l.quantidade)||0),0),
+    custoTotalPeriodo:Object.values(custoTotalProcesso).reduce((a,b)=>a+b,0),
+    faturamentoTotal:produtos.reduce((a,p)=>a+p.faturamento,0),
+    margemTotal:produtos.reduce((a,p)=>a+p.margemTotal,0),
+    chipParaSecundaria,chipVendido,acoSujoQtd,
+  };
+}
+
+function htmlGeral(c,somaRend){
+  const kpis=[
+    {label:'Ton. processada',value:`${fmt(c.totalTon)} t`},
+    {label:'Custo fabril período',value:fmtR(c.custoTotalPeriodo)},
+    {label:'Faturamento potencial',value:fmtR(c.faturamentoTotal)},
+    {label:'Margem potencial',value:fmtR(c.margemTotal),neg:c.margemTotal<0},
+  ];
+  const outs=c.produtos.filter(p=>['acoLimpo','mesh10','mesh20','mesh30'].includes(p.id));
+  return `
+    <div class="kpi-grid">
+      ${kpis.map(k=>`<div class="kpi"><div class="l">${k.label}</div><div class="v${k.neg?' neg':''}">${k.value}</div></div>`).join('')}
+    </div>
+    ${somaRend!==100?`<div class="warn">Rendimento da Trituração Secundária soma ${somaRend}% — ainda é placeholder. Ajuste em Premissas quando tiver o dado real de produção.</div>`:''}
+    <div class="panel">
+      <div class="panel-title">Fluxo da linha de produção</div>
+      <div class="flow">
+        <div class="node"><div class="l">Descarga</div><div class="v">${fmt(c.tonPorProcesso.descarga,1)} t</div></div>
+        <div class="arrow">›</div>
+        <div class="node"><div class="l">Destalonador</div><div class="v">${fmt(c.tonPorProcesso.destalonador,1)} t</div><div class="tag">Aço Sujo: ${fmt(c.acoSujoQtd,1)} t</div></div>
+        <div class="arrow">›</div>
+        <div class="node"><div class="l">Trit. Primária</div><div class="v">${fmt(c.tonPorProcesso.primaria,1)} t</div><div class="tag teal">Chip venda: ${fmt(c.chipVendido,1)} t</div></div>
+        <div class="arrow">›</div>
+        <div class="node"><div class="l">Trit. Secundária</div><div class="v">${fmt(c.tonPorProcesso.secundaria,1)} t</div></div>
+      </div>
+      <div class="outs">
+        ${outs.map(p=>`<div class="node out"><div class="l">${escapeHtml(p.nome)}</div><div class="v">${fmt(p.qtd,1)} t</div></div>`).join('')}
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Custo x venda por saída</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Produto</th><th class="r">Qtd (t)</th><th class="r">Custo/t</th><th class="r">Preço/t</th><th class="r">Margem/t</th><th class="r">Margem total</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${c.produtos.map(p=>`<tr>
+            <td class="strong">${escapeHtml(p.nome)}</td>
+            <td class="r">${fmt(p.qtd,1)}</td>
+            <td class="r" style="color:var(--text-dim)">${fmtR(p.custoUnit)}</td>
+            <td class="r">${fmtR(p.preco)}</td>
+            <td class="r ${p.margemUnit>=0?'pos':'neg'}">${fmtR(p.margemUnit)}</td>
+            <td class="r strong ${p.margemTotal>=0?'pos':'neg'}">${fmtR(p.margemTotal)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function htmlLancamentos(){
+  const nomes={pneuCarga:'Pneu de carga',pneuPasseio:'Pneu de passeio',chipComprado:'Chip comprado'};
+  const nl=state.novoLote;
+  return `
+    <div class="panel">
+      <div class="panel-title">Lançar produção do período</div>
+      <div class="form-row">
+        <div class="fg">
+          <label>Matéria-prima</label>
+          <select class="num-input" id="nl-mp" style="width:200px">
+            <option value="pneuCarga" ${nl.materiaPrima==='pneuCarga'?'selected':''}>Pneu de carga</option>
+            <option value="pneuPasseio" ${nl.materiaPrima==='pneuPasseio'?'selected':''}>Pneu de passeio</option>
+            <option value="chipComprado" ${nl.materiaPrima==='chipComprado'?'selected':''}>Chip comprado</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Quantidade (ton)</label>
+          <input class="num-input" id="nl-qtd" type="number" style="width:140px" value="${escapeHtml(nl.quantidade)}" placeholder="0">
+        </div>
+        <button type="button" class="btn-amber" id="add-lote"><i class="ti ti-plus"></i> Adicionar</button>
+      </div>
+      <table>
+        <thead><tr><th>Matéria-prima</th><th class="r">Quantidade (t)</th><th></th></tr></thead>
+        <tbody>
+          ${state.lotes.map(l=>`<tr>
+            <td>${nomes[l.materiaPrima]||l.materiaPrima}</td>
+            <td class="r">${fmt(l.quantidade,1)}</td>
+            <td class="r"><button type="button" class="btn-icon" data-del="${l.id}"><i class="ti ti-trash"></i></button></td>
+          </tr>`).join('')||'<tr><td colspan="3" style="color:var(--text-dim)">Nenhum lançamento ainda.</td></tr>'}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function htmlPremissas(somaRend){
+  const aberto=state.premissasAbertas;
+  const acc=(id,title,inner)=>{
+    const open=aberto===id;
+    return `<div class="acc">
+      <button type="button" class="acc-btn" data-acc="${id}">${title}<i class="ti ti-chevron-${open?'up':'down'}" style="color:var(--text-dim)"></i></button>
+      ${open?`<div class="acc-body">${inner}</div>`:''}
+    </div>`;
+  };
+  let html=`<div class="hint"><i class="ti ti-settings"></i> Todos os valores abaixo são editáveis e afetam o Painel Geral em tempo real.</div>`;
+  PROCESSOS.forEach(p=>{
+    html+=acc(`custo-${p.id}`,`Custos — ${p.nome}`,`
+      <div class="grid-5">
+        ${CATEGORIAS.map(c=>`<div>
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">${c.label} (R$/período)</div>
+          <input class="num-input" type="number" data-custo="${p.id}.${c.id}" value="${state.custosProcesso[p.id][c.id]}">
+        </div>`).join('')}
+      </div>`);
+  });
+  html+=acc('rendimento-sec',`Rendimento — Trituração Secundária (soma atual: ${somaRend}%)`,`
+    <div class="grid-4">
+      ${[
+        {id:'acoLimpo',label:'Aço Limpo (%)'},{id:'mesh10',label:'Mesh 10 (%)'},
+        {id:'mesh20',label:'Mesh 20 (%)'},{id:'mesh30',label:'Mesh 30 (%)'},
+      ].map(c=>`<div>
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">${c.label}</div>
+        <input class="num-input" type="number" data-rend="${c.id}" value="${state.rendimentoSecundaria[c.id]}">
+      </div>`).join('')}
+    </div>`);
+  html+=acc('precos','Preços de venda (R$/ton)',`
+    <div class="grid-3">
+      ${[
+        {id:'acoSujo',label:'Aço Sujo'},{id:'acoLimpo',label:'Aço Limpo'},{id:'chip',label:'Chip (venda)'},
+        {id:'mesh10',label:'Mesh 10'},{id:'mesh20',label:'Mesh 20'},{id:'mesh30',label:'Mesh 30'},
+      ].map(c=>`<div>
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">${c.label}</div>
+        <input class="num-input" type="number" data-preco="${c.id}" value="${state.precos[c.id]}">
+      </div>`).join('')}
+    </div>`);
+  html+=acc('aquisicao','Custo de aquisição da matéria-prima (R$/ton)',`
+    <div class="grid-3">
+      ${[
+        {id:'pneuCarga',label:'Pneu de carga'},
+        {id:'pneuPasseio',label:'Pneu de passeio'},
+        {id:'chipComprado',label:'Chip comprado'},
+      ].map(c=>`<div>
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">${c.label}</div>
+        <input class="num-input" type="number" data-aq="${c.id}" value="${state.aquisicao[c.id]}">
+      </div>`).join('')}
+    </div>`);
+  return html;
+}
+
+function render(){
+  const c=calc();
+  const somaRend=state.rendimentoSecundaria.acoLimpo+state.rendimentoSecundaria.mesh10+state.rendimentoSecundaria.mesh20+state.rendimentoSecundaria.mesh30;
+  const aba=state.aba;
+  let body='';
+  if(aba==='geral') body=htmlGeral(c,somaRend);
+  else if(aba==='lancamentos') body=htmlLancamentos();
+  else body=htmlPremissas(somaRend);
+
+  document.getElementById('app').innerHTML=`
+    <header>
+      <div class="brand">
+        <div class="brand-icon"><i class="ti ti-building-factory-2"></i></div>
+        <div>
+          <div class="brand-title">SAG AMBIENTAL</div>
+          <div class="brand-sub">Custeio fabril · linha de trituração de pneus</div>
+        </div>
+      </div>
+      <nav>
+        <button type="button" data-aba="geral" class="${aba==='geral'?'active':''}">Painel Geral</button>
+        <button type="button" data-aba="lancamentos" class="${aba==='lancamentos'?'active':''}">Lançamentos</button>
+        <button type="button" data-aba="premissas" class="${aba==='premissas'?'active':''}">Premissas</button>
+      </nav>
+    </header>
+    <main>${body}</main>`;
+
+  document.querySelectorAll('[data-aba]').forEach(btn=>{
+    btn.addEventListener('click',()=>{ state.aba=btn.dataset.aba; render(); });
+  });
+
+  if(aba==='lancamentos'){
+    document.getElementById('nl-mp')?.addEventListener('change',e=>{ state.novoLote.materiaPrima=e.target.value; });
+    document.getElementById('nl-qtd')?.addEventListener('input',e=>{ state.novoLote.quantidade=e.target.value; });
+    document.getElementById('add-lote')?.addEventListener('click',()=>{
+      const q=Number(state.novoLote.quantidade);
+      if(!q||q<=0){ toast('Informe uma quantidade válida.'); return; }
+      state.lotes=[...state.lotes,{id:Date.now(),materiaPrima:state.novoLote.materiaPrima,quantidade:q}];
+      state.novoLote={materiaPrima:state.novoLote.materiaPrima,quantidade:''};
+      saveState(); render();
+    });
+    document.querySelectorAll('[data-del]').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        state.lotes=state.lotes.filter(x=>x.id!==Number(btn.dataset.del));
+        saveState(); render();
+      });
+    });
+  }
+
+  if(aba==='premissas'){
+    document.querySelectorAll('[data-acc]').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        const id=btn.dataset.acc;
+        state.premissasAbertas=state.premissasAbertas===id?null:id;
+        render();
+      });
+    });
+    document.querySelectorAll('[data-custo]').forEach(inp=>{
+      inp.addEventListener('change',()=>{
+        const [proc,cat]=inp.dataset.custo.split('.');
+        state.custosProcesso[proc][cat]=Number(inp.value)||0;
+        saveState();
+      });
+    });
+    document.querySelectorAll('[data-rend]').forEach(inp=>{
+      inp.addEventListener('change',()=>{
+        state.rendimentoSecundaria[inp.dataset.rend]=Number(inp.value)||0;
+        saveState(); render();
+      });
+    });
+    document.querySelectorAll('[data-preco]').forEach(inp=>{
+      inp.addEventListener('change',()=>{
+        state.precos[inp.dataset.preco]=Number(inp.value)||0;
+        saveState();
+      });
+    });
+    document.querySelectorAll('[data-aq]').forEach(inp=>{
+      inp.addEventListener('change',()=>{
+        state.aquisicao[inp.dataset.aq]=Number(inp.value)||0;
+        saveState();
+      });
+    });
+  }
+}
+
+loadState();
+render();
+</script>
+</body>
+</html>
