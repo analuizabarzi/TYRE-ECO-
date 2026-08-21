@@ -269,6 +269,66 @@ input:focus,select:focus{outline:none;border-color:var(--green);background:#fff}
 .conf-table .conf-inp:focus{outline:none;border-color:var(--green)}
 .conf-table .conf-inp.ok{border-color:var(--green);background:var(--green-bg);color:var(--green)}
 .conf-table .conf-inp.diverge{border-color:var(--red);background:var(--red-bg);color:var(--red)}
+
+/* ── SAG Ambiental — custeio fabril ── */
+.content-area.sag-wide{max-width:1160px;padding:0}
+.sag-root{background:#15181B;color:#EDEDE8;min-height:calc(100vh - 56px);font-family:'Segoe UI',system-ui,sans-serif}
+.sag-root *{box-sizing:border-box}
+.sag-root input[type=number]{-moz-appearance:textfield}
+.sag-root input::-webkit-outer-spin-button,.sag-root input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.sag-num{background:#242931;border:1px solid #343B44;color:#EDEDE8;padding:6px 8px;border-radius:4px;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
+.sag-num:focus{outline:1px solid #E8A33D}
+.sag-root button:focus-visible,.sag-root select:focus-visible{outline:2px solid #E8A33D;outline-offset:2px}
+.sag-header{border-bottom:1px solid #343B44;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.sag-brand{display:flex;align-items:center;gap:12px}
+.sag-brand-icon{width:34px;height:34px;border-radius:6px;background:#E8A33D;display:flex;align-items:center;justify-content:center;color:#15181B;font-size:18px}
+.sag-brand-title{font-size:17px;font-weight:700;letter-spacing:.3px}
+.sag-brand-sub{font-size:11.5px;color:#9AA3AC;letter-spacing:.6px;text-transform:uppercase}
+.sag-nav{display:flex;gap:4px;flex-wrap:wrap}
+.sag-nav button{background:transparent;color:#9AA3AC;border:1px solid transparent;border-radius:6px;padding:7px 14px;font-size:13px;cursor:pointer;font-weight:600;font-family:inherit}
+.sag-nav button.active{background:#242931;color:#E8A33D;border-color:#8C6626}
+.sag-main{padding:20px;max-width:1160px;margin:0 auto}
+.sag-kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+@media(max-width:800px){.sag-kpi-grid{grid-template-columns:repeat(2,1fr)}}
+.sag-kpi{background:#1E2226;border:1px solid #343B44;border-radius:8px;padding:14px 16px}
+.sag-kpi .l{font-size:11px;color:#9AA3AC;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.sag-kpi .v{font-size:21px;font-weight:700;font-variant-numeric:tabular-nums}
+.sag-kpi .v.neg{color:#C1595A}
+.sag-warn{background:#2A2117;border:1px solid #8C6626;border-radius:8px;padding:10px 14px;margin-bottom:20px;font-size:12.5px;color:#E8A33D}
+.sag-panel{background:#1E2226;border:1px solid #343B44;border-radius:8px;padding:20px;margin-bottom:20px}
+.sag-panel-title{font-size:12px;color:#9AA3AC;text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px}
+.sag-table{width:100%;border-collapse:collapse;font-size:13px}
+.sag-table th{padding:6px 8px;font-weight:500;color:#9AA3AC;text-align:left}
+.sag-table th.r,.sag-table td.r{text-align:right}
+.sag-table td{padding:8px;border-top:1px solid #343B44;font-variant-numeric:tabular-nums}
+.sag-table td.strong{font-weight:600}
+.sag-pos{color:#4F8C86}.sag-neg{color:#C1595A}
+.sag-flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.sag-node{background:#242931;border:1px solid #343B44;border-radius:8px;padding:10px 12px;min-width:118px;text-align:center}
+.sag-node.out{min-width:96px;border-color:#8C6626}
+.sag-node .l{font-size:10.5px;color:#9AA3AC;text-transform:uppercase;letter-spacing:.4px}
+.sag-node .v{font-size:14px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}
+.sag-node .tag{font-size:10.5px;margin-top:6px;font-weight:600;color:#E8A33D}
+.sag-node .tag.teal{color:#4F8C86}
+.sag-arrow{color:#7C8894;font-size:18px;align-self:center}
+.sag-outs{display:flex;gap:8px;flex-wrap:wrap;padding-left:4px}
+.sag-outs .v{color:#E8A33D}
+.sag-form-row{display:flex;gap:10px;margin-bottom:18px;align-items:flex-end;flex-wrap:wrap}
+.sag-form-row .fg label{display:block;font-size:11px;color:#9AA3AC;margin-bottom:4px}
+.sag-btn-amber{background:#E8A33D;color:#15181B;border:none;border-radius:6px;padding:8px 14px;font-weight:700;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:inherit}
+.sag-btn-icon{background:none;border:none;color:#C1595A;cursor:pointer;padding:4px}
+.sag-hint{display:flex;align-items:center;gap:8px;margin-bottom:16px;color:#9AA3AC;font-size:12.5px}
+.sag-acc{background:#1E2226;border:1px solid #343B44;border-radius:8px;margin-bottom:10px;overflow:hidden}
+.sag-acc-btn{width:100%;display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:transparent;border:none;color:#EDEDE8;cursor:pointer;font-size:13.5px;font-weight:600;font-family:inherit;text-align:left}
+.sag-acc-body{padding:0 16px 16px}
+.sag-grid-5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.sag-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.sag-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:800px){
+  .sag-grid-5,.sag-grid-4{grid-template-columns:repeat(2,1fr)}
+  .sag-grid-3{grid-template-columns:1fr}
+}
+.sag-back{margin:12px 20px 0}
 </style>
 </head>
 <body>
@@ -496,7 +556,8 @@ async function carregarDadosColaborativos(){
     carregarMotoristaCheckins(), carregarConferencias(), carregarTriagemSalvas(),
     carregarFichasNF(), carregarRotasSalvas(), carregarPlanoContas(), carregarContasPagar(),
     carregarHistoricoImportacoes(), carregarRedesContato(), carregarBancos(),
-    carregarConciliacoesConfirmadas(), carregarHistoricoConciliacoesIA()
+    carregarConciliacoesConfirmadas(), carregarHistoricoConciliacoesIA(),
+    carregarSagCusteio()
   ]);
 }
 let triagemGrade={};
@@ -1002,6 +1063,8 @@ async function listarColaboradores(){
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 function renderDashboard(){
   telaAtual='dashboard';
+  const ca=document.getElementById('content-area');
+  if(ca){ ca.classList.remove('sag-wide'); ca.style.maxWidth=''; ca.style.padding=''; }
   document.getElementById('topbar-titulo').textContent='Tyre Eco';
   document.getElementById('topbar-sub').textContent=usuarioAtual.nome;
   const perfil=usuarioAtual.perfil;
@@ -1026,6 +1089,7 @@ function renderDashboard(){
       {id:'alertas',icon:'ti-brand-whatsapp',cor:'verde',nome:'Alertas WhatsApp',desc:'Z-API · Avisos de lixo'},
       {id:'importar_dados',icon:'ti-upload',cor:'azul',nome:'Importar dados',desc:'Migrar do Sygecom (CSV/Excel)'},
       {id:'usuarios',icon:'ti-users',cor:'teal',nome:'Usuários',desc:'Criar e gerenciar acessos'},
+      {id:'sag_custeio',icon:'ti-building-factory-2',cor:'laranja',nome:'SAG Ambiental',desc:'Custeio fabril · trituração'},
     ],
     motorista:[
       {id:'motorista_rota',icon:'ti-map-pin',cor:'azul',nome:'Rota do dia',desc:descRotaMotorista},
@@ -1052,6 +1116,7 @@ function renderDashboard(){
       {id:'conciliacao_bancaria',icon:'ti-building-bank',cor:'teal',nome:'Conciliação Bancária',desc:'Entradas e saídas por banco, dia a dia'},
       {id:'conciliacao_ia',icon:'ti-robot',cor:'azul',nome:'Conciliação com IA',desc:'Confira o extrato do banco (.ofx) com o sistema'},
       {id:'importar_dados',icon:'ti-upload',cor:'azul',nome:'Importar dados',desc:'Migrar do Sygecom (CSV/Excel)'},
+      {id:'sag_custeio',icon:'ti-building-factory-2',cor:'laranja',nome:'SAG Ambiental',desc:'Custeio fabril · trituração'},
     ],
     emissao_nf:[
       {id:'nf_emitir',icon:'ti-file-invoice',cor:'roxo',nome:'Emitir NF',desc:'Gerar ficha da NFS-e'},
@@ -1109,13 +1174,13 @@ function modulosPermitidos(modsPorPerfil, perfil){
 function idsModulosPermitidos(){
   const perfil=usuarioAtual.perfil;
   const mods={
-    gestor:['rota','cadastros','financeiro','financeiro_relatorios','conciliacao_bancaria','conciliacao_ia','nf_emitir','dashboard_gestor','alertas','importar_dados','usuarios','painel_frota'],
+    gestor:['rota','cadastros','financeiro','financeiro_relatorios','conciliacao_bancaria','conciliacao_ia','nf_emitir','dashboard_gestor','alertas','importar_dados','usuarios','painel_frota','sag_custeio'],
     motorista:['motorista_rota','motorista_checkin','motorista_hist'],
     conferente:['conf_lista'],
     fiscal:['fiscal_entrada','fiscal_saida'],
     triagem:['triagem_lista'],
     vendas:['vendas_nova','vendas_hist'],
-    financeiro:['financeiro','financeiro_relatorios','conciliacao_bancaria','conciliacao_ia','importar_dados'],
+    financeiro:['financeiro','financeiro_relatorios','conciliacao_bancaria','conciliacao_ia','importar_dados','sag_custeio'],
     emissao_nf:['nf_emitir'],
     logistica:['rota','logistica_painel','painel_frota'],
   };
@@ -1148,6 +1213,7 @@ function abrirModulo(id){
     'coletas_rede':renderHistoricoColetas,
     'conciliacao_bancaria':()=>{relatorioState.tab='pagosrecebidos';renderRelatorioFinanceiro();},
     'conciliacao_ia':()=>{resetConciliacaoIAState();renderConciliacaoIA();},
+    'sag_custeio':renderSagCusteio,
   };
   mapa[id]?.();
 }
@@ -1192,16 +1258,17 @@ const MODULOS_TODOS=[
   {id:'logistica_painel',nome:'Painel de Motoristas'},
   {id:'painel_frota',nome:'Painel de Frota'},
   {id:'coletas_rede',nome:'Histórico de Coletas (portal cliente)'},
+  {id:'sag_custeio',nome:'SAG Ambiental — Custeio fabril'},
 ];
 // Permissões padrão sugeridas ao escolher cada perfil (o gestor pode ajustar antes de criar)
 const PERFIL_MODULOS_PADRAO={
-  gestor:['rota','cadastros','financeiro','financeiro_relatorios','conciliacao_bancaria','conciliacao_ia','nf_emitir','dashboard_gestor','alertas','importar_dados','usuarios','painel_frota'],
+  gestor:['rota','cadastros','financeiro','financeiro_relatorios','conciliacao_bancaria','conciliacao_ia','nf_emitir','dashboard_gestor','alertas','importar_dados','usuarios','painel_frota','sag_custeio'],
   motorista:['motorista_rota','motorista_checkin','motorista_hist'],
   conferente:['conf_lista'],
   fiscal:['fiscal_entrada','fiscal_saida'],
   triagem:['triagem_lista'],
   vendas:['vendas_nova','vendas_hist'],
-  financeiro:['financeiro','financeiro_relatorios','conciliacao_bancaria','conciliacao_ia','importar_dados'],
+  financeiro:['financeiro','financeiro_relatorios','conciliacao_bancaria','conciliacao_ia','importar_dados','sag_custeio'],
   emissao_nf:['nf_emitir'],
   logistica:['rota','logistica_painel','painel_frota'],
   gestor_rede:['coletas_rede'],
@@ -7857,6 +7924,413 @@ window.wppDispararTriagem = async function({placa,motorista,total,lixo,pct}){
     await wppSalvarLog();
   }
 };
+
+// ── SAG AMBIENTAL — Custeio fabril (linha de trituração de pneus) ─────────────
+const SAG_PROCESSOS=[
+  {id:'descarga',nome:'Descarga'},
+  {id:'destalonador',nome:'Destalonador'},
+  {id:'primaria',nome:'Trituração Primária'},
+  {id:'secundaria',nome:'Trituração Secundária'},
+];
+const SAG_CATS=[
+  {id:'maoObra',label:'Mão de obra'},
+  {id:'energia',label:'Energia'},
+  {id:'manutencao',label:'Manutenção'},
+  {id:'depreciacao',label:'Depreciação'},
+  {id:'insumos',label:'Insumos'},
+];
+function sagCustoZerado(){ return {maoObra:0,energia:0,manutencao:0,depreciacao:0,insumos:0}; }
+function sagDefaultState(){
+  return {
+    aba:'geral',
+    premissasAbertas:null,
+    custosProcesso:{descarga:sagCustoZerado(),destalonador:sagCustoZerado(),primaria:sagCustoZerado(),secundaria:sagCustoZerado()},
+    precos:{acoSujo:300,acoLimpo:500,chip:650,mesh10:1800,mesh20:2000,mesh30:2200},
+    rendimentoSecundaria:{acoLimpo:5,mesh10:30,mesh20:35,mesh30:30},
+    aquisicao:{pneuCarga:0,pneuPasseio:0,chipComprado:0},
+    lotes:[
+      {id:1,materiaPrima:'pneuCarga',quantidade:100},
+      {id:2,materiaPrima:'pneuPasseio',quantidade:60},
+      {id:3,materiaPrima:'chipComprado',quantidade:40},
+    ],
+    novoLote:{materiaPrima:'pneuCarga',quantidade:''},
+  };
+}
+let sagState=sagDefaultState();
+let sagSaveTimer=null;
+
+async function salvarSagCusteio(){
+  try{
+    const payload={
+      custosProcesso:sagState.custosProcesso,
+      precos:sagState.precos,
+      rendimentoSecundaria:sagState.rendimentoSecundaria,
+      aquisicao:sagState.aquisicao,
+      lotes:sagState.lotes,
+    };
+    await window.storage?.set('sag_custeio', JSON.stringify(payload));
+  }catch(e){ console.warn('salvarSagCusteio',e); }
+}
+function agendarSalvarSag(){
+  clearTimeout(sagSaveTimer);
+  sagSaveTimer=setTimeout(()=>salvarSagCusteio(),400);
+}
+async function carregarSagCusteio(){
+  try{
+    const r=await window.storage?.get('sag_custeio');
+    if(!r) return;
+    const d=JSON.parse(r.value);
+    if(d.custosProcesso) sagState.custosProcesso={
+      descarga:{...sagCustoZerado(),...(d.custosProcesso.descarga||{})},
+      destalonador:{...sagCustoZerado(),...(d.custosProcesso.destalonador||{})},
+      primaria:{...sagCustoZerado(),...(d.custosProcesso.primaria||{})},
+      secundaria:{...sagCustoZerado(),...(d.custosProcesso.secundaria||{})},
+    };
+    if(d.precos) sagState.precos={...sagState.precos,...d.precos};
+    if(d.rendimentoSecundaria) sagState.rendimentoSecundaria={...sagState.rendimentoSecundaria,...d.rendimentoSecundaria};
+    if(d.aquisicao) sagState.aquisicao={...sagState.aquisicao,...d.aquisicao};
+    if(Array.isArray(d.lotes)) sagState.lotes=d.lotes;
+  }catch(e){ console.warn('carregarSagCusteio',e); }
+}
+
+const sagFmt=(n,d=0)=>Number(n||0).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});
+const sagFmtR=(n)=>`R$ ${sagFmt(n,2)}`;
+
+function calcSag(){
+  const {lotes,custosProcesso,precos,rendimentoSecundaria,aquisicao}=sagState;
+  const tonPorProcesso={descarga:0,destalonador:0,primaria:0,secundaria:0};
+  let chipParaSecundaria=0, chipVendido=0, acoSujoQtd=0;
+
+  lotes.forEach(l=>{
+    const q=Number(l.quantidade)||0;
+    if(q<=0) return;
+    tonPorProcesso.descarga+=q;
+    if(l.materiaPrima==='pneuCarga'){
+      tonPorProcesso.destalonador+=q;
+      const acoSujo=q*0.3;
+      const segue=q*0.7;
+      acoSujoQtd+=acoSujo;
+      tonPorProcesso.primaria+=segue;
+      chipParaSecundaria+=segue;
+    }
+    if(l.materiaPrima==='pneuPasseio'){
+      tonPorProcesso.primaria+=q;
+      chipVendido+=q;
+    }
+    if(l.materiaPrima==='chipComprado'){
+      chipParaSecundaria+=q;
+    }
+  });
+  tonPorProcesso.secundaria=chipParaSecundaria;
+
+  const rendPct={
+    acoLimpo:rendimentoSecundaria.acoLimpo/100,
+    mesh10:rendimentoSecundaria.mesh10/100,
+    mesh20:rendimentoSecundaria.mesh20/100,
+    mesh30:rendimentoSecundaria.mesh30/100,
+  };
+  const saidasSecundaria={
+    acoLimpo:chipParaSecundaria*rendPct.acoLimpo,
+    mesh10:chipParaSecundaria*rendPct.mesh10,
+    mesh20:chipParaSecundaria*rendPct.mesh20,
+    mesh30:chipParaSecundaria*rendPct.mesh30,
+  };
+
+  const custoTotalProcesso={}, custoPorTon={};
+  SAG_PROCESSOS.forEach(p=>{
+    const cats=custosProcesso[p.id];
+    const total=Object.values(cats).reduce((a,b)=>a+(Number(b)||0),0);
+    custoTotalProcesso[p.id]=total;
+    custoPorTon[p.id]=tonPorProcesso[p.id]>0?total/tonPorProcesso[p.id]:0;
+  });
+
+  // Aquisição mass-alocada: R$/t de entrada vira R$/t de cada saída daquela fração
+  const aqCarga=Number(aquisicao.pneuCarga||0);
+  const aqPasseio=Number(aquisicao.pneuPasseio||0);
+  const aqChip=Number(aquisicao.chipComprado||0);
+
+  const custoCargaAteChip=aqCarga + custoPorTon.descarga + custoPorTon.destalonador/0.7 + custoPorTon.primaria;
+  const custoPasseioAteChip=aqPasseio + custoPorTon.descarga + custoPorTon.primaria;
+  const custoChipCompradoAteSecundaria=custoPorTon.descarga + aqChip;
+
+  let chipDaCarga=0, chipDeCompra=0;
+  lotes.forEach(l=>{
+    const q=Number(l.quantidade)||0;
+    if(l.materiaPrima==='pneuCarga') chipDaCarga+=q*0.7;
+    if(l.materiaPrima==='chipComprado') chipDeCompra+=q;
+  });
+  const custoEntradaSecundariaTotal=chipDaCarga*custoCargaAteChip + chipDeCompra*custoChipCompradoAteSecundaria;
+  const custoMedioPorTonSecundariaEntrada=chipParaSecundaria>0?custoEntradaSecundariaTotal/chipParaSecundaria:0;
+  const custoUnitSecundariaSaida=custoMedioPorTonSecundariaEntrada + custoPorTon.secundaria;
+
+  const produtos=[
+    {id:'acoSujo',nome:'Aço Sujo',qtd:acoSujoQtd,custoUnit:aqCarga+custoPorTon.descarga+custoPorTon.destalonador,preco:precos.acoSujo},
+    {id:'chip',nome:'Chip (venda)',qtd:chipVendido,custoUnit:custoPasseioAteChip,preco:precos.chip},
+    {id:'acoLimpo',nome:'Aço Limpo',qtd:saidasSecundaria.acoLimpo,custoUnit:custoUnitSecundariaSaida,preco:precos.acoLimpo},
+    {id:'mesh10',nome:'Mesh 10',qtd:saidasSecundaria.mesh10,custoUnit:custoUnitSecundariaSaida,preco:precos.mesh10},
+    {id:'mesh20',nome:'Mesh 20',qtd:saidasSecundaria.mesh20,custoUnit:custoUnitSecundariaSaida,preco:precos.mesh20},
+    {id:'mesh30',nome:'Mesh 30',qtd:saidasSecundaria.mesh30,custoUnit:custoUnitSecundariaSaida,preco:precos.mesh30},
+  ].map(p=>({
+    ...p,
+    margemUnit:p.preco-p.custoUnit,
+    margemTotal:(p.preco-p.custoUnit)*p.qtd,
+    faturamento:p.preco*p.qtd,
+  }));
+
+  const totalTon=lotes.reduce((a,l)=>a+(Number(l.quantidade)||0),0);
+  const custoTotalPeriodo=Object.values(custoTotalProcesso).reduce((a,b)=>a+b,0);
+  const faturamentoTotal=produtos.reduce((a,p)=>a+p.faturamento,0);
+  const margemTotal=produtos.reduce((a,p)=>a+p.margemTotal,0);
+
+  return {tonPorProcesso,custoTotalProcesso,custoPorTon,produtos,totalTon,custoTotalPeriodo,faturamentoTotal,margemTotal,chipParaSecundaria,chipVendido,acoSujoQtd};
+}
+
+function renderSagCusteio(){
+  telaAtual='sag_custeio';
+  const ca=document.getElementById('content-area');
+  ca.classList.add('sag-wide');
+  document.getElementById('topbar-titulo').textContent='SAG Ambiental';
+  document.getElementById('topbar-sub').textContent='Custeio fabril';
+
+  const calc=calcSag();
+  const somaRend=sagState.rendimentoSecundaria.acoLimpo+sagState.rendimentoSecundaria.mesh10+sagState.rendimentoSecundaria.mesh20+sagState.rendimentoSecundaria.mesh30;
+  const aba=sagState.aba;
+
+  let body='';
+  if(aba==='geral') body=htmlSagGeral(calc,somaRend);
+  else if(aba==='lancamentos') body=htmlSagLancamentos();
+  else body=htmlSagPremissas(somaRend);
+
+  ca.innerHTML=`
+    <div class="sag-root">
+      <div class="sag-back">${btnBack('Voltar')}</div>
+      <header class="sag-header">
+        <div class="sag-brand">
+          <div class="sag-brand-icon"><i class="ti ti-building-factory-2"></i></div>
+          <div>
+            <div class="sag-brand-title">SAG AMBIENTAL</div>
+            <div class="sag-brand-sub">Custeio fabril · linha de trituração de pneus</div>
+          </div>
+        </div>
+        <nav class="sag-nav">
+          <button type="button" data-sag-aba="geral" class="${aba==='geral'?'active':''}">Painel Geral</button>
+          <button type="button" data-sag-aba="lancamentos" class="${aba==='lancamentos'?'active':''}">Lançamentos</button>
+          <button type="button" data-sag-aba="premissas" class="${aba==='premissas'?'active':''}">Premissas</button>
+        </nav>
+      </header>
+      <main class="sag-main">${body}</main>
+    </div>`;
+
+  bindBack();
+  ca.querySelectorAll('[data-sag-aba]').forEach(btn=>{
+    btn.addEventListener('click',()=>{ sagState.aba=btn.dataset.sagAba; renderSagCusteio(); });
+  });
+  if(aba==='lancamentos') bindSagLancamentos();
+  if(aba==='premissas') bindSagPremissas();
+}
+
+function htmlSagGeral(calc,somaRend){
+  const kpis=[
+    {label:'Ton. processada',value:`${sagFmt(calc.totalTon)} t`},
+    {label:'Custo fabril período',value:sagFmtR(calc.custoTotalPeriodo)},
+    {label:'Faturamento potencial',value:sagFmtR(calc.faturamentoTotal)},
+    {label:'Margem potencial',value:sagFmtR(calc.margemTotal),neg:calc.margemTotal<0},
+  ];
+  const outs=calc.produtos.filter(p=>['acoLimpo','mesh10','mesh20','mesh30'].includes(p.id));
+  return `
+    <div class="sag-kpi-grid">
+      ${kpis.map(k=>`<div class="sag-kpi"><div class="l">${k.label}</div><div class="v${k.neg?' neg':''}">${k.value}</div></div>`).join('')}
+    </div>
+    ${somaRend!==100?`<div class="sag-warn">Rendimento da Trituração Secundária soma ${somaRend}% — ainda é placeholder. Ajuste em Premissas quando tiver o dado real de produção.</div>`:''}
+    <div class="sag-panel">
+      <div class="sag-panel-title">Fluxo da linha de produção</div>
+      <div class="sag-flow">
+        <div class="sag-node"><div class="l">Descarga</div><div class="v">${sagFmt(calc.tonPorProcesso.descarga,1)} t</div></div>
+        <div class="sag-arrow">›</div>
+        <div class="sag-node"><div class="l">Destalonador</div><div class="v">${sagFmt(calc.tonPorProcesso.destalonador,1)} t</div><div class="tag">Aço Sujo: ${sagFmt(calc.acoSujoQtd,1)} t</div></div>
+        <div class="sag-arrow">›</div>
+        <div class="sag-node"><div class="l">Trit. Primária</div><div class="v">${sagFmt(calc.tonPorProcesso.primaria,1)} t</div><div class="tag teal">Chip venda: ${sagFmt(calc.chipVendido,1)} t</div></div>
+        <div class="sag-arrow">›</div>
+        <div class="sag-node"><div class="l">Trit. Secundária</div><div class="v">${sagFmt(calc.tonPorProcesso.secundaria,1)} t</div></div>
+      </div>
+      <div class="sag-outs">
+        ${outs.map(p=>`<div class="sag-node out"><div class="l">${escapeHtml(p.nome)}</div><div class="v">${sagFmt(p.qtd,1)} t</div></div>`).join('')}
+      </div>
+    </div>
+    <div class="sag-panel">
+      <div class="sag-panel-title">Custo x venda por saída</div>
+      <table class="sag-table">
+        <thead>
+          <tr>
+            <th>Produto</th><th class="r">Qtd (t)</th><th class="r">Custo/t</th><th class="r">Preço/t</th><th class="r">Margem/t</th><th class="r">Margem total</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${calc.produtos.map(p=>`<tr>
+            <td class="strong">${escapeHtml(p.nome)}</td>
+            <td class="r">${sagFmt(p.qtd,1)}</td>
+            <td class="r" style="color:#9AA3AC">${sagFmtR(p.custoUnit)}</td>
+            <td class="r">${sagFmtR(p.preco)}</td>
+            <td class="r ${p.margemUnit>=0?'sag-pos':'sag-neg'}">${sagFmtR(p.margemUnit)}</td>
+            <td class="r strong ${p.margemTotal>=0?'sag-pos':'sag-neg'}">${sagFmtR(p.margemTotal)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function htmlSagLancamentos(){
+  const nomes={pneuCarga:'Pneu de carga',pneuPasseio:'Pneu de passeio',chipComprado:'Chip comprado'};
+  const nl=sagState.novoLote;
+  return `
+    <div class="sag-panel">
+      <div class="sag-panel-title">Lançar produção do período</div>
+      <div class="sag-form-row">
+        <div class="fg">
+          <label>Matéria-prima</label>
+          <select class="sag-num" id="sag-nl-mp" style="width:200px">
+            <option value="pneuCarga" ${nl.materiaPrima==='pneuCarga'?'selected':''}>Pneu de carga</option>
+            <option value="pneuPasseio" ${nl.materiaPrima==='pneuPasseio'?'selected':''}>Pneu de passeio</option>
+            <option value="chipComprado" ${nl.materiaPrima==='chipComprado'?'selected':''}>Chip comprado</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Quantidade (ton)</label>
+          <input class="sag-num" id="sag-nl-qtd" type="number" style="width:140px" value="${escapeHtml(nl.quantidade)}" placeholder="0">
+        </div>
+        <button type="button" class="sag-btn-amber" id="sag-add-lote"><i class="ti ti-plus"></i> Adicionar</button>
+      </div>
+      <table class="sag-table">
+        <thead><tr><th>Matéria-prima</th><th class="r">Quantidade (t)</th><th></th></tr></thead>
+        <tbody>
+          ${sagState.lotes.map(l=>`<tr>
+            <td>${nomes[l.materiaPrima]||l.materiaPrima}</td>
+            <td class="r">${sagFmt(l.quantidade,1)}</td>
+            <td class="r"><button type="button" class="sag-btn-icon" data-sag-del="${l.id}"><i class="ti ti-trash"></i></button></td>
+          </tr>`).join('')||'<tr><td colspan="3" style="color:#9AA3AC">Nenhum lançamento ainda.</td></tr>'}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function bindSagLancamentos(){
+  document.getElementById('sag-nl-mp')?.addEventListener('change',e=>{ sagState.novoLote.materiaPrima=e.target.value; });
+  document.getElementById('sag-nl-qtd')?.addEventListener('input',e=>{ sagState.novoLote.quantidade=e.target.value; });
+  document.getElementById('sag-add-lote')?.addEventListener('click',()=>{
+    const q=Number(sagState.novoLote.quantidade);
+    if(!q||q<=0){ mostrarToast('Informe uma quantidade válida.','aviso'); return; }
+    sagState.lotes=[...sagState.lotes,{id:Date.now(),materiaPrima:sagState.novoLote.materiaPrima,quantidade:q}];
+    sagState.novoLote={materiaPrima:sagState.novoLote.materiaPrima,quantidade:''};
+    agendarSalvarSag();
+    renderSagCusteio();
+  });
+  document.querySelectorAll('[data-sag-del]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const id=Number(btn.dataset.sagDel);
+      sagState.lotes=sagState.lotes.filter(x=>x.id!==id);
+      agendarSalvarSag();
+      renderSagCusteio();
+    });
+  });
+}
+
+function htmlSagPremissas(somaRend){
+  const aberto=sagState.premissasAbertas;
+  const acc=(id,title,inner)=>{
+    const open=aberto===id;
+    return `<div class="sag-acc">
+      <button type="button" class="sag-acc-btn" data-sag-acc="${id}">${title}<i class="ti ti-chevron-${open?'up':'down'}" style="color:#9AA3AC"></i></button>
+      ${open?`<div class="sag-acc-body">${inner}</div>`:''}
+    </div>`;
+  };
+
+  let html=`<div class="sag-hint"><i class="ti ti-settings"></i> Todos os valores abaixo são editáveis e afetam o Painel Geral em tempo real.</div>`;
+
+  SAG_PROCESSOS.forEach(p=>{
+    html+=acc(`custo-${p.id}`,`Custos — ${p.nome}`,`
+      <div class="sag-grid-5">
+        ${SAG_CATS.map(c=>`<div>
+          <div style="font-size:11px;color:#9AA3AC;margin-bottom:4px">${c.label} (R$/período)</div>
+          <input class="sag-num" type="number" data-sag-custo="${p.id}.${c.id}" value="${sagState.custosProcesso[p.id][c.id]}">
+        </div>`).join('')}
+      </div>`);
+  });
+
+  html+=acc('rendimento-sec',`Rendimento — Trituração Secundária (soma atual: ${somaRend}%)`,`
+    <div class="sag-grid-4">
+      ${[
+        {id:'acoLimpo',label:'Aço Limpo (%)'},
+        {id:'mesh10',label:'Mesh 10 (%)'},
+        {id:'mesh20',label:'Mesh 20 (%)'},
+        {id:'mesh30',label:'Mesh 30 (%)'},
+      ].map(c=>`<div>
+        <div style="font-size:11px;color:#9AA3AC;margin-bottom:4px">${c.label}</div>
+        <input class="sag-num" type="number" data-sag-rend="${c.id}" value="${sagState.rendimentoSecundaria[c.id]}">
+      </div>`).join('')}
+    </div>`);
+
+  html+=acc('precos','Preços de venda (R$/ton)',`
+    <div class="sag-grid-3">
+      ${[
+        {id:'acoSujo',label:'Aço Sujo'},{id:'acoLimpo',label:'Aço Limpo'},{id:'chip',label:'Chip (venda)'},
+        {id:'mesh10',label:'Mesh 10'},{id:'mesh20',label:'Mesh 20'},{id:'mesh30',label:'Mesh 30'},
+      ].map(c=>`<div>
+        <div style="font-size:11px;color:#9AA3AC;margin-bottom:4px">${c.label}</div>
+        <input class="sag-num" type="number" data-sag-preco="${c.id}" value="${sagState.precos[c.id]}">
+      </div>`).join('')}
+    </div>`);
+
+  html+=acc('aquisicao','Custo de aquisição da matéria-prima (R$/ton)',`
+    <div class="sag-grid-3">
+      ${[
+        {id:'pneuCarga',label:'Pneu de carga'},
+        {id:'pneuPasseio',label:'Pneu de passeio'},
+        {id:'chipComprado',label:'Chip comprado'},
+      ].map(c=>`<div>
+        <div style="font-size:11px;color:#9AA3AC;margin-bottom:4px">${c.label}</div>
+        <input class="sag-num" type="number" data-sag-aq="${c.id}" value="${sagState.aquisicao[c.id]}">
+      </div>`).join('')}
+    </div>`);
+
+  return html;
+}
+
+function bindSagPremissas(){
+  document.querySelectorAll('[data-sag-acc]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const id=btn.dataset.sagAcc;
+      sagState.premissasAbertas=sagState.premissasAbertas===id?null:id;
+      renderSagCusteio();
+    });
+  });
+  document.querySelectorAll('[data-sag-custo]').forEach(inp=>{
+    inp.addEventListener('change',()=>{
+      const [proc,cat]=inp.dataset.sagCusto.split('.');
+      sagState.custosProcesso[proc][cat]=Number(inp.value)||0;
+      agendarSalvarSag();
+    });
+  });
+  document.querySelectorAll('[data-sag-rend]').forEach(inp=>{
+    inp.addEventListener('change',()=>{
+      sagState.rendimentoSecundaria[inp.dataset.sagRend]=Number(inp.value)||0;
+      agendarSalvarSag();
+      renderSagCusteio();
+    });
+  });
+  document.querySelectorAll('[data-sag-preco]').forEach(inp=>{
+    inp.addEventListener('change',()=>{
+      sagState.precos[inp.dataset.sagPreco]=Number(inp.value)||0;
+      agendarSalvarSag();
+    });
+  });
+  document.querySelectorAll('[data-sag-aq]').forEach(inp=>{
+    inp.addEventListener('change',()=>{
+      sagState.aquisicao[inp.dataset.sagAq]=Number(inp.value)||0;
+      agendarSalvarSag();
+    });
+  });
+}
+
 </script>
 
 </body>
