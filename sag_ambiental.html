@@ -86,8 +86,12 @@ td.strong{font-weight:600}
 .grid-5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
 .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.grid-8{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.rateio-readonly{background:var(--panel-alt);border:1px dashed var(--line);border-radius:4px;padding:8px;font-size:12.5px;font-variant-numeric:tabular-nums}
+.rateio-readonly .rl{font-size:11px;color:var(--text-dim);margin-bottom:4px}
+.muted{font-size:11.5px;color:var(--text-dim);margin:8px 0 0;line-height:1.4}
 @media(max-width:800px){
-  .grid-5,.grid-4{grid-template-columns:repeat(2,1fr)}
+  .grid-5,.grid-4,.grid-8{grid-template-columns:repeat(2,1fr)}
   .grid-3{grid-template-columns:1fr}
 }
 .toast-wrap{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:8px;width:min(92vw,380px);pointer-events:none}
@@ -112,14 +116,23 @@ const CATEGORIAS=[
   {id:'depreciacao',label:'Depreciação'},
   {id:'insumos',label:'Insumos'},
 ];
+const INDIRETOS=[
+  {id:'aluguel',label:'Aluguel'},
+  {id:'funcionarios',label:'Funcionários'},
+  {id:'outros',label:'Outros'},
+];
 const STORAGE_KEY='sag_ambiental_custeio_v1';
 
 function custoZerado(){ return {maoObra:0,energia:0,manutencao:0,depreciacao:0,insumos:0}; }
+function indiretosZerados(){ return {aluguel:0,funcionarios:0,outros:0}; }
+function rateioPctPadrao(){ return {descarga:25,destalonador:25,primaria:25,secundaria:25}; }
 function defaultState(){
   return {
     aba:'geral',
     premissasAbertas:null,
     custosProcesso:{descarga:custoZerado(),destalonador:custoZerado(),primaria:custoZerado(),secundaria:custoZerado()},
+    custosIndiretos:indiretosZerados(),
+    rateioPct:rateioPctPadrao(),
     precos:{acoSujo:300,acoLimpo:500,chip:650,mesh10:1800,mesh20:2000,mesh30:2200},
     rendimentoSecundaria:{acoLimpo:5,mesh10:30,mesh20:35,mesh30:30},
     aquisicao:{pneuCarga:0,pneuPasseio:0,chipComprado:0},
@@ -147,6 +160,8 @@ function loadState(){
         secundaria:{...custoZerado(),...(d.custosProcesso.secundaria||{})},
       };
     }
+    if(d.custosIndiretos) state.custosIndiretos={...indiretosZerados(),...d.custosIndiretos};
+    if(d.rateioPct) state.rateioPct={...rateioPctPadrao(),...d.rateioPct};
     if(d.precos) state.precos={...state.precos,...d.precos};
     if(d.rendimentoSecundaria) state.rendimentoSecundaria={...state.rendimentoSecundaria,...d.rendimentoSecundaria};
     if(d.aquisicao) state.aquisicao={...state.aquisicao,...d.aquisicao};
@@ -157,6 +172,8 @@ function saveState(){
   try{
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       custosProcesso:state.custosProcesso,
+      custosIndiretos:state.custosIndiretos,
+      rateioPct:state.rateioPct,
       precos:state.precos,
       rendimentoSecundaria:state.rendimentoSecundaria,
       aquisicao:state.aquisicao,
@@ -180,7 +197,7 @@ function toast(msg){
 }
 
 function calc(){
-  const {lotes,custosProcesso,precos,rendimentoSecundaria,aquisicao}=state;
+  const {lotes,custosProcesso,precos,rendimentoSecundaria,aquisicao,custosIndiretos,rateioPct}=state;
   const tonPorProcesso={descarga:0,destalonador:0,primaria:0,secundaria:0};
   let chipParaSecundaria=0, chipVendido=0, acoSujoQtd=0;
 
@@ -210,9 +227,25 @@ function calc(){
     mesh30:chipParaSecundaria*(rendimentoSecundaria.mesh30/100),
   };
 
-  const custoTotalProcesso={}, custoPorTon={};
+  const totalIndiretos=INDIRETOS.reduce((a,i)=>a+(Number(custosIndiretos[i.id])||0),0);
+  const somaRateioPct=PROCESSOS.reduce((a,p)=>a+(Number(rateioPct[p.id])||0),0);
+
+  // Rateio dos indiretos (Aluguel, Funcionários, Outros) por % de cada equipamento
+  const rateioPorProcesso={};
+  const custoDiretoProcesso={}, custoTotalProcesso={}, custoPorTon={};
   PROCESSOS.forEach(p=>{
-    const total=Object.values(custosProcesso[p.id]).reduce((a,b)=>a+(Number(b)||0),0);
+    const pct=(Number(rateioPct[p.id])||0)/100;
+    const rateio={
+      aluguel:(Number(custosIndiretos.aluguel)||0)*pct,
+      funcionarios:(Number(custosIndiretos.funcionarios)||0)*pct,
+      outros:(Number(custosIndiretos.outros)||0)*pct,
+    };
+    rateio.total=rateio.aluguel+rateio.funcionarios+rateio.outros;
+    rateioPorProcesso[p.id]=rateio;
+
+    const direto=Object.values(custosProcesso[p.id]).reduce((a,b)=>a+(Number(b)||0),0);
+    custoDiretoProcesso[p.id]=direto;
+    const total=direto+rateio.total;
     custoTotalProcesso[p.id]=total;
     custoPorTon[p.id]=tonPorProcesso[p.id]>0?total/tonPorProcesso[p.id]:0;
   });
@@ -250,7 +283,8 @@ function calc(){
   }));
 
   return {
-    tonPorProcesso,produtos,
+    tonPorProcesso,produtos,rateioPorProcesso,custoDiretoProcesso,custoTotalProcesso,custoPorTon,
+    totalIndiretos,somaRateioPct,
     totalTon:lotes.reduce((a,l)=>a+(Number(l.quantidade)||0),0),
     custoTotalPeriodo:Object.values(custoTotalProcesso).reduce((a,b)=>a+b,0),
     faturamentoTotal:produtos.reduce((a,p)=>a+p.faturamento,0),
@@ -272,6 +306,7 @@ function htmlGeral(c,somaRend){
       ${kpis.map(k=>`<div class="kpi"><div class="l">${k.label}</div><div class="v${k.neg?' neg':''}">${k.value}</div></div>`).join('')}
     </div>
     ${somaRend!==100?`<div class="warn">Rendimento da Trituração Secundária soma ${somaRend}% — ainda é placeholder. Ajuste em Premissas quando tiver o dado real de produção.</div>`:''}
+    ${c.somaRateioPct!==100?`<div class="warn">Rateio dos custos indiretos soma ${fmt(c.somaRateioPct,1)}% — ajuste os % em Premissas para fechar 100%.</div>`:''}
     <div class="panel">
       <div class="panel-title">Fluxo da linha de produção</div>
       <div class="flow">
@@ -286,6 +321,51 @@ function htmlGeral(c,somaRend){
       <div class="outs">
         ${outs.map(p=>`<div class="node out"><div class="l">${escapeHtml(p.nome)}</div><div class="v">${fmt(p.qtd,1)} t</div></div>`).join('')}
       </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Rateio de indiretos por equipamento</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Equipamento</th>
+            <th class="r">Rateio %</th>
+            <th class="r">Aluguel</th>
+            <th class="r">Funcionários</th>
+            <th class="r">Outros</th>
+            <th class="r">Indiretos</th>
+            <th class="r">Diretos</th>
+            <th class="r">Total</th>
+            <th class="r">Custo/t</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${PROCESSOS.map(p=>{
+            const r=c.rateioPorProcesso[p.id];
+            return `<tr>
+              <td class="strong">${escapeHtml(p.nome)}</td>
+              <td class="r">${fmt(state.rateioPct[p.id],1)}%</td>
+              <td class="r">${fmtR(r.aluguel)}</td>
+              <td class="r">${fmtR(r.funcionarios)}</td>
+              <td class="r">${fmtR(r.outros)}</td>
+              <td class="r">${fmtR(r.total)}</td>
+              <td class="r" style="color:var(--text-dim)">${fmtR(c.custoDiretoProcesso[p.id])}</td>
+              <td class="r strong">${fmtR(c.custoTotalProcesso[p.id])}</td>
+              <td class="r">${fmtR(c.custoPorTon[p.id])}</td>
+            </tr>`;
+          }).join('')}
+          <tr>
+            <td class="strong">Total</td>
+            <td class="r">${fmt(c.somaRateioPct,1)}%</td>
+            <td class="r">${fmtR(state.custosIndiretos.aluguel)}</td>
+            <td class="r">${fmtR(state.custosIndiretos.funcionarios)}</td>
+            <td class="r">${fmtR(state.custosIndiretos.outros)}</td>
+            <td class="r strong">${fmtR(c.totalIndiretos)}</td>
+            <td class="r" style="color:var(--text-dim)">${fmtR(Object.values(c.custoDiretoProcesso).reduce((a,b)=>a+b,0))}</td>
+            <td class="r strong">${fmtR(c.custoTotalPeriodo)}</td>
+            <td class="r">—</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
     <div class="panel">
       <div class="panel-title">Custo x venda por saída</div>
@@ -343,8 +423,9 @@ function htmlLancamentos(){
     </div>`;
 }
 
-function htmlPremissas(somaRend){
+function htmlPremissas(somaRend, calcResult){
   const aberto=state.premissasAbertas;
+  const somaPct=PROCESSOS.reduce((a,p)=>a+(Number(state.rateioPct[p.id])||0),0);
   const acc=(id,title,inner)=>{
     const open=aberto===id;
     return `<div class="acc">
@@ -353,14 +434,44 @@ function htmlPremissas(somaRend){
     </div>`;
   };
   let html=`<div class="hint"><i class="ti ti-settings"></i> Todos os valores abaixo são editáveis e afetam o Painel Geral em tempo real.</div>`;
+
+  html+=acc('indiretos','Custos indiretos — Aluguel, Funcionários, Outros (R$/período)',`
+    <div class="grid-3">
+      ${INDIRETOS.map(c=>`<div>
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">${c.label}</div>
+        <input class="num-input" type="number" data-ind="${c.id}" value="${state.custosIndiretos[c.id]}">
+      </div>`).join('')}
+    </div>
+    <p class="muted">Total indiretos: <strong style="color:var(--text)">${fmtR(calcResult.totalIndiretos)}</strong> — rateados nos equipamentos conforme os % abaixo.</p>
+  `);
+
+  html+=acc('rateio-pct',`% de rateio por equipamento (soma atual: ${fmt(somaPct,1)}%)`,`
+    <div class="grid-4">
+      ${PROCESSOS.map(p=>`<div>
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">${escapeHtml(p.nome)} (%)</div>
+        <input class="num-input" type="number" data-rateio="${p.id}" value="${state.rateioPct[p.id]}">
+      </div>`).join('')}
+    </div>
+    <p class="muted">Ex.: 25 / 25 / 25 / 25 divide Aluguel, Funcionários e Outros igualmente entre os quatro equipamentos.</p>
+  `);
+
   PROCESSOS.forEach(p=>{
+    const r=calcResult.rateioPorProcesso[p.id];
     html+=acc(`custo-${p.id}`,`Custos — ${p.nome}`,`
       <div class="grid-5">
         ${CATEGORIAS.map(c=>`<div>
           <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">${c.label} (R$/período)</div>
           <input class="num-input" type="number" data-custo="${p.id}.${c.id}" value="${state.custosProcesso[p.id][c.id]}">
         </div>`).join('')}
-      </div>`);
+      </div>
+      <p class="muted" style="margin-top:14px;margin-bottom:8px">Rateio de indiretos neste equipamento (${fmt(state.rateioPct[p.id],1)}%)</p>
+      <div class="grid-4">
+        <div class="rateio-readonly"><div class="rl">Aluguel rateado</div>${fmtR(r.aluguel)}</div>
+        <div class="rateio-readonly"><div class="rl">Funcionários rateado</div>${fmtR(r.funcionarios)}</div>
+        <div class="rateio-readonly"><div class="rl">Outros rateado</div>${fmtR(r.outros)}</div>
+        <div class="rateio-readonly"><div class="rl">Total do equipamento</div><strong>${fmtR(calcResult.custoTotalProcesso[p.id])}</strong></div>
+      </div>
+    `);
   });
   html+=acc('rendimento-sec',`Rendimento — Trituração Secundária (soma atual: ${somaRend}%)`,`
     <div class="grid-4">
@@ -403,7 +514,7 @@ function render(){
   let body='';
   if(aba==='geral') body=htmlGeral(c,somaRend);
   else if(aba==='lancamentos') body=htmlLancamentos();
-  else body=htmlPremissas(somaRend);
+  else body=htmlPremissas(somaRend,c);
 
   document.getElementById('app').innerHTML=`
     <header>
@@ -457,6 +568,18 @@ function render(){
         const [proc,cat]=inp.dataset.custo.split('.');
         state.custosProcesso[proc][cat]=Number(inp.value)||0;
         saveState();
+      });
+    });
+    document.querySelectorAll('[data-ind]').forEach(inp=>{
+      inp.addEventListener('change',()=>{
+        state.custosIndiretos[inp.dataset.ind]=Number(inp.value)||0;
+        saveState(); render();
+      });
+    });
+    document.querySelectorAll('[data-rateio]').forEach(inp=>{
+      inp.addEventListener('change',()=>{
+        state.rateioPct[inp.dataset.rateio]=Number(inp.value)||0;
+        saveState(); render();
       });
     });
     document.querySelectorAll('[data-rend]').forEach(inp=>{
