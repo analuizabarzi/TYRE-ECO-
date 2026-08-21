@@ -11,6 +11,7 @@ Coleta sucata automotiva (pneus, discos, filtros, etc.) das redes **Campneus**, 
 | Arquivo | Descrição |
 |---|---|
 | `index.html` | **Sistema completo** — login, todos os módulos, todo o negócio. Este é o único arquivo em produção. |
+| `sag_ambiental.html` | **SAG Ambiental** — painel standalone de custeio fabril da linha de trituração (fora do Tyre Eco). |
 | `firebase.json` / `.firebaserc` | Configuração do Firebase Hosting |
 | `.github/workflows/deploy.yml` | Deploy automático (ver seção "Publicação") |
 
@@ -42,7 +43,6 @@ A trava de permissão é aplicada tanto na tela (esconde os cards) quanto na abe
 - **Alertas WhatsApp (Z-API)** — três alertas configuráveis (ver seção própria)
 - **Usuários** — criação de login por colaborador + permissões granulares por módulo
 - **Dashboard** — visão geral do dia
-- **SAG Ambiental** — custeio fabril da linha de trituração (fluxo, lançamentos, premissas, margem por saída)
 
 ### 🧭 Logística
 - Mesmo Roteirizador do Gestor
