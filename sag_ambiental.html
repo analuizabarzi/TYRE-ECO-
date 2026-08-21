@@ -229,7 +229,7 @@ function calc(){
   const totalIndiretos=INDIRETOS.reduce((a,i)=>a+(Number(custosIndiretos[i.id])||0),0);
   const somaRateioPct=PROCESSOS.reduce((a,p)=>a+(Number(rateioPct[p.id])||0),0);
 
-  // Rateio dos indiretos (Aluguel, Funcionários, Outros) por % de cada equipamento
+  // Rateio dos indiretos (Aluguel e Outros) por % de cada equipamento
   const rateioPorProcesso={};
   const custoDiretoProcesso={}, custoTotalProcesso={}, custoPorTon={};
   PROCESSOS.forEach(p=>{
