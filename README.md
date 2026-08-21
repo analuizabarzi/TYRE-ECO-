@@ -42,6 +42,7 @@ A trava de permissão é aplicada tanto na tela (esconde os cards) quanto na abe
 - **Alertas WhatsApp (Z-API)** — três alertas configuráveis (ver seção própria)
 - **Usuários** — criação de login por colaborador + permissões granulares por módulo
 - **Dashboard** — visão geral do dia
+- **SAG Ambiental** — custeio fabril da linha de trituração (fluxo, lançamentos, premissas, margem por saída)
 
 ### 🧭 Logística
 - Mesmo Roteirizador do Gestor
